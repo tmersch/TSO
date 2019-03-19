@@ -69,7 +69,7 @@ public class PlanetV4 extends JComponent {
 		
 		//Then, we apply that acceleration for a time deltaT (which we get from TitanV4.java) on the velocity
 		Vector oldVelocity = new Vector(velocity);
-		velocity.add(acceleration.divide(1.495978707e11)).multiply(TitanV4.deltaT);
+		velocity.add(acceleration.divide(1.495978707e11).multiply(TitanV4.deltaT));
 		
 		//And then we apply that velocity on the position to get the new position
 		//We use the average velocity instead of the new velocity to get a better result for the final position (as the velocity progressively increases along the movement)

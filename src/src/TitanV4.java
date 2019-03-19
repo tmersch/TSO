@@ -33,7 +33,7 @@ public class TitanV4 {
 	protected static final double PixelPerKm = sunSizePixel/sunSizeKm;
 	protected static final double G = 6.674 * Math.pow(10, -11);
 		//the gravitational constant
-	protected static final double deltaT = 1;
+	protected static final double deltaT = 0.1;
 		//the time interval which we consider the acceleration is constant on
 	protected static final int[] initialTime = {2019, 03, 18};
 	
@@ -54,12 +54,16 @@ public class TitanV4 {
 			//mainFrame.add(planets[i]);
 		}
 		
-		for (int i = 0; i < 31; i ++) {
-			System.out.printf("%d.%d.%d \n", initialTime[2]+i, initialTime[1], initialTime[0]);
+		planets[3].showPosition();		
+		for (int i = 0; i < 31/deltaT; i ++) {
 			planets[3].updatePos();
-			planets[3].showPosition();
-			System.out.println();
-		}		
+			
+			if (i % 10 == 0) {
+				System.out.printf("%d.%d.%d \n", initialTime[2]+1+(i/10), initialTime[1], initialTime[0]);
+				planets[3].showPosition();
+				System.out.println();
+			}
+		}
 		
 		/*
 		mainFrame.setVisible(true);

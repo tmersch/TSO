@@ -101,9 +101,18 @@ public class Planet extends JComponent {
 	*/
 	public void computeGOfPlanet (Planet p) {
 		double[] oldAcceleration = new double[acceleration.length];
+		
+		//Compute the distance to the given planet
+		double distToPlanet = 0;
+		for (int i = 0; i < pos.length; i ++) {
+			distToPlanet += Math.pow(pos[i] - p.getPosition()[i], 2);
+		}
+		distToPlanet = Math.sqrt(distToPlanet);
+		
+		//Compute the accelerations
 		for (int i = 0; i < acceleration.length; i ++) {
 			oldAcceleration[i] = acceleration[i];
-			acceleration[i] += (Titan.G * (mass * p.getMass()) * (((p.getPosition()[i] - pos[i])*(1.49597870700e11))/Math.pow(Math.abs(p.getPosition()[i] - pos[i]) * (1.495978707e11), 3)))/mass;
+			acceleration[i] += (Titan.G * (mass * p.getMass()) / (Math.pow((distToPlanet) * (1.495978707e11), 2)) * mass);
 			
 			//System.out.println("\nResult " + i + ": " + (acceleration[i]-oldAcceleration[i]));
 		}

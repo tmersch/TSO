@@ -62,7 +62,7 @@ public class Vector{
 	}
 	
 	public double length() {
-		return (Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+		return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
 	}
 
     public double distanceFrom(Vector a){
