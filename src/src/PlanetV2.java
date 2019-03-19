@@ -94,8 +94,8 @@ public class PlanetV2 extends JComponent {
 	public void showPosition () {
 		System.out.print("Planet " + name + " is currently at: ");
 		pos.printVector();
-		//System.out.print("Velocity is ");
-		//velocity.printVector();
+		System.out.print("Velocity is ");
+		velocity.printVector();
 	}
 	
 	/** Returns the mass of the planet

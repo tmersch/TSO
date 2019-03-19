@@ -112,8 +112,12 @@ public class PlanetV3 extends JComponent {
 	/** Prints the current position
 	*/
 	public void showPosition () {
+		System.out.println("Planet " + name + " is currently at: \nx=" + (pos[0]/1.49597870700e11) + ", y=" + (pos[1]/1.49597870700e11) + ", z=" + (pos[2]/1.49597870700e11));
+		System.out.println("Velocity is \nx=" + (velocity[0]/1.49597870700e11) + ", y=" + (velocity[1]/1.49597870700e11) + ", z=" + (velocity[2]/1.49597870700e11));
+		/*
 		System.out.printf("Planet %s is currently at: \nx = %6.15e, y = %6.15e, z = %6.15e\n", name, (pos[0]/1.49597870700e11), (pos[1]/1.49597870700e11), (pos[2]/1.49597870700e11));
 		System.out.printf("Velocity is \nx = %6.15e, y = %6.15e, z = %6.15e\n", (velocity[0]/1.49597870700e11), (velocity[1]/1.49597870700e11), (velocity[2]/1.49597870700e11));
+		*/
 	}
 	
 	/** Returns the mass of the planet
