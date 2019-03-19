@@ -49,7 +49,7 @@ public class TitanV2 {
 			//mainFrame.add(planets[i]);
 		}
 		
-		for (int i = 0; i < 11; i ++) {
+		for (int i = 0; i < 31; i ++) {
 			System.out.printf("%d.%d.%d \n", initialTime[2]+i, initialTime[1], initialTime[0]);
 			planets[3].showPosition();
 			planets[3].updatePos();

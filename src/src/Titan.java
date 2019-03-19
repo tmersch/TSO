@@ -32,6 +32,16 @@ public class Titan {
 		//the time interval which we consider the acceleration is constant on
 	protected static final int[] initialTime = {2019, 03, 18};
 	
+	/** 
+	*/
+	public static void createPlanets () {
+		planets = new Planet[planetNames.length];
+		for (int i = 0; i < planetNames.length; i ++) {
+			planets[i] = new Planet(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetVelocities[i]);
+			//mainFrame.add(planets[i]);
+		}
+	}
+	
 	public static void main (String[] args) {
 		//Creation of the Window
 		/*
@@ -43,13 +53,9 @@ public class Titan {
 		*/
 		
 		//Creation of the planet objects
-		planets = new Planet[planetNames.length];
-		for (int i = 0; i < planetNames.length; i ++) {
-			planets[i] = new Planet(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetVelocities[i]);
-			//mainFrame.add(planets[i]);
-		}
+		createPlanets();
 		
-		for (int i = 0; i < 11; i ++) {
+		for (int i = 0; i < 31; i ++) {
 			System.out.printf("%d.%d.%d \n", initialTime[2]+i, initialTime[1], initialTime[0]);
 			planets[3].showPosition();
 			planets[3].updatePos();

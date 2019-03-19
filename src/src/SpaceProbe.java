@@ -22,7 +22,7 @@ public class SpaceProbe {
 	/** Computes the forces exerted on the space probe by the planets (and later on also moons ?)
 			then saves it in acceleration
 	*/
-	public void computeAcceleration () {
+	public void updatePosition () {
 		for (int i = 0; i < Titan.planets.length; i ++) {
 			computeGOfPlanet(Titan.planets[i]);
 		}
@@ -32,7 +32,7 @@ public class SpaceProbe {
 			using Newton's law of universal gravity
 	*/
 	public void computeGOfPlanet(Planet p) {
-		for (int i = 0; i < 2; i ++) {
+		for (int i = 0; i < acceleration.length; i ++) {
 			acceleration[i] += Titan.G * (mass * p.getMass()) * ((p.getPosition()[i] - pos[i])/Math.pow(Math.abs(p.getPosition()[i] - pos[i]), 3));
 		}
 	}
