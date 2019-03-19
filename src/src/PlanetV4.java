@@ -84,7 +84,7 @@ public class PlanetV4 extends JComponent {
 		direction.substract(p.getPosition()).normalize().multiply(-1);
 		
 		//Then, multiply by the corresponding things to get the gravitational force
-		acceleration = direction.multiply(TitanV4.G).multiply(mass).multiply(p.getMass()).divide(Math.pow(p.getPosition().distanceFrom(pos) * (1.495978707e11), 2)).divide(mass);
+		acceleration.add(direction.multiply(TitanV4.G).multiply(mass).multiply(p.getMass()).divide(Math.pow(p.getPosition().distanceFrom(pos) * (1.495978707e11), 2)).divide(mass));
 		
 		//acceleration.printVector();
 	}
