@@ -14,10 +14,11 @@ public class Titan {
 	
 	//in 1000 km (for the real number, multiply by 1000)
 	private static final double[] planetDiameters = {1391.4, 4.879, 12.104, 12.756, 6.792, 142.984, 120.536, 51.118, 49.528};
-	private static final double[] aphelion = {0, 69816.9, 108939, 152100, 249200, 816620, 1514500, 3008000, 4540000};
-	private static final double[] perihelion = {0, 46001.2, 107477, 147095, 206700, 740520, 1352550, 2742000, 4460000};
-	private static double[][] planetPositions;
-	private static final double[][] planetAverageVelocities = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+	
+	private static double[][] planetPositions = {{0, 0, 0}, {-0.3925273567960567, -0.03879819483847988, 0.03283913641371604}, {-0.09732017651020915, -0.7199294932321404, -0.004262207523265710}, {-0.9935587640964904, 0.05480629946974475, -0.0000005093705349706397}, {0.2088395560566083, 1.536156446371844, 0.02706356460138197}, {-1.603846996938872, -5.079387235786619, 0.05698343195059011}, {2.350925833159521, -9.777692602515410, 0.07639256388661175}, {16.85838399418344,  10.48395996441127, -0.1793774975872748}, {29.04012364814637, -7.256104038656750, -0.5199155264376948}};
+		//These are in AU (astronomical unit), which is 149597870700 meters ...
+	private static final double[][] planetVelocities = {{0, 0, 0}, {-0.003085174827440397, -0.02678905961013325, -0.001906002544192568}, {0.01990865829058800, -0.002788334487005553, -0.001187140903113389}, {-0.001222948947169834, -0.01723762248532030, 0.0000001549730006627249}, {-0.01333740617497093, 0.003074268766369706, 0.0003916762672222440}, {0.007112084459265169, -0.001917954171635386, -0.0001511468482529501}, {0.005125372011552628, 0.001286146992007010, -0.0002265307895743247}, {-0.002098870396482691, 0.003154630568316460, 0.00003880419915949317}, {0.0007479191938823906, 0.003062927778796595, -0.00008075934314926571}};
+		//in AU/day ?
 	protected static Planet[] planets;
 		//Array containing the 8 planets
 		
@@ -27,35 +28,38 @@ public class Titan {
 	protected static final double PixelPerKm = sunSizePixel/sunSizeKm;
 	protected static final double G = 6.674 * Math.pow(10, -11);
 		//the gravitational constant
+	protected static final double deltaT = 1;
+		//the time interval which we consider the acceleration is constant on
+	protected static final int[] initialTime = {2019, 03, 18};
 	
 	public static void main (String[] args) {
 		//Creation of the Window
+		/*
 		JFrame mainFrame = new JFrame("Solar System");
 		mainFrame.setSize(WIDTH, HEIGHT);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainFrame.setLocationRelativeTo(null);
 		mainFrame.setLayout(new FlowLayout());
+		*/
 		
 		//Creation of the planet objects
 		planets = new Planet[planetNames.length];
-		//Provisory
-		planetPositions = new double[aphelion.length][2];
 		for (int i = 0; i < planetNames.length; i ++) {
-			planetPositions[i][0] = 0;
-			planetPositions[i][1] = (aphelion[i]+perihelion[i]);
-			planets[i] = new Planet(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetAverageVelocities[i]);
-			mainFrame.add(planets[i]);
+			planets[i] = new Planet(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetVelocities[i]);
+			//mainFrame.add(planets[i]);
 		}
 		
-		/*Prints the list of components of the mainFrame
-			Note: the components are printed out as hexcodes, thus this is not very useful
-		Component[] c = mainFrame.getContentPane().getComponents();
-		for (int i = 0; i < c.length; i ++) {
-			System.out.println("Component: " + c);
+		for (int i = 0; i < 11; i ++) {
+			System.out.printf("%d.%d.%d \n", initialTime[2]+i, initialTime[1], initialTime[0]);
+			planets[3].showPosition();
+			planets[3].updatePos();
+			System.out.println();
 		}
-		*/
 		
+		/*
 		mainFrame.setVisible(true);
 		mainFrame.setLayout(null);
+		*/
 	}
+}
 }

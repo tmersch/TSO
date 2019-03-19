@@ -14,28 +14,41 @@ public class Planet extends JComponent {
 		//pos[0] is x, pos[1] is y
 	private double[] startV;
 		//startV[0] is the starting velocity on x, startV[1] is the starting velocity on y
-	private double[] v;
+	private double[] velocity;
 		//v[0] is the velocity on x, v[1] is the velocity on y
+	private double[] acceleration;
+	
 	
 	public Planet (String name, double mass, double diameter, double[] startingPos, double[] startingV) {
 		this.name = name;
 		this.mass = mass;
 		this.diameter = diameter;
+		
+		/* Graphical part
 		circleDiameter = diameter * Titan.PixelPerKm;
 		System.out.println("Planet " + name + ", diameter: " + diameter + ", pixelPerKm: " + Titan.PixelPerKm + ", circleDiameter: " + circleDiameter);
+		*/
 		
+		//Position
 		startPos = new double[startingPos.length];
-		startPos[0] = startingPos[0];
-		startPos[1] = startingPos[1];
+		for (int i = 0; i < startingPos.length; i++) {
+			startPos[i] = startingPos[i];
+		}
 		pos = new double[startingPos.length];
-		pos[0] = startingPos[0];
-		pos[1] = startingPos[1];
+		for (int i = 0; i < startingPos.length; i++) {
+			pos[i] = startingPos[i];
+		}
+		//Velocity
 		startV = new double[startingV.length];
-		startV[0] = startingV[0];
-		startV[1] = startingV[1];
-		v = new double[startingV.length];
-		v[0] = startingV[0];
-		v[1] = startingV[1];
+		for (int i = 0; i < startingV.length; i++) {
+			startV[i] = startingV[i];
+		}
+		velocity = new double[startingV.length];
+		for (int i = 0; i < startingPos.length; i++) {
+			velocity[i] = startingV[i];
+		}
+		//Acceleration
+		acceleration = new double[startingV.length];
 	}
 	
 	/** To draw the object
@@ -51,16 +64,56 @@ public class Planet extends JComponent {
 		
 		System.out.println("Planet " + name + " drawn at x = " + circle.getX() + ", y = " + circle.getY() + ", diameter: " + circleDiameter);
 		
-		g2.setStroke(new Stroke());
+		//g2.setStroke(new Stroke());
 		
 		g2.fill(circle);
 	}
 	
 	/** Update the planet's position using the physics formulas
 	*/
-	public void updatePos () {
-		pos[0] = pos[0];
-		pos[1] = pos[1];
+	public void updatePos () {		
+		//This part computes the new acceleration
+		for (int i = 0; i < acceleration.length; i ++) {
+			acceleration[i] = 0;
+		}
+		
+		for (int i = 0; i < Titan.planets.length; i ++) {
+			if (! Titan.planets[i].equals(this)) {
+				computeGOfPlanet(Titan.planets[i]);
+			}
+		}
+		
+		//Then, we apply that acceleration for a time deltaT (which we get from Titan.java) on the velocity
+		double[] oldVelocity = new double[velocity.length];
+		for (int i = 0; i < velocity.length; i ++) {
+			oldVelocity[i] = velocity[i];
+			velocity[i] += (acceleration[i] * Titan.deltaT)/(1.49597870700e11);
+		}
+		
+		//And then we apply that velocity on the position to get the new position
+		for (int i = 0; i < pos.length; i ++) {
+			//We use the average velocity instead of the new velocity to get a better result for the final position (as the velocity progressively increases along the movement)
+			pos[i] += ((velocity[i] + oldVelocity[i])/2) * Titan.deltaT;
+		}
+	}
+	
+	/** Auxiliary method for updatePos, this method computes the acceleration on this planet due to the given parameter Planet
+	*/
+	public void computeGOfPlanet (Planet p) {
+		double[] oldAcceleration = new double[acceleration.length];
+		for (int i = 0; i < acceleration.length; i ++) {
+			oldAcceleration[i] = acceleration[i];
+			acceleration[i] += (Titan.G * (mass * p.getMass()) * (((p.getPosition()[i] - pos[i])*(1.49597870700e11))/Math.pow(Math.abs(p.getPosition()[i] - pos[i]) * (1.495978707e11), 3)))/mass;
+			
+			//System.out.println("\nResult " + i + ": " + (acceleration[i]-oldAcceleration[i]));
+		}
+	}
+	
+	/** Prints the current position
+	*/
+	public void showPosition () {
+		System.out.println("Planet " + name + " is currently at: \nx=" + pos[0] + ", y=" + pos[1] + ", z=" + pos[2]);
+		System.out.println("Velocity is \nx=" + velocity[0] + ", y=" + velocity[1] + ", z=" + velocity[2]);
 	}
 	
 	/** Returns the mass of the planet
@@ -71,7 +124,13 @@ public class Planet extends JComponent {
 	
 	/** Returns the position of the planet
 	*/
-	public double getPosition() {
+	public double[] getPosition() {
 		return pos;
+	}
+	
+	/** Returns the name of the planet
+	*/
+	public String getName() {
+		return name;
 	}
 }
