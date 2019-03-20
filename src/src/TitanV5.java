@@ -7,7 +7,7 @@ import java.awt.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.*;
 
-public class TitanV4 {
+public class TitanV5 {
 	private static final int WIDTH = 1200;
 	private static final int HEIGHT = 800;
 	
@@ -16,12 +16,12 @@ public class TitanV4 {
 		//in kg
 	private static final double[] planetDiameters = {	1391.4, 					4.879, 																			12.104, 																			12.756, 																		6.792, 																			142.984, 																		120.536, 																		51.118, 																		49.528};
 		//in 1000 km (for the real number, multiply by 1000)
-	private static Vector[] planetPositions = {			new Vector(0, 0, 0), 		new Vector(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10)};
+	private static Vector2D[] planetPositions = {			new Vector2D(0, 0, 0), 		new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10)};
 		//in meters
-	private static final Vector[] planetVelocities = {	new Vector(0, 0, 0), 		new Vector(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 	new Vector(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 	new Vector(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 	new Vector(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2)};
+	private static final Vector2D[] planetVelocities = {	new Vector2D(0, 0, 0), 		new Vector2D(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector2D(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector2D(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector2D(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector2D(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 	new Vector2D(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 	new Vector2D(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 	new Vector2D(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2)};
 		//in meters/secs
 	
-	protected static PlanetV4[] planets;
+	protected static PlanetV5[] planets;
 		//Array containing the 8 planets
 		
 	//Variables also accessible by other .java files to calculate the pixel size of the different planets
@@ -60,9 +60,9 @@ public class TitanV4 {
 		createPlanets();
 		
 		/* Test object
-		measurePos.add(new Vector(planetDiameters[3]*500000, 0, 0));
+		measurePos.add(new Vector2D(planetDiameters[3]*500000, 0, 0));
 		
-		measure = new PlanetV4("Test", 1, 1, measurePos, new Vector(0, 0, 0));
+		measure = new PlanetV5("Test", 1, 1, measurePos, new Vector2D(0, 0, 0));
 		
 		measure.updatePos();
 		measure.showPosition();
@@ -89,9 +89,9 @@ public class TitanV4 {
 	/** Creates the Planet objects
 	*/
 	public static void createPlanets() {
-		planets = new PlanetV4[planetNames.length];
+		planets = new PlanetV5[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
-			planets[i] = new PlanetV4(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetVelocities[i], planetCircles[i]);
+			planets[i] = new PlanetV5(planetNames[i], planetMasses[i], planetDiameters[i], planetPositions[i], planetVelocities[i], planetCircles[i]);
 			//mainFrame.add(planets[i]);
 		}
 	}
@@ -109,7 +109,7 @@ public class TitanV4 {
 					double upper = G*planets[i].getMass() * planets[j].getMass();
 					double lower = planets[i].getPosition().distanceFrom(planets[j].getPosition());
 					double gravitation = upper/lower;
-					Vector a = new Vector();
+					Vector2D a = new Vector2D();
 					a = planets[i].getPosition().substract(planets[j].getPosition()).normalize().multiply(-1);
 
 					planets[i].force.add(a.multiply(gravitation));
@@ -124,17 +124,17 @@ public class TitanV4 {
 
 		//calculate change in speed over deltaT
 		for(int i=1; i<planets.length; i++){
-			Vector oldVelocity = new Vector(planets[i].velocity);
+			Vector2D oldVelocity = new Vector2D(planets[i].velocity);
 			planets[i].velocity.add((planets[i].acceleration.multiply(deltaT)));
 
-			Vector posChange = new Vector();
+			Vector2D posChange = new Vector2D();
 			posChange = (oldVelocity.add(planets[i].velocity).divide(2)).multiply(deltaT);
 			planets[i].pos.add(posChange);
 		}
 		
 		//Reset the forces
 		for (int i = 0; i < planets.length; i ++) {
-			planets[i].force = new Vector();
+			planets[i].force = new Vector2D();
 		}
 	}
 }
