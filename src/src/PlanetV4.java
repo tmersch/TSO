@@ -69,7 +69,7 @@ public class PlanetV4 extends JComponent {
 		
 		//Then, we apply that acceleration for a time deltaT (which we get from TitanV4.java) on the velocity
 		Vector oldVelocity = new Vector(velocity);
-		velocity.add(acceleration.divide(1.495978707e11).multiply(TitanV4.deltaT));
+		velocity.add(acceleration.multiply(TitanV4.deltaT));
 		
 		//And then we apply that velocity on the position to get the new position
 		//We use the average velocity instead of the new velocity to get a better result for the final position (as the velocity progressively increases along the movement)
@@ -80,12 +80,20 @@ public class PlanetV4 extends JComponent {
 	*/
 	public void computeGOfPlanet (PlanetV4 p) {
 		//First, establish a vector of length 1 in the correct direction of the force
-		Vector direction = new Vector(pos);
+		Vector direction = new Vector(this.pos);
 		direction.substract(p.getPosition()).normalize().multiply(-1);
 		
-		//Then, multiply by the corresponding things to get the gravitational force
-		acceleration.add(direction.multiply(TitanV4.G).multiply(mass).multiply(p.getMass()).divide(Math.pow(p.getPosition().distanceFrom(pos) * (1.495978707e11), 2)).divide(mass));
+		//Auxiliary step, compute the distance between the two planets
+		double r = this.pos.distanceFrom(p.getPosition());
 		
+		if (p.getName().equals("Sun"))
+			System.out.println("Distance from the sun to Earth r: " + (r/(1.495978707e11)));
+		
+		//Then, multiply by the corresponding things to get the gravitational force
+		Vector gravitationalForce = new Vector(direction);
+		gravitationalForce.multiply(TitanV4.G).multiply(this.mass).multiply(p.getMass()).divide(Math.pow(r, 2));
+		
+		acceleration.add(new Vector(gravitationalForce).divide(this.mass));
 		//acceleration.printVector();
 	}
 	
