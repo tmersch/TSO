@@ -31,9 +31,9 @@ public class GUI extends Application {
 	private Vector2D dragPosStart;
 
 	//Number of seconds between each update
-	public static final double DELTA_T = 60;
+	public static final double DELTA_T = 60 * 30;
 	//scaling factor (number of meters in AU divided by 100)
-	public static final double SCALE = 1495978707.0*4;
+	public static final double SCALE = 5e9;//1495978707.0*4;
 	//radius of the planets
 	public static final double PLANET_RADIUS = 5;
 	//height of the part at the bottom
@@ -178,17 +178,19 @@ public class GUI extends Application {
 		for (int i = 0; i < planets.length; i ++) {
 			for (int j = i+1; j < planets.length; j ++) {
 				planets[i].addGToAcceleration(planets[j]);
+				planets[j].addGToAcceleration(planets[i]);
 			}
 		}
 
-		if (temp ++ < 10) {
+		if (temp ++ < 3) {
 			//DEBUGGING print the acceleration for the planets
-			for (int i = 0; i < planets.length; i ++) {
+			int i = 3;
+			//for (int i = 0; i < planets.length; i ++) {
 				System.out.println("Acceleration of the " + planets[i].getName() + ": " + planets[i].getAcceleration());
 				System.out.println("Velocity of the " + planets[i].getName() + ": " + planets[i].getVelocity());
 				System.out.println("Position of the " + planets[i].getName() + ": " + planets[i].getPosition());
 				System.out.println();
-			}
+			//}
 
 			System.out.println("\n\n");
 		}
