@@ -33,11 +33,11 @@ public class GUI extends Application {
 	//Number of seconds between each update
 	public static final double DELTA_T = 60;
 	//scaling factor (number of meters in AU divided by 100)
-	public static final double SCALE = 1495978707;
+	public static final double SCALE = 1495978707.0*4;
 	//radius of the planets
-	public static final double PLANET_RADIUS = 10;
+	public static final double PLANET_RADIUS = 5;
 	//height of the part at the bottom
-	private static final int BOTTOM_AREA_HEIGHT = 100;
+	private static final int TOP_AREA_HEIGHT = 100;
 	//the gravitation constant
 	public static final double G = 6.67300E-11;
 
@@ -60,10 +60,7 @@ public class GUI extends Application {
 
 	private CoordinatesTransformer coordinates = new CoordinatesTransformer();
 
-	private FPSCounter fps = new FPSCounter();
 	private Label timeLabel;
-  private Label fpsLabel;
-  private Label scaleLabel;
 
 
 	/** Main method
@@ -78,13 +75,13 @@ public class GUI extends Application {
 
 		//CoordinateTransformer
 		coordinates.setScale(SCALE);
-		coordinates.setOriginXForOther(500);
-		coordinates.setOriginYForOther(500);
+		coordinates.setOriginXForOther(350);
+		coordinates.setOriginYForOther(350);
 		GraphicsContext gc = createGUI(stage);
 		Timeline timeline = new Timeline();
 		timeline.setCycleCount(Timeline.INDEFINITE);
 		KeyFrame kf = new KeyFrame(
-				Duration.millis(0.1),
+				Duration.millis(1),
 				new EventHandler<ActionEvent>() {
 					public void handle(ActionEvent ae) {
 						updateFrame(gc);
@@ -120,62 +117,38 @@ public class GUI extends Application {
 	}
 
 	private GraphicsContext createGUI (Stage stage) {
+		//Create the borderPane
 		BorderPane border = new BorderPane();
+		//Create the label that shows the time
 		createTimeLabel();
-		createFPSLabel();
-    createScaleLabel();
+
+		//Create the horizontal box that will contain the time label
 		HBox hbox = createHBox();
-		border.setBottom(hbox);
-		Canvas canvas = createCanvas();
+		//add it to top of the borderpane
+		border.setTop(hbox);
+
+		//Create the canvas
+		Canvas canvas = new Canvas();
+		//and set it in the center of the borderpane
 		border.setCenter(canvas);
-		stage.setTitle("NBody simulation");
 		Scene scene = new Scene(border);
+
+		//Set the title, scene of the stage and setMaximized
+		stage.setTitle("NBody simulation");
 		stage.setScene(scene);
 		stage.setMaximized(true);
 
 		// Bind canvas size to stack pane size
 		canvas.widthProperty().bind(stage.widthProperty());
-		canvas.heightProperty().bind(stage.heightProperty().subtract(BOTTOM_AREA_HEIGHT));
+		canvas.heightProperty().bind(stage.heightProperty().add(TOP_AREA_HEIGHT));
 		return canvas.getGraphicsContext2D();
-	}
-
-	private Canvas createCanvas () {
-		Canvas canvas = new Canvas();
-
-		// dragging of map
-        canvas.setOnDragDetected((event) -> this.dragPosStart = new Vector2D(event.getX(), event.getY(), 0));
-        canvas.setOnMouseDragged((event) -> {
-            if (this.dragPosStart != null) {
-                Vector2D dragPosCurrent = new Vector2D(event.getX(), event.getY(), 0);
-                dragPosCurrent.subtract(this.dragPosStart);
-                dragPosStart = new Vector2D(event.getX(), event.getY(), 0);
-                coordinates.setOriginXForOther(coordinates.getOriginXForOther() + dragPosCurrent.x);
-                coordinates.setOriginYForOther(coordinates.getOriginYForOther() + dragPosCurrent.y);
-            }
-        });
-        canvas.setOnMouseReleased((event) -> this.dragPosStart = null);
-
-        // zooming (scaling)
-        canvas.setOnScroll((event) -> {
-            if (event.getDeltaY() > 0) {
-                coordinates.setScale(coordinates.getScale() * 0.9);
-            } else {
-                coordinates.setScale(coordinates.getScale() * 1.1);
-            }
-        });
-
-		return canvas;
 	}
 
 	private HBox createHBox () {
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
-        hbox.setSpacing(10);   // Gap between nodes
-        hbox.setStyle("-fx-background-color: #336699;");
         hbox.setFillHeight(true);
         hbox.getChildren().add(this.timeLabel);
-        hbox.getChildren().add(this.fpsLabel);
-        hbox.getChildren().add(this.scaleLabel);
         return hbox;
     }
 
@@ -221,16 +194,6 @@ public class GUI extends Application {
 		timeLabel = new Label();
 		timeLabel.setPrefSize(500, 20);	// -----------------------------------------------------------------
 	}
-
-	private void createFPSLabel() {
-      fpsLabel = new Label();
-      fpsLabel.setPrefSize(100, 20);
-  }
-
-	private void createScaleLabel() {
-      scaleLabel = new Label();
-      scaleLabel.setPrefSize(300, 20);
-  }
 
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
