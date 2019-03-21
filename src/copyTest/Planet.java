@@ -62,6 +62,6 @@ public class Planet {
 		velocity.add(new Vector2D(acceleration).multiply(time));
 
 		//Update location with the averageVelocity
-		position.add((new Vector2D(oldVelocity).add(velocity)).divide(2.0));
+		position.add(new Vector2D(oldVelocity).add(velocity).divide(2.0).multiply(time));
 	}
 }
