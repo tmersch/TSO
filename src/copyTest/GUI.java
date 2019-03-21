@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -100,16 +101,19 @@ public class GUI extends Application {
 		gc.clearRect(0, 0, canvasWidth, canvasHeight);
 
 		for (Planet p : planets) {
-			double otherX = coordinates.modelToOtherX(p.getPosition().x);
-			double otherY = coordinates.modelToOtherY(p.getPosition().y);
+			Vector2D otherPosition = coordinates.modelToOtherPosition(p.getPosition());
+
+			//Vector2D velocDirection = new Vector2D(p.getPosition()).add(p.getVelocity());
+			//Vector2D velocScaled = coordinates.modelVelocity(velocDirection);
+			//Line velocity = new Line(p.getPosition().x, p.getPosition().y, velocDirection.x, velocDirection.y);
 
 			//Draw circles
 			gc.setFill(Color.BLACK);
-			gc.fillOval(otherX - PLANET_RADIUS, otherY - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
+			gc.fillOval(otherPosition.x - PLANET_RADIUS, otherPosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
 
 			//Draw the labels
 			Text text = new Text(p.getName());
-			gc.fillText(p.getName(), otherX - (text.getLayoutBounds().getWidth() / 2), otherY - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+			gc.fillText(p.getName(), otherPosition.x - (text.getLayoutBounds().getWidth() / 2), otherPosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
 		}
 
 		update(DELTA_T);
