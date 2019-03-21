@@ -49,7 +49,7 @@ public class GUI extends Application implements EventHandler<ActionEvent> {
     {
         if(event.getSource() == button){
 
-            for(int j=0; j<300; j++){
+            for(int j=0; j<(30*TitanV4.SECONDS_IN_DAY)/TitanV4.deltaT; j++){
             //    for(int i=1; i<TitanV4.planets.length; i++){
             //        TitanV4.planets[i].updatePos();
             //    }

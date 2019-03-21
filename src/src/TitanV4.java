@@ -30,8 +30,9 @@ public class TitanV4 {
 	protected static final double PixelPerKm = sunSizePixel/sunSizeKm;
 	protected static final double G = 6.674 * Math.pow(10, -11);
 		//the gravitational constant
-	protected static final double deltaT = 1e-4;
+	protected static final double deltaT = 1;
 		//the time interval which we consider the acceleration is constant on
+	protected static final double SECONDS_IN_DAY = 86400;
 	protected static final int[] initialTime = {2019, 03, 18};
 	
 	private static Circle Sun = new Circle(250, 250, 3.0f);
@@ -113,6 +114,7 @@ public class TitanV4 {
 					a = planets[i].getPosition().substract(planets[j].getPosition()).normalize().multiply(-1);
 
 					planets[i].force.add(a.multiply(gravitation));
+					planets[i].force.add(a.multiply(-gravitation));
 				}
 			}
 		}

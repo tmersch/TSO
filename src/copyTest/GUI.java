@@ -97,7 +97,7 @@ public class GUI extends Application {
 
 	/** Draw a single frame
 	*/
-	private void updateFrame(GraphicsContext gc) {
+	protected void updateFrame(GraphicsContext gc) {
 		this.canvasWidth = gc.getCanvas().getWidth();
 		this.canvasHeight = gc.getCanvas().getHeight();
 		gc.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -122,6 +122,8 @@ public class GUI extends Application {
 	private GraphicsContext createGUI (Stage stage) {
 		BorderPane border = new BorderPane();
 		createTimeLabel();
+		createFPSLabel();
+    createScaleLabel();
 		HBox hbox = createHBox();
 		border.setBottom(hbox);
 		Canvas canvas = createCanvas();
@@ -180,7 +182,12 @@ public class GUI extends Application {
 	/** Initialize the Planet objects
 	*/
 	protected void createPlanets() {
+		planets = new Planet[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
+			System.out.println(planetNames[i]);
+			System.out.println(planetMasses[i]);
+			System.out.println(planetPositions[i]);
+			System.out.println(planetVelocities[i]);
 			planets[i] = new Planet(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
 		}
 	}
@@ -214,6 +221,16 @@ public class GUI extends Application {
 		timeLabel = new Label();
 		timeLabel.setPrefSize(500, 20);	// -----------------------------------------------------------------
 	}
+
+	private void createFPSLabel() {
+      fpsLabel = new Label();
+      fpsLabel.setPrefSize(100, 20);
+  }
+
+	private void createScaleLabel() {
+      scaleLabel = new Label();
+      scaleLabel.setPrefSize(300, 20);
+  }
 
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
