@@ -145,22 +145,19 @@ public class GUI extends Application {
 	}
 
 	private HBox createHBox () {
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(15, 12, 15, 12));
-        hbox.setFillHeight(true);
-        hbox.getChildren().add(this.timeLabel);
-        return hbox;
-    }
+		//Create the horizontal box
+    HBox hbox = new HBox();
+    hbox.setPadding(new Insets(15, 12, 15, 12));
+    hbox.setFillHeight(true);
+    hbox.getChildren().add(this.timeLabel);
+    return hbox;
+  }
 
 	/** Initialize the Planet objects
 	*/
 	protected void createPlanets() {
 		planets = new Planet[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
-			System.out.println(planetNames[i]);
-			System.out.println(planetMasses[i]);
-			System.out.println(planetPositions[i]);
-			System.out.println(planetVelocities[i]);
 			planets[i] = new Planet(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
 		}
 	}
