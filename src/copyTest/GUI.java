@@ -50,26 +50,22 @@ public class GUI extends Application {
   private long elapsedSeconds = 0;
 
 	//Array for the planets
-	private Planet[] planets;
-	private static final String[] planetNames = {				"Sun", 						"Mercury", 																			"Venus", 																			"Earth", 																			"Mars", 																		"Jupiter", 																			"Saturn", 																			"Uranus", 																			"Neptune"};
-	private static final double[] planetMasses = {			1.9885e30, 					3.302e23, 																			4.8685e24, 																			5.97219e24, 																		6.4171e23, 																		1.8981*Math.pow(10, 27), 															5.6834e26, 																			8.6813e25, 																			1.02413e26};
+	private static Planet[] planets;
+	private static final String[] planetNames = {				"Sun", 						"Mercury", 																			"Venus", 																			"Earth", 																			"Mars", 																		"Jupiter", 																			"Saturn", 																			"Uranus", 																			"Neptune", 										"Titan"};
+	private static final double[] planetMasses = {			1.9885e30, 					3.302e23, 																			4.8685e24, 																			5.97219e24, 																		6.4171e23, 																		1.8981e27, 															5.6834e26, 																			8.6813e25, 																			1.02413e26, 					1.34553e23};
 		//in kg
-	private static final double[] planetRadius = {	695700e3, 					2440, 																			12104, 																			12756, 																		6.792, 																			142.984, 																		120.536, 																		51.118, 																		49.528};
-		//in km
-	private static final Vector2D[] planetPositions = {			new Vector2D(0, 0, 0), 		new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10)};
+	private static final double[] planetRadius = {	695700e3, 					2440e3, 																			6051.84e3, 																			6371.01e3, 																		3389.92e3, 																			71492e3, 																		60268e3, 																		25559e3, 																		24766e3, 																		2575.5e3};
 		//in meters
-	private static final Vector2D[] planetVelocities = {	new Vector2D(0, 0, 0), 		new Vector2D(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector2D(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector2D(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector2D(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector2D(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 		new Vector2D(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 		new Vector2D(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 		new Vector2D(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2)};
+	private static final Vector2D[] planetPositions = {			new Vector2D(0, 0, 0), 		new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10), new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10)};
+		//in meters
+	private static final Vector2D[] planetVelocities = {	new Vector2D(0, 0, 0), 		new Vector2D(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector2D(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector2D(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector2D(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector2D(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 		new Vector2D(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 		new Vector2D(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 		new Vector2D(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2), new Vector2D(4.602663714929883e3, -5.834636275449419e2, 1.481088959791306e3)};
 		//in meters/secs
 
-	private static final String[] moonNames = {			"Titan"};
-	private static final double[] moonMasses = {		1.34553e23};
-		//in kg
-	private static final double[] moonRadius = {		2575.5};
-		//in km
-	private static final Vector2D[] moonPositions = {new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10)};
-		//in m
-	private static final Vector2D[] moonVelocities = {new Vector2D(4.602663714929883e3, -5.834636275449419e2, 1.481088959791306e3)};
-		//in m/s
+	private static SpaceProbe spaceProbe;
+
+	private static final double averageVelocitySpaceProbe = 16e3;
+		//in meters/secs
+
 	private static final int[] initialTime = {18, 3, 2019};
 
 	private CoordinatesTransformer coordinates = new CoordinatesTransformer();
@@ -91,19 +87,52 @@ public class GUI extends Application {
 		coordinates.setScale(SCALE);
 		coordinates.setOriginXForOther(700);
 		coordinates.setOriginYForOther(350);
-		GraphicsContext gc = createGUI(stage);
-		Timeline timeline = new Timeline();
-		timeline.setCycleCount(Timeline.INDEFINITE);
-		KeyFrame kf = new KeyFrame(
-				Duration.millis(1),
-				new EventHandler<ActionEvent>() {
-					public void handle(ActionEvent ae) {
-						updateFrame(gc);
-					}
+
+		Scanner s = new Scanner(System.in);
+		String input = "";
+
+		while ((input != 1) && (input != 2)) {
+			System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 if something else)");
+			input = s.next();
+
+			if (input == "1") {
+				//GUI part
+				GraphicsContext gc = createGUI(stage);
+				Timeline timeline = new Timeline();
+				timeline.setCycleCount(Timeline.INDEFINITE);
+				KeyFrame kf = new KeyFrame(
+					Duration.millis(1),
+					new EventHandler<ActionEvent>() {
+						public void handle(ActionEvent ae) {
+							updateFrame(gc);
+						}
 				});
-		timeline.getKeyFrames().add(kf);
-		timeline.play();
-		stage.show();
+				timeline.getKeyFrames().add(kf);
+				timeline.play();
+				stage.show();
+			}
+			else if (input == "2") {
+				//Space probe launch
+				// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+				//Compute the current distance between the Earth and Titan (- the earth's radius, since we start on the surface of Earth)
+				//Problem ! we do not know the position of Titan once we reach it !! Only the current
+				double dist = new Vector2D(planets[3].getPosition()).distance(planets[9].getPosition()) - planetRadius[3];
+
+				//Calculate the time needed using averageVelocitySpaceProbe
+				//Problem ! The velocity will not stay constant !!!
+				double time = dist * averageVelocitySpaceProbe;
+
+				//Compute the position of the planets after that time
+				for (int i = 0; i < time/DELTA_T; i ++) {
+					
+				}
+
+				//Create the SpaceProbe
+				createSpaceProbe();
+
+				//Then, see if it managed to get to Titan
+			}
+		}
 	}
 
 	/** Draw a single frame
@@ -115,13 +144,6 @@ public class GUI extends Application {
 
 		for (Planet p : planets) {
 			Vector2D otherPosition = coordinates.modelToOtherPosition(p.getPosition());
-
-			/*
-			//Compute and draw the velocity vector
-			Vector2D velocDirection = new Vector2D(p.getVelocity());
-			Vector2D velocScaled = coordinates.modelVelocity(velocDirection, p).add(p.getPosition());
-			Line velocity = new Line(p.getPosition().x, p.getPosition().y, velocDirection.x, velocDirection.y);
-			*/
 
 			//Draw circles
 			gc.setFill(Color.BLACK);
@@ -173,18 +195,27 @@ public class GUI extends Application {
     return hbox;
   }
 
-	/** Initialize the Planet objects
+	/** Initialize the Planet and the Moon objects
 	*/
-	protected void createPlanets() {
+	public void createSolarSystem() {
 		planets = new Planet[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
 			planets[i] = new Planet(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
 		}
+	}
 
-		moons = new Moon[moonNames.length];
-		for (int i = 0; i < moonNames.length; i ++) {
-			moons[i] = new Moon(moonNames[i], moonMasses[i], moonPositions[i], moonVelocities[i]);
-		}
+	/** Initialize the spaceProbe, on the surface of the Earth, in direction of Titan
+			and set the velocity to the normal velocity, in direction of Titan
+	*/
+	public void createSpaceProbe () {
+		//Start off with the direction of Titan, which is the position of Titan - the position of the Earth, which we then
+		computeTitanPositionAfter();
+	}
+
+	/** computes Titan's position after the time given as parameter
+	*/
+	public void computeTitanPositionAfter(double time) {
+
 	}
 
 
@@ -194,7 +225,7 @@ public class GUI extends Application {
 		This method updates the acceleration of the planets, then the velocity and location
 	*/
 	public void update (double time) {
-		//Reset the acceleration of all planets
+		//Reset the acceleration of all planets and moons
 		for (int i = 0; i < planets.length; i ++) {
 			planets[i].resetAcceleration();
 		}
