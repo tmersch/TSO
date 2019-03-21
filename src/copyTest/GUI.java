@@ -65,7 +65,7 @@ public class GUI extends Application {
 	private static SpaceProbe spaceProbe;
 	private static final double voyagerMass = 800;
 		//in kg
-	private static final double averageVelocitySpaceProbe = 3e8;
+	private static final double averageVelocitySpaceProbe = 16e3;
 		//in meters/secs
 
 	private static final int[] initialTime = {18, 3, 2019};
@@ -118,28 +118,20 @@ public class GUI extends Application {
 				//Compute the current distance between the Earth and Titan (- the earth's radius, since we start on the surface of Earth)
 				//Problem ! we do not know the position of Titan once we reach it !! Only the current
 				double dist = new Vector2D(planets[3].getPosition()).distance(planets[9].getPosition()) - planetRadius[3];
-				System.out.println("Distance between earth and " + planets[9].getName() + " is: " + dist);
 
 				//Calculate the time needed using averageVelocitySpaceProbe
 				//Problem ! The velocity will not stay constant !!!
 				double time = dist/averageVelocitySpaceProbe;
-				System.out.println("Time needed with a velocity of " + averageVelocitySpaceProbe + " is " + time + " secs: " + getTimeAsString(time));
+
+				System.out.println("Expected time to get to Titan with velocity " + averageVelocitySpaceProbe + ", is: " + getTimeAsString(time));
 
 				//save the current position of earth
 				Vector2D earthPos = new Vector2D(planets[3].getPosition());
-				System.out.println("Saved old position of Earth: " + earthPos);
-
-				System.out.println("Working out the simulation ... gonna take " + time + " secs, and " + (time/DELTA_T) + " steps");
 
 				//Compute the position of the planets after that time
 				for (int i = 0; i < time/DELTA_T; i ++) {
 					update(DELTA_T);
-					if (i % 100000 == 0) {
-						System.out.println("Reached step " + i + "/" + time/DELTA_T);
-					}
 				}
-
-				System.out.println("Ended working out the simulation after " + time + " secs, and " + (time/DELTA_T) + " steps");
 
 				//Compute the direction vector from the previous Earth position to Titan
 				Vector2D direction = new Vector2D(planets[9].getPosition()).subtract(earthPos).normalize();
@@ -156,20 +148,25 @@ public class GUI extends Application {
 				//Reset the solar System
 				createSolarSystem();
 
-				System.out.println("Created spaceProbe and reset Solar system ...");
-
-				//While the space probe has not crashed in a planet and is not further away from the sun than pluto, update the position of the planets and of the space probe
-				while ((spaceProbe.DidNotCrash()) && (spaceProbe.getPosition().distance(planets[0].getPosition()) > 5906376272e3)) {
-					updateWithSpaceProbe(DELTA_T);
-				}
-
-				//Then, after the loop ended, tell the result
-				if (spaceProbe.DidNotCrash()) {
-					System.out.println("The space probe got lost in space, probably outside of the solar system");
-				}
-				else {
-					System.out.println("The space probe crashed on " + spaceProbe.crashedPlanet.getName());
-				}
+				//Also show the second simulation with the Space probe
+				GraphicsContext gc = createGUI(stage);
+				Timeline timeline = new Timeline();
+				timeline.setCycleCount(Timeline.INDEFINITE);
+				KeyFrame kf = new KeyFrame(
+					Duration.millis(1),
+					new EventHandler<ActionEvent>() {
+						public void handle(ActionEvent ae) {
+							if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
+								updateFrameWithSpaceProbe(gc);
+							}
+							else {
+								updateFrame(gc);
+							}
+						}
+				});
+				timeline.getKeyFrames().add(kf);
+				timeline.play();
+				stage.show();
 			}
 		}
 	}
@@ -197,6 +194,40 @@ public class GUI extends Application {
 		timeLabel.setText(getElapsedTimeAsString());
 	}
 
+	protected void updateFrameWithSpaceProbe(GraphicsContext gc) {
+		this.canvasWidth = gc.getCanvas().getWidth();
+		this.canvasHeight = gc.getCanvas().getHeight();
+		gc.clearRect(0, 0, canvasWidth, canvasHeight);
+
+		//Draw all the planets
+		for (Planet p : planets) {
+			Vector2D otherPosition = coordinates.modelToOtherPosition(p.getPosition());
+
+			//Draw circles
+			gc.setFill(Color.BLACK);
+			gc.fillOval(otherPosition.x - PLANET_RADIUS, otherPosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
+
+			//Draw the labels
+			Text text = new Text(p.getName());
+			gc.fillText(p.getName(), otherPosition.x - (text.getLayoutBounds().getWidth() / 2), otherPosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+		}
+
+		//Draw the space probe
+		Vector2D spaceProbePosition = coordinates.modelToOtherPosition(spaceProbe.getPosition());
+
+		//draw circle for import junit.framework.TestCase;
+		gc.setFill(Color.BLACK);
+		gc.fillOval(spaceProbePosition.x - PLANET_RADIUS, spaceProbePosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
+
+		//draw a fitting label
+		Text text = new Text("Space probe");
+		gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+
+		updateWithSpaceProbe(DELTA_T);
+		timeLabel.setText(getElapsedTimeAsString());
+	}
+
+
 	private GraphicsContext createGUI (Stage stage) {
 		//Create the borderPane
 		BorderPane border = new BorderPane();
@@ -215,7 +246,7 @@ public class GUI extends Application {
 		Scene scene = new Scene(border);
 
 		//Set the title, scene of the stage and setMaximized
-		stage.setTitle("NBody simulation");
+		stage.setTitle("The road to Titan");
 		stage.setScene(scene);
 		stage.setMaximized(true);
 
@@ -299,6 +330,9 @@ public class GUI extends Application {
 			planets[i].updateVelocityAndPosition(time);
 		}
 		spaceProbe.updateVelocityAndPosition(time);
+
+		//Increment the seconds
+		elapsedSeconds += time;
 	}
 
 	private void createTimeLabel() {
