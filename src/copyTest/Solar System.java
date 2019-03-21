@@ -1,1 +1,0 @@
-public class Canvas extends Canvas

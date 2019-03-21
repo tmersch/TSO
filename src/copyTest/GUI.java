@@ -162,6 +162,9 @@ public class GUI extends Application {
 		}
 	}
 
+
+	private double temp = 0;
+
 	/** We assume that createPlanets has been called before
 		This method updates the acceleration of the planets, then the velocity and location
 	*/
@@ -178,8 +181,20 @@ public class GUI extends Application {
 			}
 		}
 
+		if (temp ++ < 10) {
+			//DEBUGGING print the acceleration for the planets
+			for (int i = 0; i < planets.length; i ++) {
+				System.out.println("Acceleration of the " + planets[i].getName() + ": " + planets[i].getAcceleration());
+				System.out.println("Velocity of the " + planets[i].getName() + ": " + planets[i].getVelocity());
+				System.out.println("Position of the " + planets[i].getName() + ": " + planets[i].getPosition());
+				System.out.println();
+			}
+
+			System.out.println("\n\n");
+		}
+
 		//Update the velocity and position of each body
-		for (int i = 0; i < planets.length; i ++) {
+		for (int i = 1; i < planets.length; i ++) {
 			planets[i].updateVelocityAndPosition(time);
 		}
 
