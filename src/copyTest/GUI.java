@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 
 /** GUI representing the solar system using javafx
 */
@@ -50,11 +51,11 @@ public class GUI extends Application {
   private long elapsedSeconds = 0;
 
 	//Array for the planets
-	private static Planet[] planets;
+	protected static Planet[] planets;
 	private static final String[] planetNames = {				"Sun", 						"Mercury", 																			"Venus", 																			"Earth", 																			"Mars", 																		"Jupiter", 																			"Saturn", 																			"Uranus", 																			"Neptune", 										"Titan"};
 	private static final double[] planetMasses = {			1.9885e30, 					3.302e23, 																			4.8685e24, 																			5.97219e24, 																		6.4171e23, 																		1.8981e27, 															5.6834e26, 																			8.6813e25, 																			1.02413e26, 					1.34553e23};
 		//in kg
-	private static final double[] planetRadius = {	695700e3, 					2440e3, 																			6051.84e3, 																			6371.01e3, 																		3389.92e3, 																			71492e3, 																		60268e3, 																		25559e3, 																		24766e3, 																		2575.5e3};
+	protected static final double[] planetRadius = {	695700e3, 					2440e3, 																			6051.84e3, 																			6371.01e3, 																		3389.92e3, 																			71492e3, 																		60268e3, 																		25559e3, 																		24766e3, 																		2575.5e3};
 		//in meters
 	private static final Vector2D[] planetPositions = {			new Vector2D(0, 0, 0), 		new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10), new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10)};
 		//in meters
@@ -62,8 +63,9 @@ public class GUI extends Application {
 		//in meters/secs
 
 	private static SpaceProbe spaceProbe;
-
-	private static final double averageVelocitySpaceProbe = 16e3;
+	private static final double voyagerMass = 800;
+		//in kg
+	private static final double averageVelocitySpaceProbe = 3e8;
 		//in meters/secs
 
 	private static final int[] initialTime = {18, 3, 2019};
@@ -91,11 +93,11 @@ public class GUI extends Application {
 		Scanner s = new Scanner(System.in);
 		String input = "";
 
-		while ((input != 1) && (input != 2)) {
+		while ((! input.equals("1")) && (! input.equals("2"))) {
 			System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 if something else)");
 			input = s.next();
 
-			if (input == "1") {
+			if (input.equals("1")) {
 				//GUI part
 				GraphicsContext gc = createGUI(stage);
 				Timeline timeline = new Timeline();
@@ -111,26 +113,63 @@ public class GUI extends Application {
 				timeline.play();
 				stage.show();
 			}
-			else if (input == "2") {
+			else if (input.equals("2")) {
 				//Space probe launch
-				// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 				//Compute the current distance between the Earth and Titan (- the earth's radius, since we start on the surface of Earth)
 				//Problem ! we do not know the position of Titan once we reach it !! Only the current
 				double dist = new Vector2D(planets[3].getPosition()).distance(planets[9].getPosition()) - planetRadius[3];
+				System.out.println("Distance between earth and " + planets[9].getName() + " is: " + dist);
 
 				//Calculate the time needed using averageVelocitySpaceProbe
 				//Problem ! The velocity will not stay constant !!!
-				double time = dist * averageVelocitySpaceProbe;
+				double time = dist/averageVelocitySpaceProbe;
+				System.out.println("Time needed with a velocity of " + averageVelocitySpaceProbe + " is " + time + " secs: " + getTimeAsString(time));
+
+				//save the current position of earth
+				Vector2D earthPos = new Vector2D(planets[3].getPosition());
+				System.out.println("Saved old position of Earth: " + earthPos);
+
+				System.out.println("Working out the simulation ... gonna take " + time + " secs, and " + (time/DELTA_T) + " steps");
 
 				//Compute the position of the planets after that time
 				for (int i = 0; i < time/DELTA_T; i ++) {
-					
+					update(DELTA_T);
+					if (i % 100000 == 0) {
+						System.out.println("Reached step " + i + "/" + time/DELTA_T);
+					}
 				}
 
-				//Create the SpaceProbe
-				createSpaceProbe();
+				System.out.println("Ended working out the simulation after " + time + " secs, and " + (time/DELTA_T) + " steps");
 
-				//Then, see if it managed to get to Titan
+				//Compute the direction vector from the previous Earth position to Titan
+				Vector2D direction = new Vector2D(planets[9].getPosition()).subtract(earthPos).normalize();
+				//Then, multiply it by the averageVelocitySpaceProbe to get the starting Velocity of the spaceProbe
+				Vector2D initialVelocity = new Vector2D(direction).multiply(averageVelocitySpaceProbe);
+
+				//and the initial position of the space Probe (being the position of Earth + a vector in the direction of Titan, with length equal to the radius of Earth)
+				Vector2D initialPosition = new Vector2D(earthPos).add(direction.multiply(planetRadius[3]));
+
+				//Create the SpaceProbe
+				spaceProbe = new SpaceProbe(voyagerMass, initialPosition, initialVelocity);
+
+				//Then, see if it would manage to get to Titan
+				//Reset the solar System
+				createSolarSystem();
+
+				System.out.println("Created spaceProbe and reset Solar system ...");
+
+				//While the space probe has not crashed in a planet and is not further away from the sun than pluto, update the position of the planets and of the space probe
+				while ((spaceProbe.DidNotCrash()) && (spaceProbe.getPosition().distance(planets[0].getPosition()) > 5906376272e3)) {
+					updateWithSpaceProbe(DELTA_T);
+				}
+
+				//Then, after the loop ended, tell the result
+				if (spaceProbe.DidNotCrash()) {
+					System.out.println("The space probe got lost in space, probably outside of the solar system");
+				}
+				else {
+					System.out.println("The space probe crashed on " + spaceProbe.crashedPlanet.getName());
+				}
 			}
 		}
 	}
@@ -204,23 +243,6 @@ public class GUI extends Application {
 		}
 	}
 
-	/** Initialize the spaceProbe, on the surface of the Earth, in direction of Titan
-			and set the velocity to the normal velocity, in direction of Titan
-	*/
-	public void createSpaceProbe () {
-		//Start off with the direction of Titan, which is the position of Titan - the position of the Earth, which we then
-		computeTitanPositionAfter();
-	}
-
-	/** computes Titan's position after the time given as parameter
-	*/
-	public void computeTitanPositionAfter(double time) {
-
-	}
-
-
-	private double temp = 0;
-
 	/** We assume that createPlanets has been called before
 		This method updates the acceleration of the planets, then the velocity and location
 	*/
@@ -240,19 +262,6 @@ public class GUI extends Application {
 			}
 		}
 
-		if (temp ++ < 3) {
-			//DEBUGGING print the acceleration for the planets
-			int i = 3;
-			//for (int i = 0; i < planets.length; i ++) {
-				System.out.println("Acceleration of the " + planets[i].getName() + ": " + planets[i].getAcceleration());
-				System.out.println("Velocity of the " + planets[i].getName() + ": " + planets[i].getVelocity());
-				System.out.println("Position of the " + planets[i].getName() + ": " + planets[i].getPosition());
-				System.out.println();
-			//}
-
-			System.out.println("\n\n");
-		}
-
 		//Update the velocity and position of each body
 		for (int i = 1; i < planets.length; i ++) {
 			planets[i].updateVelocityAndPosition(time);
@@ -262,6 +271,36 @@ public class GUI extends Application {
 		elapsedSeconds += time;
 	}
 
+	/** We assume that createPlanets has been called before
+		This method updates the acceleration of the planets, then the velocity and location
+		but also the acceleration, velocity and location of the spaceProbe
+	*/
+	public void updateWithSpaceProbe (double time) {
+		//Reset the acceleration of all planets and moons
+		for (int i = 0; i < planets.length; i ++) {
+			planets[i].resetAcceleration();
+		}
+		spaceProbe.resetAcceleration();
+
+		//Add gravitational force from each body to each body
+		for (int i = 0; i < planets.length; i ++) {
+			for (int j = 0; j < planets.length; j ++) {
+				if (i != j) {
+					planets[i].addGToAcceleration(planets[j]);
+					//planets[j].addGToAcceleration(planets[i]);
+				}
+			}
+
+			spaceProbe.addGToAcceleration(planets[i]);
+		}
+
+		//Update the velocity and position of each body
+		for (int i = 1; i < planets.length; i ++) {
+			planets[i].updateVelocityAndPosition(time);
+		}
+		spaceProbe.updateVelocityAndPosition(time);
+	}
+
 	private void createTimeLabel() {
 		timeLabel = new Label();
 		timeLabel.setPrefSize(500, 20);	// -----------------------------------------------------------------
@@ -269,10 +308,19 @@ public class GUI extends Application {
 
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
-        long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
-        long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-        long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-        long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-        return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+    long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
+    long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+    long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+    long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+	}
+
+	private String getTimeAsString (double time) {
+		long years = (long)(time / SEC_IN_YEAR);
+    long days = (long)((time % SEC_IN_YEAR) / SEC_IN_DAY);
+    long hours = (long)(((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR);
+    long minutes = (long)((((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE);
+    long seconds = (long)((((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE);
+    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 }

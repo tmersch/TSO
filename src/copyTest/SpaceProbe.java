@@ -1,8 +1,9 @@
 public class SpaceProbe {
 	private double mass;
-	private Vector2D pos;
-	private Vector2D velocities;
+	private Vector2D position;
+	private Vector2D velocity;
 	private Vector2D acceleration = new Vector2D();
+	protected Planet crashedPlanet;
 
 	/** Constructor for SpaceProbe.
 		It has parameters mass, which represents the mass of the space probe (constant, because it has no engines that could burn up fuel),
@@ -11,7 +12,7 @@ public class SpaceProbe {
 	*/
 	public SpaceProbe (double mass, Vector2D startingPos, Vector2D startingV) {
 		this.mass = mass;
-		pos = new Vector2D(startingPos)
+		position = new Vector2D(startingPos);
 		velocity = new Vector2D(startingV);
 	}
 
@@ -61,5 +62,16 @@ public class SpaceProbe {
 
 		//Update location with the averageVelocity
 		position.add(new Vector2D(oldVelocity).add(velocity).divide(2.0).multiply(time));
+	}
+
+	public boolean DidNotCrash() {
+		for (int i = 0; i < GUI.planets.length; i ++) {
+			if (new Vector2D(GUI.planets[i].getPosition()).distance(position) <= GUI.planetRadius[i]) {
+				crashedPlanet = GUI.planets[i];
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
