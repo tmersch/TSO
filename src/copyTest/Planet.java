@@ -9,8 +9,8 @@ public class Planet {
 	public Planet (String name, double mass, Vector2D startingPos, Vector2D startingVelocity) {
 		this.name = name;
 		this.mass = mass;
-		this.position = startingPos;
-		this.velocity = startingVelocity;
+		this.position = new Vector2D(startingPos);
+		this.velocity = new Vector2D(startingVelocity);
 	}
 
 	public String getName() {

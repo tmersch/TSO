@@ -68,11 +68,18 @@ public class SpaceProbe {
 		for (int i = 0; i < GUI.planets.length; i ++) {
 			if (new Vector2D(GUI.planets[i].getPosition()).distance(position) <= GUI.planetRadius[i]) {
 				crashedPlanet = GUI.planets[i];
-				System.out.println("The space probe crashed in " + crashedPlanet.getName());
 				return false;
 			}
 		}
-
+		
 		return true;
+	}
+
+	public Planet getCrashedPlanet() {
+		return crashedPlanet;
+	}
+
+	public void resetCrashedPlanet() {
+		crashedPlanet = null;
 	}
 }

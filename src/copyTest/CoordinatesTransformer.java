@@ -31,13 +31,6 @@ public class CoordinatesTransformer {
 		return new Vector2D(this.originXForOther + getModelToOtherDistance(pos.x), this.originYForOther + getModelToOtherDistance(pos.y));
 	}
 
-	/*
-	public Vector2D modelVelocity(Vector2D v, Planet p) {
-
-		return new Vector2D(v.x, v.y);
-	}
-	*/
-
 	public double getModelToOtherDistance (double distance) {
 		return distance / scale;
 	}
