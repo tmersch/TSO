@@ -26,14 +26,14 @@ import java.util.Scanner;
 
 /** GUI representing the solar system using javafx
 */
-public class GUI extends Application {
+public class GUIV2 extends Application {
 	//Width and height of the window
 	private double canvasWidth = 0;		// ------------------------------------------------------------
 	private double canvasHeight = 0;	// ------------------------------------------------------------
 	//private Vector2D dragPosStart;
 
 	//Number of seconds between each update
-	public static final double DELTA_T = 60 * 30;
+	public static final double DELTA_T = 15 * 60;
 	//scaling factor //(number of meters in AU divided by 100)
 	public static final double SCALE = 5e9;//1495978707.0*4;
 	//radius of the planets
@@ -70,6 +70,7 @@ public class GUI extends Application {
 
 	private static final int[] initialTime = {18, 3, 2019};
 
+	private Timeline timeline;
 	private CoordinatesTransformer coordinates = new CoordinatesTransformer();
 	private GraphicsContext gc;
 	private Label timeLabel;
@@ -168,7 +169,7 @@ public class GUI extends Application {
 								new EventHandler<ActionEvent>() {
 									public void handle(ActionEvent ae) {
 										if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-											updateFrameWithSpaceProbe(gc);
+											updateFrame(gc);
 										}
 										else {
 											updateFrame(gc);//timeline.stop();
@@ -184,7 +185,7 @@ public class GUI extends Application {
 							int num = 1;
 							while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
 								oldPos = new Vector2D(spaceProbe.getPosition());
-								updateWithSpaceProbe(DELTA_T);
+								update(DELTA_T);
 								//System.out.println("Iteration #" + numberIterations + + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
 								num ++;
 							}
@@ -273,7 +274,7 @@ public class GUI extends Application {
 						new EventHandler<ActionEvent>() {
 							public void handle(ActionEvent ae) {
 								if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-									updateFrameWithSpaceProbe(gc);
+									updateFrame(gc);
 								}
 								else {
 									updateFrame(gc);//timeline.stop();
@@ -328,7 +329,7 @@ public class GUI extends Application {
 						new EventHandler<ActionEvent>() {
 							public void handle(ActionEvent ae) {
 								if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-									updateFrameWithSpaceProbe(gc);
+									updateFrame(gc);
 								}
 								else {
 									updateFrame(gc);
@@ -399,7 +400,7 @@ public class GUI extends Application {
 	/** This class is used to create EventHandlers for keyframes to feed to the timeline ...
 		Whenever it is called, it updates the solar system
 	*/
-	class EventHandlerWithSpaceProbe implements EventHandler<ActionEvent> {
+	class SolarSystemUpdater implements EventHandler<ActionEvent> {
 		private boolean isSpaceProbeIncluded;
 
 		/** Default constructor for this class
@@ -411,6 +412,11 @@ public class GUI extends Application {
 
 		public void handle (ActionEvent e) {
 			updateFrame(gc, isSpaceProbeIncluded);
+		}
+	}
+
+	public void updateFrame(GraphicsContext gc) {
+		updateFrame(gc, false);
 	}
 
 	/** Draw a single frame
@@ -501,33 +507,17 @@ public class GUI extends Application {
 		}
 	}
 
+	public void update (double time) {
+		update(time, false);
+	}
+
 	/** We assume that createPlanets has been called before
 		This method updates the acceleration of the planets, then the velocity and location
 	*/
 	private void update (double time, boolean spaceProbeIncluded) {
-		//Reset the acceleration of all planets and moons
 		for (int i = 0; i < planets.length; i ++) {
-			planets[i].resetAcceleration();
+			planets[i].updatePosition(0, DELTA_T);
 		}
-		if (spaceProbeIncluded) spaceProbe.resetAcceleration();
-
-		//Add gravitational force from each body to each body
-		for (int i = 0; i < planets.length; i ++) {
-			for (int j = 0; j < planets.length; j ++) {
-				if (i != j) {
-					planets[i].addGToAcceleration(planets[j]);
-					//planets[j].addGToAcceleration(planets[i]);
-				}
-			}
-
-			if (spaceProbeIncluded) spaceProbe.addGToAcceleration(planets[i]);
-		}
-
-		//Update the velocity and position of each body
-		for (int i = 1; i < planets.length; i ++) {
-			planets[i].updateVelocityAndPosition(time);
-		}
-		if (spaceProbeIncluded) spaceProbe.updateVelocityAndPosition(time);
 
 		//Increment the seconds
 		elapsedSeconds += time;

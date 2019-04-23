@@ -3,6 +3,7 @@ class Vector2D {
 	protected double y;
 
 	public Vector2D () {
+		this(0, 0);
 	}
 
 	public Vector2D (double x, double y) {
