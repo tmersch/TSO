@@ -411,6 +411,7 @@ public class GUI extends Application {
 
 		public void handle (ActionEvent e) {
 			updateFrame(gc, isSpaceProbeIncluded);
+		}
 	}
 
 	/** Draw a single frame

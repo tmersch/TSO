@@ -6,46 +6,6 @@ public class Planet {
 	private Vector2D velocity;
 	private Vector2D acceleration;
 
-	/** Class representing the state of the planet, the position and velocity in x and y
-	*/
-	public class State {
-		protected double x, y, v_x, v_y;
-
-		public State (double x, double y, double v_x, double v_y) {
-			this.x = x;
-			this.y = y;
-			this.v_x = v_x;
-			this.v_y = v_y;
-		}
-
-		public State (Vector2D pos, Vector2D vel) {
-			this.x = pos.x;
-			this.y = pos.y;
-			this.v_x = vel.x;
-			this.v_y = vel.y;
-		}
-	}
-
-	/** Class representing the dervatives of the position and velocities, in x and y
-	*/
-	public class Derivative {
-		protected double dx, dy, dv_x, dv_y;
-
-		public Derivative (double dx, double dy, double dv_x, double dv_y) {
-			this.dx = dx;
-			this.dy = dy;
-			this.dv_x = dv_x;
-			this.dv_y = dv_y;
-		}
-
-		public Derivative (Vector2D dPos, Vector2D dVel) {
-			this.dx = dPos.x;
-			this.dy = dPos.y;
-			this.dv_x = dVel.x;
-			this.dv_y = dVel.y;
-		}
-	}
-
 	public Planet (String name, double mass, Vector2D startingPos, Vector2D startingVelocity) {
 		this.name = name;
 		this.mass = mass;
@@ -90,7 +50,7 @@ public class Planet {
 		return new Derivative(s.v_x, s.v_y, a.x, a.y);
 	}
 
-	public void updatePosition (double time, double deltaT) {
+	public void updatePosition (double deltaT) {
 		State initialState = new State(position, velocity);
 
 		Derivative a = initialDerivative(initialState);

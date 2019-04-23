@@ -33,7 +33,7 @@ public class GUIV2 extends Application {
 	//private Vector2D dragPosStart;
 
 	//Number of seconds between each update
-	public static final double DELTA_T = 15 * 60;
+	public static final double DELTA_T = 60;
 	//scaling factor //(number of meters in AU divided by 100)
 	public static final double SCALE = 5e9;//1495978707.0*4;
 	//radius of the planets
@@ -101,16 +101,19 @@ public class GUIV2 extends Application {
 			if (input.equals("1")) {
 				//GUI part
 				gc = createGUI(stage);
+				launchGUI(0.1, false);
+				/*
 				Timeline timeline = new Timeline();
 				timeline.setCycleCount(Timeline.INDEFINITE);
 				KeyFrame kf = new KeyFrame(
-					Duration.millis(1),
+					Duration.millis(0.1),
 					new EventHandler<ActionEvent>() {
 						public void handle(ActionEvent ae) {
 							updateFrame(gc);
 						}
 				});
 				timeline.getKeyFrames().add(kf);
+				*/
 				timeline.play();
 				stage.show();
 			}
@@ -157,11 +160,13 @@ public class GUIV2 extends Application {
 						Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
 						spaceProbe = new SpaceProbe(voyagerMass, initialPosition, initialVelocity);
 
-						int method = 2;
+						int method = 1;
 						Vector2D oldPos;
 						if (method == 1) {
 							//Run the simulation
-							GraphicsContext gc = createGUI(stage);
+							gc = createGUI(stage);
+							launchGUI(1, true);
+							/*
 							Timeline timeline = new Timeline();
 							timeline.setCycleCount(Timeline.INDEFINITE);
 							KeyFrame kf = new KeyFrame(
@@ -177,6 +182,7 @@ public class GUIV2 extends Application {
 									}
 							});
 							timeline.getKeyFrames().add(kf);
+							*/
 							timeline.play();
 							stage.show();
 						}
@@ -185,8 +191,8 @@ public class GUIV2 extends Application {
 							int num = 1;
 							while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
 								oldPos = new Vector2D(spaceProbe.getPosition());
-								update(DELTA_T);
-								//System.out.println("Iteration #" + numberIterations + + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
+								update(DELTA_T, true);
+								System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
 								num ++;
 							}
 						}
@@ -266,22 +272,9 @@ public class GUIV2 extends Application {
 					Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
 					spaceProbe = new SpaceProbe(voyagerMass, initialPosition, initialVelocity);
 
-					GraphicsContext gc = createGUI(stage);
-					Timeline timeline = new Timeline();
-					timeline.setCycleCount(Timeline.INDEFINITE);
-					KeyFrame kf = new KeyFrame(
-						Duration.millis(10),
-						new EventHandler<ActionEvent>() {
-							public void handle(ActionEvent ae) {
-								if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-									updateFrame(gc);
-								}
-								else {
-									updateFrame(gc);//timeline.stop();
-								}
-							}
-					});
-					timeline.getKeyFrames().add(kf);
+					//Launch the simulation
+				  gc = createGUI(stage);
+					launchGUI(10, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
 					timeline.play();
 					stage.show();
 				}
@@ -302,7 +295,7 @@ public class GUIV2 extends Application {
 
 					//Compute the position of the planets after that time
 					for (int i = 0; i < time/DELTA_T; i ++) {
-						update(DELTA_T);
+						update(DELTA_T, true);
 					}
 
 					//Compute the direction vector from the previous Earth position to Titan
@@ -321,33 +314,17 @@ public class GUIV2 extends Application {
 					createSolarSystem();
 
 					//Also show the second simulation with the Space probe
-					GraphicsContext gc = createGUI(stage);
-					Timeline timeline = new Timeline();
-					timeline.setCycleCount(Timeline.INDEFINITE);
-					KeyFrame kf = new KeyFrame(
-						Duration.millis(1),
-						new EventHandler<ActionEvent>() {
-							public void handle(ActionEvent ae) {
-								if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-									updateFrame(gc);
-								}
-								else {
-									updateFrame(gc);
-								}
-							}
-					});
-					timeline.getKeyFrames().add(kf);
+					gc = createGUI(stage);
+					launchGUI(1, true);
 					timeline.play();
 					stage.show();
 				}
 			}
 			//Test of space probe angle
 			else if (input.equals("3")) {
-				double launch_angle = 289.5;
-
 				Scanner S = new Scanner(System.in);
 				System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
-				launch_angle = S.nextDouble();
+				double launch_angle = S.nextDouble();
 
 				createSolarSystem();
 
@@ -358,8 +335,9 @@ public class GUIV2 extends Application {
 				Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
 				spaceProbe = new SpaceProbe(voyagerMass, initialPosition, initialVelocity);
 
-				GraphicsContext gc = createGUI(stage);
-				launchGUI(500, true);
+				//Show the simulation of the solar system with the space probe
+				gc = createGUI(stage);
+				launchGUI(0.5, true);
 				timeline.play();
 				stage.show();
 			}
@@ -371,28 +349,13 @@ public class GUIV2 extends Application {
 			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
 	*/
 	public void launchGUI (double updateInterval, boolean spaceProbePresent) {
-		Timeline timeline = new Timeline();
+		timeline = new Timeline();
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		KeyFrame kf = null;
-		if (spaceProbePresent) {
-			kf = new KeyFrame(
-				Duration.millis(updateInterval),
-				new EventHandler<ActionEvent>() {
-					public void handle(ActionEvent ae) {
-
-					}
-			});
-		}
-		else {
-			kf = new KeyFrame(
-				Duration.millis(updateInterval),
-				new EventHandler<ActionEvent>() {
-					public void handle(ActionEvent ae) {
-						updateFrame(gc);
-					}
-			});
-		}
+		kf = new KeyFrame(
+			Duration.millis(updateInterval),
+			new SolarSystemUpdater(spaceProbePresent));
 
 		timeline.getKeyFrames().add(kf);
 	}
@@ -413,10 +376,6 @@ public class GUIV2 extends Application {
 		public void handle (ActionEvent e) {
 			updateFrame(gc, isSpaceProbeIncluded);
 		}
-	}
-
-	public void updateFrame(GraphicsContext gc) {
-		updateFrame(gc, false);
 	}
 
 	/** Draw a single frame
@@ -507,17 +466,17 @@ public class GUIV2 extends Application {
 		}
 	}
 
-	public void update (double time) {
-		update(time, false);
-	}
-
 	/** We assume that createPlanets has been called before
-		This method updates the acceleration of the planets, then the velocity and location
+		This method updates acceleration, then the velocity and the position of the planets
+
+		@param time, the time interval which we update the position after
+		@param spaceProbeIncluded indicates whether the space probe's position is also updated or not
 	*/
 	private void update (double time, boolean spaceProbeIncluded) {
 		for (int i = 0; i < planets.length; i ++) {
-			planets[i].updatePosition(0, DELTA_T);
+			planets[i].updatePosition(DELTA_T);
 		}
+		if (spaceProbeIncluded) spaceProbe.updatePosition(DELTA_T);
 
 		//Increment the seconds
 		elapsedSeconds += time;
@@ -525,9 +484,15 @@ public class GUIV2 extends Application {
 
 	private void createTimeLabel() {
 		timeLabel = new Label();
-		timeLabel.setPrefSize(500, 20);	// -----------------------------------------------------------------
+		timeLabel.setPrefSize(500, 20);
 	}
 
+	/** 
+
+		@param time, a given number of seconds
+
+		@return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
+	*/
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
     long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
@@ -537,12 +502,18 @@ public class GUIV2 extends Application {
     return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 
-	private String getTimeAsString (double time) {
-		long years = (long)(time / SEC_IN_YEAR);
-    long days = (long)((time % SEC_IN_YEAR) / SEC_IN_DAY);
-    long hours = (long)(((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR);
-    long minutes = (long)((((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE);
-    long seconds = (long)((((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE);
+	/** Mainly for debugging purposes, could be deleted in the end product
+
+		@param time, a given number of seconds
+
+		@return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
+	*/
+	private String getTimeAsString (long time) {
+		long years = time / SEC_IN_YEAR;
+    long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
+    long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+    long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+    long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
     return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 }
