@@ -1,7 +1,9 @@
+/**
+*/
 public class CoordinatesTransformer {
 	private double scale;
-	private double originXForOther;
-	private double originYForOther;
+	private double xModifier;
+	private double yModifier;
 
 	public double getScale() {
 		return scale;
@@ -11,27 +13,27 @@ public class CoordinatesTransformer {
 		this.scale = scale;
 	}
 
-	public double getOriginXForOther () {
-		return originXForOther;
+	public double getModifiedX () {
+		return xModifier;
 	}
 
-	public void setOriginXForOther (double originXForOther) {
-		this.originXForOther = originXForOther;
+	public void setModifiedX (double modifiedX) {
+		xModifier = modifiedX;
 	}
 
-	public double getOriginYForOther () {
-		return originYForOther;
+	public double getModifiedY () {
+		return yModifier;
 	}
 
-	public void setOriginYForOther (double originYForOther) {
-		this.originYForOther = originYForOther;
+	public void setModifiedY (double modifiedY) {
+		yModifier = modifiedY;
 	}
 
 	public Vector2D modelToOtherPosition (Vector2D pos) {
-		return new Vector2D(this.originXForOther + getModelToOtherDistance(pos.x), this.originYForOther + getModelToOtherDistance(pos.y));
+		return new Vector2D(xModifier + getScaledSize(pos.x), yModifier + getScaledSize(pos.y));
 	}
 
-	public double getModelToOtherDistance (double distance) {
+	public double getScaledSize (double distance) {
 		return distance / scale;
 	}
 }

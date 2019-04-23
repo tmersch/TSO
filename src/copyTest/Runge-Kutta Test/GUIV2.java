@@ -76,20 +76,22 @@ public class GUIV2 extends Application {
 	private Label timeLabel;
 
 
-	/** Main method
+	/** Main method, gets called when the program is executed
 	*/
 	public static void main (String[] args) {
 		launch(args);
 	}
 
+	/** This method is called by JavaFX GUI when starting the program
+	*/
 	public void start (Stage stage) {
 		//Initialize the planets
 		createSolarSystem();
 
 		//CoordinateTransformer
 		coordinates.setScale(SCALE);
-		coordinates.setOriginXForOther(700);
-		coordinates.setOriginYForOther(350);
+		coordinates.setModifiedX(700);
+		coordinates.setModifiedY(350);
 
 		Scanner s = new Scanner(System.in);
 		String input = "";
@@ -286,7 +288,7 @@ public class GUIV2 extends Application {
 
 					//Calculate the time needed using averageVelocitySpaceProbe
 					//Problem ! The velocity will not stay constant !!!
-					double time = dist/averageVelocitySpaceProbe;
+					long time = (long)(dist/averageVelocitySpaceProbe);
 
 					System.out.println("Expected time to get to Titan with velocity " + averageVelocitySpaceProbe + ", is: " + getTimeAsString(time));
 
@@ -344,6 +346,65 @@ public class GUIV2 extends Application {
 		}
 	}
 
+	/** Initialize the Planet and the Moon objects with their default properties, contained in
+	*/
+	public void createSolarSystem() {
+		planets = new Planet[planetNames.length];
+		for (int i = 0; i < planetNames.length; i ++) {
+			planets[i] = new Planet(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
+		}
+	}
+
+	/** Initializes the GUI elements and sets some of their parameters
+
+		@param Stage, the GUI
+
+		@return GraphicsContext, the graphicsContext of the stage
+	*/
+	private GraphicsContext createGUI (Stage stage) {
+		//Create the borderPane
+		BorderPane border = new BorderPane();
+
+		//Create the label that shows the time
+		timeLabel = new Label();
+		timeLabel.setPrefSize(500, 20);
+
+		//Create the horizontal box that will contain the time label
+		HBox hbox = new HBox();
+		//set its parameters and add it the timeLabel
+		hbox.setPadding(new Insets(15, 12, 15, 12));
+		hbox.setFillHeight(true);
+		hbox.getChildren().add(this.timeLabel);
+
+		//add it to top of the borderpane
+		border.setTop(hbox);
+
+		//Create the canvas
+		Canvas canvas = new Canvas();
+		//add the zooming capability
+		canvas.setOnScroll((event) -> {
+				if (event.getDeltaY() > 0) {
+						coordinates.setScale(coordinates.getScale() * 0.9);
+				} else {
+						coordinates.setScale(coordinates.getScale() * 1.1);
+				}
+		});
+
+		//and set it in the center of the borderpane
+		border.setCenter(canvas);
+		Scene scene = new Scene(border);
+
+		//Set the title, scene of the stage and setMaximized
+		stage.setTitle("The road to Titan");
+		stage.setScene(scene);
+		stage.setMaximized(true);
+
+		// Bind canvas size to stack pane size
+		canvas.widthProperty().bind(stage.widthProperty());
+		canvas.heightProperty().bind(stage.heightProperty().add(TOP_AREA_HEIGHT));
+		return canvas.getGraphicsContext2D();
+	}
+
 	/** Makes the last preparations for the GUI
 			@param updateInterval, the interval in milliseconds between each frame-update
 			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
@@ -378,7 +439,9 @@ public class GUIV2 extends Application {
 		}
 	}
 
-	/** Draw a single frame
+	/** Draw the planets at their new positions, then update them
+		@param gc, the graphicsContext on which we draw the planets' positions
+		@param spaceProbeIncluded determines whether the space probe also has to be taken into account or not
 	*/
 	private void updateFrame(GraphicsContext gc, boolean spaceProbeIncluded) {
 		this.canvasWidth = gc.getCanvas().getWidth();
@@ -415,59 +478,8 @@ public class GUIV2 extends Application {
 		timeLabel.setText(getElapsedTimeAsString());
 	}
 
-	private GraphicsContext createGUI (Stage stage) {
-		//Create the borderPane
-		BorderPane border = new BorderPane();
-		//Create the label that shows the time
-		createTimeLabel();
-
-		//Create the horizontal box that will contain the time label
-		HBox hbox = new HBox();
-		//set its parameters and add it the timeLabel
-		hbox.setPadding(new Insets(15, 12, 15, 12));
-    hbox.setFillHeight(true);
-    hbox.getChildren().add(this.timeLabel);
-
-		//add it to top of the borderpane
-		border.setTop(hbox);
-
-		//Create the canvas
-		Canvas canvas = new Canvas();
-		//add the zooming capability
-		canvas.setOnScroll((event) -> {
-				if (event.getDeltaY() > 0) {
-						coordinates.setScale(coordinates.getScale() * 0.9);
-				} else {
-						coordinates.setScale(coordinates.getScale() * 1.1);
-				}
-		});
-
-		//and set it in the center of the borderpane
-		border.setCenter(canvas);
-		Scene scene = new Scene(border);
-
-		//Set the title, scene of the stage and setMaximized
-		stage.setTitle("The road to Titan");
-		stage.setScene(scene);
-		stage.setMaximized(true);
-
-		// Bind canvas size to stack pane size
-		canvas.widthProperty().bind(stage.widthProperty());
-		canvas.heightProperty().bind(stage.heightProperty().add(TOP_AREA_HEIGHT));
-		return canvas.getGraphicsContext2D();
-	}
-
-	/** Initialize the Planet and the Moon objects
-	*/
-	public void createSolarSystem() {
-		planets = new Planet[planetNames.length];
-		for (int i = 0; i < planetNames.length; i ++) {
-			planets[i] = new Planet(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
-		}
-	}
-
-	/** We assume that createPlanets has been called before
-		This method updates acceleration, then the velocity and the position of the planets
+	/** This method updates acceleration, then the velocity and the position of the planets
+		It is assumed that createPlanets has been called before
 
 		@param time, the time interval which we update the position after
 		@param spaceProbeIncluded indicates whether the space probe's position is also updated or not
@@ -482,16 +494,9 @@ public class GUIV2 extends Application {
 		elapsedSeconds += time;
 	}
 
-	private void createTimeLabel() {
-		timeLabel = new Label();
-		timeLabel.setPrefSize(500, 20);
-	}
+	/** Formats the elapsedSeconds variable for displaying the time elapsed since the beginning of the simulation
 
-	/** 
-
-		@param time, a given number of seconds
-
-		@return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
+		@return a nicely formatted string expressing the elapsedSeconds variable in years, days, minutes and seconds
 	*/
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
