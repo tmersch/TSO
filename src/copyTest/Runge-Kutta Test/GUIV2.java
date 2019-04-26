@@ -25,7 +25,7 @@ public class GUIV2 extends Application {
 	private double canvasHeight = 0;	// ------------------------------------------------------------
 
 	//Number of seconds between each update
-	public static final double DELTA_T = 60;
+	public static final double DELTA_T = 60 * 30;
 	//scaling factor
 	public static final double SCALE = 5e9;
 	//radius of the planets
@@ -100,19 +100,7 @@ public class GUIV2 extends Application {
 			if (input.equals("1")) {
 				//GUI part
 				gc = createGUI(stage);
-				launchGUI(0.1, false);
-				/*
-				Timeline timeline = new Timeline();
-				timeline.setCycleCount(Timeline.INDEFINITE);
-				KeyFrame kf = new KeyFrame(
-					Duration.millis(0.1),
-					new EventHandler<ActionEvent>() {
-						public void handle(ActionEvent ae) {
-							updateFrame(gc);
-						}
-				});
-				timeline.getKeyFrames().add(kf);
-				*/
+				launchGUI(1, false);
 				timeline.play();
 				stage.show();
 			}
@@ -126,14 +114,16 @@ public class GUIV2 extends Application {
 				//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
 				if (choice == 1) {
 					System.out.println("Launching binary search angle calibration");
-					double launch_angle = 1;
+					double launch_angle = 71;
 					boolean crashedTitan = false;
 					double DISTANCE_SUN_PLUTO = 5906376272e3;
 					double angleChange = 90;
 					int previousMove = 0;
 					int numberIterations = 0;
+					double spaceProbeAngle = 0;
+					double titanAngle  = 0;
 					while (! crashedTitan) {
-						//System.out.println("Iteration #" + numberIterations);
+						System.out.println("Iteration #" + numberIterations);
 
 						//Initialize the space probe and the solar system
 						createSolarSystem();
@@ -148,29 +138,12 @@ public class GUIV2 extends Application {
 						Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
 						spaceProbe = new SpaceProbe(voyagerMass, initialPosition, initialVelocity);
 
-						int method = 1;
+						int method = 2;
 						Vector2D oldPos;
 						if (method == 1) {
 							//Run the simulation
 							gc = createGUI(stage);
 							launchGUI(1, true);
-							/*
-							Timeline timeline = new Timeline();
-							timeline.setCycleCount(Timeline.INDEFINITE);
-							KeyFrame kf = new KeyFrame(
-								Duration.millis(1),
-								new EventHandler<ActionEvent>() {
-									public void handle(ActionEvent ae) {
-										if (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < 5906376272e3)) {
-											updateFrame(gc);
-										}
-										else {
-											updateFrame(gc);//timeline.stop();
-										}
-									}
-							});
-							timeline.getKeyFrames().add(kf);
-							*/
 							timeline.play();
 							stage.show();
 						}
@@ -180,7 +153,7 @@ public class GUIV2 extends Application {
 							while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
 								oldPos = new Vector2D(spaceProbe.getPosition());
 								update(DELTA_T, true);
-								System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
+								//System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
 								num ++;
 							}
 						}
@@ -191,12 +164,14 @@ public class GUIV2 extends Application {
 							System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
 						}
 						else {
+							//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
 							if (spaceProbe.getCrashedPlanet() != null)
 								System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
 							spaceProbe.resetCrashedPlanet();
-							//Otherwise, we need to try again with a new launch_angle
-							double spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
-							double titanAngle = planets[9].getPosition().angle(planetPositions[0]);
+
+							//Then, we compute the angles
+							spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
+							titanAngle = planets[9].getPosition().angle(planetPositions[0]);
 							//Both angles will now be between 0 and 360 degrees
 
 							if (spaceProbeAngle - titanAngle > 0) {
@@ -236,6 +211,8 @@ public class GUIV2 extends Application {
 							}
 						}
 
+						System.out.println("New space probe launch angle: " + launch_angle);
+
 						numberIterations ++;
 						elapsedSeconds = 0;
 						/*	Seems to cause an error with the window
@@ -252,6 +229,11 @@ public class GUIV2 extends Application {
 					//Reset the solar System
 					createSolarSystem();
 
+					//Print out all angles ...
+					System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
+					System.out.println("TitanAngle: " + titanAngle);
+					System.out.println("'Optimal' launch angle: " + launch_angle);
+
 					//Reset the spaceProbe
 					launch_angle = (launch_angle/180) * Math.PI;
 					Vector2D angleScaler = new Vector2D(Math.cos(launch_angle), Math.sin(launch_angle));
@@ -262,7 +244,7 @@ public class GUIV2 extends Application {
 
 					//Launch the simulation
 				  gc = createGUI(stage);
-					launchGUI(10, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
+					launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
 					timeline.play();
 					stage.show();
 				}
@@ -471,10 +453,12 @@ public class GUIV2 extends Application {
 		@param spaceProbeIncluded indicates whether the space probe's position is also updated or not
 	*/
 	private void update (double time, boolean spaceProbeIncluded) {
-		for (int i = 0; i < planets.length; i ++) {
-			planets[i].updatePosition(DELTA_T);
+		for (int step = 1; step < 5; step ++) {
+			for (int i = 0; i < planets.length; i ++) {
+				planets[i].updatePosition(step, DELTA_T);
+			}
+			if (spaceProbeIncluded) spaceProbe.updatePosition(step, DELTA_T);
 		}
-		if (spaceProbeIncluded) spaceProbe.updatePosition(DELTA_T);
 
 		//Increment the seconds
 		elapsedSeconds += time;
