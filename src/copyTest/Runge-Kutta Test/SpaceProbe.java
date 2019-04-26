@@ -52,39 +52,20 @@ public class SpaceProbe {
 	public void updatePosition (double deltaT) {
 		State initialState = new State(position, velocity);
 
-		Derivative a = initialDerivative(initialState);
-		//Vector2D a_a = computeAcceleration();
-		//Vector2D v_a = new Vector2D(velocity);
+		Derivative k1 = initialDerivative(initialState);
+		Derivative k2 = nextDerivative(initialState, k1, deltaT/2);
+		Derivative k3 = nextDerivative(initialState, k2, deltaT/2);
+		Derivative k4 = nextDerivative(initialState, k3, deltaT);
 
-		Derivative b = nextDerivative(initialState, a, deltaT/2);
-		//position.add(new Vector2D(v_a).multiply(deltaT/2));
-		//velocity.add(new Vector2D(a_a).multiply(deltaT/2));
-		//Vector2D v_b = new Vector2D(velocity);
-		//Vector2D a_b = computeAcceleration();
-
-		Derivative c = nextDerivative(initialState, b, deltaT/2);
-		//position.add(new Vector2D(v_b).multiply(deltaT/2));
-		//velocity.add(new Vector2D(a_b).multiply(deltaT/2));
-		//Vector2D v_c = new Vector2D(velocity);
-		//Vector2D a_c = computeAcceleration();
-
-		Derivative d = nextDerivative(initialState, c, deltaT);
-		//position.add(new Vector2D(v_c).multiply(deltaT));
-		//velocity.add(new Vector2D(a_c).multiply(deltaT));
-		//Vector2D v_d = new Vector2D(velocity);
-		//Vector2D a_d = computeAcceleration();
-
-		double dxdt = 1.0/6.0 * (a.dx + 2*(b.dx + c.dx) + d.dx);
-		double dydt = 1.0/6.0 * (a.dy + 2*(b.dy + c.dy) + d.dy);
-		double dv_xdt = 1.0/6.0 * (a.dv_x + 2*(b.dv_x + c.dv_x) + d.dv_x);
-		double dv_ydt = 1.0/6.0 * (a.dv_y + 2*(b.dv_y + c.dv_y) + d.dv_y);
+		double dxdt = 1.0/6.0 * (k1.dx + 2*(k2.dx + k3.dx) + k4.dx);
+		double dydt = 1.0/6.0 * (k1.dy + 2*(k2.dy + k3.dy) + k4.dy);
+		double dv_xdt = 1.0/6.0 * (k1.dv_x + 2*(k2.dv_x + k3.dv_x) + k4.dv_x);
+		double dv_ydt = 1.0/6.0 * (k1.dv_y + 2*(k2.dv_y + k3.dv_y) + k4.dv_y);
 
 		Vector2D posAdd = new Vector2D(dxdt, dydt).multiply(deltaT);
 		position.add(posAdd);
 		Vector2D velocAdd = new Vector2D(dv_xdt, dv_ydt).multiply(deltaT);
 		velocity.add(velocAdd);
-		//position.add(new Vector2D(v_a).add(v_b.multiply(2)).add(v_c.multiply(2)).add(v_d).divide(6)).multiply(deltaT);
-		//velocity.add(new Vector2D(a_a).add(a_b.multiply(2)).add(a_c.multiply(2)).add(a_d).divide(6)).multiply(deltaT);
 	}
 
 	public Vector2D computeAcceleration2 (State state) {
