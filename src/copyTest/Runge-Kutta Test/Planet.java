@@ -9,12 +9,25 @@ public class Planet {
 	private String name;
 	private double mass;
 		//in kg
+
 	private Vector2D position;
 		//in meters
 	private Vector2D velocity;
 		//in meters/secs
 	private Vector2D acceleration;
 		//in meters/secs^2
+
+	private State initalState;
+		//Contains the position and velocity
+	private Derivative derivative;
+		//Contains the velocity (dx/dt) and acceleration (dv/dt)
+
+		//Used for method updatePosition() using Runge-Kutta
+	private State state;
+	private Derivative k1;
+	private Derivative k2;
+	private Derivative k3;
+	private Derivative k4;
 
 	/** Default constructor with all parameters provided:
 		@param name, the planet's name
@@ -23,10 +36,16 @@ public class Planet {
 		@param startingVelocity, the planet's velocity at t=0
 	*/
 	public Planet (String name, double mass, Vector2D startingPos, Vector2D startingVelocity) {
+		//Save the different parameters' values under their respective variables
 		this.name = name;
 		this.mass = mass;
-		this.position = new Vector2D(startingPos);
-		this.velocity = new Vector2D(startingVelocity);
+		position = new Vector2D(startingPos);
+		velocity = new Vector2D(startingVelocity);
+
+		//Then, create the state of the planet, and bind the position and velocity vectors of the planet to the initialState state
+		initialState = new State();
+		initialState.position = position;
+		initialState.velocity = velocity;
 	}
 
 	public String getName() {
@@ -42,69 +61,76 @@ public class Planet {
 	}
 
 	public Vector2D getVelocity() {
-		return velocity;
+		return new Vector2D(velocity);
 	}
 
 	public Vector2D getAcceleration() {
-		return acceleration;
+		return new Vector2D(derivative.dVelocity);
 	}
 
 	public Derivative initialDerivative (State initial) {
-		Vector2D a = computeAcceleration2(initial);
+		Vector2D a = computeAccelerationRK(initial);
 
-		return new Derivative(initial.v_x, initial.v_y, a.x, a.y);
+		return new Derivative(initial.velocity.x, initial.velocity.y, a.x, a.y);
 	}
 
 	public Derivative nextDerivative (State initial, Derivative d, double deltaT) {
-		State s = new State(0, 0, 0, 0);
-		s.x = initial.x + d.dx * deltaT;
-		s.y = initial.y + d.dy * deltaT;
-		s.v_x = initial.v_x + d.dv_x * deltaT;
-		s.v_y = initial.v_y + d.dv_y * deltaT;
+		initial.position.add(new Vector2D(initial.position.x + d.dPosition.x * deltaT, initial.position.y + d.dPosition.y * deltaT));
+		initial.velocity.add(new Vector2D(initial.velocity.x + d.dVelocity.x * deltaT, initial.velocity.y + d.dVelocity.y * deltaT));
 
-		Vector2D a = computeAcceleration2(initial);
-		return new Derivative(s.v_x, s.v_y, a.x, a.y);
+		Vector2D a = computeAccelerationRK(initial);
+		return new Derivative(initial.velocity.x, initial.velocity.y, a.x, a.y);
 	}
 
-	public void updatePosition (double deltaT) {
-		State initialState = new State(position, velocity);
+	/** This method is used to update the position of the Planets. It uses Runge-Kutta
+	*/
+	public void updatePosition (int step, double deltaT) {
+		if (step == 1) {
+			state = new State(initialState);
+			k1 = initialDerivative(state);
+			k2 = nextDerivative(state, k1, deltaT/2);
+		}
+		else if (step == 2) {
+			k3 = nextDerivative(state, k2, deltaT/2);
+		}
+		else if (step == 3) {
+			k4 = nextDerivative(state, k3, deltaT);
+		}
+		else {	//step = 4
+			//Compute the modifying values of x, y, v_x and v_y, according to Runge-Kutta:
+			// w(i+1) = w(i) + 1/6*(k1 + 2*k2 + 2*k3 + k4);
+			Vector2D dPosdt = new Vector2D().add(k1.dPosition).add(new Vector2D(k2.dPosition).multiply(2)).add(new Vector2D(k3.dPosition).multiply(2)).add(k4.dPosition).divide(6);
+			Vector2D dVelocdt = new Vector2D().add(k1.dVelocity).add(new Vector2D(k2.dVelocity).multiply(2)).add(new Vector2D(k3.dVelocity).multiply(2)).add(k4.dVelocity).divide(6);
 
-		Derivative k1 = initialDerivative(initialState);
-		Derivative k2 = nextDerivative(initialState, k1, deltaT/2);
-		Derivative k3 = nextDerivative(initialState, k2, deltaT/2);
-		Derivative k4 = nextDerivative(initialState, k3, deltaT);
+			Vector2D posAdd = new Vector2D(dPosdt).multiply(deltaT);
+			initialState.position.add(posAdd);
+			Vector2D velocAdd = new Vector2D(dVelocdt).multiply(deltaT);
+			initialState.velocity.add(velocAdd);
 
-		double dxdt = 1.0/6.0 * (k1.dx + 2*(k2.dx + k3.dx) + k4.dx);
-		double dydt = 1.0/6.0 * (k1.dy + 2*(k2.dy + k3.dy) + k4.dy);
-		double dv_xdt = 1.0/6.0 * (k1.dv_x + 2*(k2.dv_x + k3.dv_x) + k4.dv_x);
-		double dv_ydt = 1.0/6.0 * (k1.dv_y + 2*(k2.dv_y + k3.dv_y) + k4.dv_y);
-
-		Vector2D posAdd = new Vector2D(dxdt, dydt).multiply(deltaT);
-		position.add(posAdd);
-		Vector2D velocAdd = new Vector2D(dv_xdt, dv_ydt).multiply(deltaT);
-		velocity.add(velocAdd);
+			position
+		}
 	}
 
-	public Vector2D computeAcceleration2 (State state) {
+	public Vector2D computeAccelerationRK (State state) {
 		resetAcceleration();
 
 		for (int i = 0; i < GUIV2.planets.length; i ++) {
 			if (! GUIV2.planets[i].equals(this)) {
-				addGToAcceleration2(GUIV2.planets[i], state);
+				addGToAccelerationRK(GUIV2.planets[i], state);
 			}
 		}
 
 		return new Vector2D(acceleration);
 	}
 
-	public void addGToAcceleration2 (Planet other, State self) {
+	public void addGToAccelerationRK (Planet other, State self) {
 		//Compute the gravitational force
 		//	Make a unity vector in the correct direction
-		Vector2D direction = new Vector2D(self.x, self.y);
+		Vector2D direction = new Vector2D(self.position);
 		direction.subtract(other.getPosition()).normalize().multiply(-1);
 
 		//	Compute the distance between the two planets
-		double dist = new Vector2D(self.x, self.y).distance(other.getPosition());
+		double dist = new Vector2D(self.position).distance(other.getPosition());
 
 		//	Calculate the gravitational force
 		Vector2D force = new Vector2D(direction);
@@ -112,6 +138,22 @@ public class Planet {
 
 		//From that, add the corresponding acceleration to the planet's acceleration
 		acceleration.add(new Vector2D(force).divide(mass));
+	}
+
+	public void resetAcceleration() {
+		acceleration = new Vector2D();
+	}
+
+	/* These methods are old methods used to compute trajectories using Euler's method
+	public void updateVelocityAndPosition (double time) {
+		//Save the velocity before applying the acceleration
+		Vector2D oldVelocity = new Vector2D(this.velocity);
+
+		//Calculate the final velocity
+		velocity.add(new Vector2D(acceleration).multiply(time));
+
+		//Update location with the averageVelocity
+		position.add(new Vector2D(oldVelocity).add(velocity).divide(2.0).multiply(time));
 	}
 
 	public Vector2D computeAcceleration () {
@@ -142,19 +184,5 @@ public class Planet {
 		//From that, add the corresponding acceleration to the planet's acceleration
 		acceleration.add(new Vector2D(force).divide(mass));
 	}
-
-	public void resetAcceleration() {
-		acceleration = new Vector2D();
-	}
-
-	public void updateVelocityAndPosition (double time) {
-		//Save the velocity before applying the acceleration
-		Vector2D oldVelocity = new Vector2D(this.velocity);
-
-		//Calculate the final velocity
-		velocity.add(new Vector2D(acceleration).multiply(time));
-
-		//Update location with the averageVelocity
-		position.add(new Vector2D(oldVelocity).add(velocity).divide(2.0).multiply(time));
-	}
+	*/
 }
