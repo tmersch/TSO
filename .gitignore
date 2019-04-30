@@ -1,1 +1,2 @@
-src/src/Victor/
+#Ignore .class files
+*.class
