@@ -46,13 +46,14 @@ public class GUIV2 extends Application {
 	//Array containing the planets/moons
 	protected static CelestialBody[] planets;
 	//Arrays containing all the information about the planets/moons
-	private static final String[] planetNames = {				"Sun", 						"Mercury", 																			"Venus", 																			"Earth", 																			"Mars", 																		"Jupiter", 																			"Saturn", 																			"Uranus", 																			"Neptune", 										"Titan", 												"Moon", 								"Ganymede"};
+	// Indexes: --------------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
+	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede"};
 		//names of the planets
-	private static final double[] planetMasses = {			1.9885e30, 					3.302e23, 																			4.8685e24, 																			5.97219e24, 																		6.4171e23, 																		1.8981e27, 															5.6834e26, 																			8.6813e25, 																			1.02413e26, 					1.34553e23, 												7.349e22, 										1.482e23};
+	private static final double[] planetMasses = {	1.9885e30, 		3.302e23, 		4.8685e24, 		5.97219e24, 	6.4171e23, 		1.8981e27, 			5.6834e26, 			8.6813e25, 			1.02413e26, 		1.34553e23, 	7.349e22, 		1.482e23};
 		//masses in kg
-	protected static final double[] planetRadius = {	695700e3, 					2440e3, 																			6051.84e3, 																			6371.01e3, 																		3389.92e3, 																			71492e3, 																		60268e3, 																		25559e3, 																		24766e3, 																		2575.5e3, 							1737.53e3,										2.634e6};
+	protected static final double[] planetRadius = {695700e3, 		2440e3, 			6051.84e3, 		6371.01e3, 		3389.92e3, 		71492e3, 				60268e3, 				25559e3, 				24766e3, 				2575.5e3, 		1737.53e3,		2.634e6};
 		//average radius in meters
-	protected static final Vector2D[] planetPositions = {			new Vector2D(0, 0, 0), 		new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10), new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10), new Vector2D(-1.488847132490647e11, 8.460303130865488e9, 1.051062554109981e7), new Vector2D(-2.394535094933694e11, -7.589080066586609e11, 8.567293856946945e9)};
+	protected static final Vector2D[] planetPositions = {	new Vector2D(0, 0, 0), 	new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10), new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10), new Vector2D(-1.488847132490647e11, 8.460303130865488e9, 1.051062554109981e7), new Vector2D(-2.394535094933694e11, -7.589080066586609e11, 8.567293856946945e9)};
 		//positions at initialTime in meters
 	private static final Vector2D[] planetVelocities = {	new Vector2D(0, 0, 0), 		new Vector2D(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector2D(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector2D(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector2D(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector2D(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 		new Vector2D(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 		new Vector2D(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 		new Vector2D(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2), new Vector2D(4.602663714929883e3, -5.834636275449419e2, 1.481088959791306e3), new Vector2D(-2.872352106787649e3, -3.061966993302498e4, 9.000888638350801e1), new Vector2D(2.600098840800917e3, 1.559203853272592e3, -2.073416903427829e2)};
 		//velocity at initialTime in meters/secs
@@ -114,10 +115,10 @@ public class GUIV2 extends Application {
 				//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
 				if (choice == 1) {
 					System.out.println("Launching binary search angle calibration");
-					double launch_angle = 71;
+					double launch_angle = 289;
 					boolean crashedTitan = false;
 					double DISTANCE_SUN_PLUTO = 5906376272e3;
-					double angleChange = 90;
+					double angleChange = 1;
 					int previousMove = 0;
 					int numberIterations = 0;
 					double spaceProbeAngle = 0;
@@ -132,11 +133,8 @@ public class GUIV2 extends Application {
 						if (angleChange < Math.ulp(launch_angle))
 							crashedTitan = true;
 
-						Vector2D angleScaler = new Vector2D(Math.cos(launch_angle), Math.sin(launch_angle));
-						Vector2D initialPosition = new Vector2D(planets[3].getPosition());
-						initialPosition.add(new Vector2D(angleScaler).multiply(1000+planetRadius[3]));
-						Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
-						spaceProbe = new SpaceProbe("SpaceProbe", voyagerMass, initialPosition, initialVelocity);
+						//Create a new spaceProbe launched with a new angle from planet Earth
+						spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
 
 						int method = 2;
 						Vector2D oldPos;
@@ -207,6 +205,7 @@ public class GUIV2 extends Application {
 								previousMove = 1;
 							}
 							else {
+								crashedTitan = true;
 								System.out.println("SpaceProbeAngle = titanAngle !");
 							}
 						}
@@ -215,14 +214,6 @@ public class GUIV2 extends Application {
 
 						numberIterations ++;
 						elapsedSeconds = 0;
-						/*	Seems to cause an error with the window
-						try {
-							Thread.sleep(5000);
-						}
-						catch (InterruptedException e) {
-							System.out.println("Thread.sleep interrupted");
-						}
-						*/
 					}
 
 					//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
@@ -234,13 +225,8 @@ public class GUIV2 extends Application {
 					System.out.println("TitanAngle: " + titanAngle);
 					System.out.println("'Optimal' launch angle: " + launch_angle);
 
-					//Reset the spaceProbe
-					launch_angle = (launch_angle/180) * Math.PI;
-					Vector2D angleScaler = new Vector2D(Math.cos(launch_angle), Math.sin(launch_angle));
-					Vector2D initialPosition = new Vector2D(planets[3].getPosition());
-					initialPosition.add(new Vector2D(angleScaler).multiply(1000+planetRadius[3]));
-					Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
-					spaceProbe = new SpaceProbe("SpaceProbe", voyagerMass, initialPosition, initialVelocity);
+					//Reset the spaceProbe with the new launch_angle
+					spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
 
 					//Launch the simulation
 				  gc = createGUI(stage);
@@ -296,18 +282,15 @@ public class GUIV2 extends Application {
 				System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
 				double launch_angle = S.nextDouble();
 
+				//Reset the solar system
 				createSolarSystem();
 
-				//Reset the spaceProbe
-				Vector2D angleScaler = new Vector2D(Math.cos(Math.toRadians(-launch_angle)), Math.sin(Math.toRadians(-launch_angle)));
-				Vector2D initialPosition = new Vector2D(planets[3].getPosition());
-				initialPosition.add(new Vector2D(angleScaler).multiply(1000+planetRadius[3]));
-				Vector2D initialVelocity = new Vector2D(angleScaler).multiply(averageVelocitySpaceProbe);
-				spaceProbe = new SpaceProbe("SpaceProbe", voyagerMass, initialPosition, initialVelocity);
+				//Create a new spaceProbe with the starting angle
+				spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
 
 				//Show the simulation of the solar system with the space probe
 				gc = createGUI(stage);
-				launchGUI(0.5, true);
+				launchGUI(1, true);
 				timeline.play();
 				stage.show();
 			}
@@ -378,13 +361,21 @@ public class GUIV2 extends Application {
 			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
 	*/
 	public void launchGUI (double updateInterval, boolean spaceProbePresent) {
+		launchGUI(updateInterval, spaceProbePresent, 0);
+	}
+
+	/** Alternative version! Makes the last preparations for the GUI
+			@param updateInterval, the interval in milliseconds between each frame-update
+			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
+			@param waitAtStartTime, the number of seconds to wait before the planets start moving
+	*/
+	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime) {
 		timeline = new Timeline();
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
-		KeyFrame kf = null;
-		kf = new KeyFrame(
+		KeyFrame kf = new KeyFrame(
 			Duration.millis(updateInterval),
-			new SolarSystemUpdater(spaceProbePresent));
+			new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
 
 		timeline.getKeyFrames().add(kf);
 	}
@@ -394,6 +385,9 @@ public class GUIV2 extends Application {
 	*/
 	class SolarSystemUpdater implements EventHandler<ActionEvent> {
 		private boolean isSpaceProbeIncluded;
+		private double waitStartTime;
+		private long startTime;
+		private boolean updatedFrameOnce = false;
 
 		/** Default constructor for this class
 			@param spaceProbeIncluded specifies whether the spaceProbe is part of the simulation or not (and, as such, if it needs to be simulated too or not)
@@ -402,8 +396,18 @@ public class GUIV2 extends Application {
 			isSpaceProbeIncluded = spaceProbeIncluded;
 		}
 
+		public SolarSystemUpdater (boolean spaceProbeIncluded, double waitAtStartTime) {
+			this(spaceProbeIncluded);
+			this.startTime = System.nanoTime();
+			waitStartTime = waitAtStartTime;
+		}
+
 		public void handle (ActionEvent e) {
-			updateFrame(gc, isSpaceProbeIncluded);
+			if ((updatedFrameOnce) || (System.nanoTime() > startTime + waitStartTime*Math.pow(10, 9))) {
+				updateFrame(gc, isSpaceProbeIncluded);
+				if (! updatedFrameOnce)
+					updatedFrameOnce = true;
+			}
 		}
 	}
 
