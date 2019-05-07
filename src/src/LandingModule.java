@@ -50,28 +50,36 @@ public class LandingModule {
 
 	/** Simple implementation for landing on titan, only taking gravitational acceleration into account
 	 *
-	 * @param timestep timestep you calculated the new position and velocity over
+	 * @param timestep timestep you calculate the new position and velocity over
 	 */
 	public void crashOnTitan(double timestep) {
+		boolean thrust = false;
+		double landingTime = 0;
 		double y0 = position.getY();
 		double v0 = 0; // Assuming 0 as initial velocity for now. Need to use velocity vector later
 		// For now, use y position for simple model. Will use hasLanded() method later
 		while (position.getY() > 0) {
 
 			double v1 = v0 + GRAVITYTITAN*timestep;
+			if (thrust) {
+				v1 += useMainThruster() * timestep;
+			}
+			// s1 = s0 + v0*t + .5at^2
 			double y1 = y0 + v0*timestep + .5*GRAVITYTITAN*(timestep*timestep);
+			if (thrust) {
+				y1 += .5 * useMainThruster() * (timestep * timestep);
+			}
 			position.setY(y1);
 
 			v0 = v1;
 			y0 = y1;
 
-			// Try to keep constant speed of 10 m/s for landing
-			if (v0 < -10) {
-				v0 += useMainThruster();
-			}
 			// Slow down for landing
-			if (y0 < 1000 && v0 < TOLVELX) {
-				v0 += useMainThruster();
+			if ((y0/(v0/2)) < (v0/(GRAVITYTITAN+useMainThruster())) && counter > 75) {
+				thrust = true;
+			}
+			if (v0 > -1) {
+				thrust = false;
 			}
 
 			/* Possible Runge-Kutta implementation but probably not necessary
@@ -81,6 +89,7 @@ public class LandingModule {
 			position.setY(w1);
 			currentTime += timestep;
 			w0 = w1;*/
+			landingTime += timestep;
 		}
 	}
 
