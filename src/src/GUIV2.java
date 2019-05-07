@@ -65,13 +65,19 @@ public class GUIV2 extends Application {
 	private static SpaceProbe spaceProbe;
 	private static final double voyagerMass = 800;
 		//in kg
-	private static final double averageVelocitySpaceProbe = 480e3;
+	private static final double averageVelocitySpaceProbe = 48e3;
 		//in meters/secs
 
+	//GUI parts
 	private Timeline timeline;
 	private CoordinatesTransformer coordinates = new CoordinatesTransformer();
 	private GraphicsContext gc;
 	private Label timeLabel;
+		//the startTime of the simulation according to System.nanoTime()
+	private long startTime = -1;
+		//number of iterations in the current simulation
+	private int numIterations;
+	private boolean showNumIterations = false;
 
 
 	/** Main method, gets called when the program is executed
@@ -115,7 +121,7 @@ public class GUIV2 extends Application {
 				//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
 				if (choice == 1) {
 					System.out.println("Launching binary search angle calibration");
-					double launch_angle = 289;
+					double launch_angle = 259;
 					boolean crashedTitan = false;
 					double DISTANCE_SUN_PLUTO = 5906376272e3;
 					double angleChange = 1;
@@ -149,11 +155,12 @@ public class GUIV2 extends Application {
 							//While the space probe has not crashed into a planet or its distance to the sun is greater than the distance from Neptune to the sun
 							int num = 1;
 							while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
-								oldPos = new Vector2D(spaceProbe.getPosition());
+								//oldPos = new Vector2D(spaceProbe.getPosition());
 								update(DELTA_T, true);
 								//System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
 								num ++;
 							}
+							System.out.println(num + " iterations needed to end simulation");
 						}
 
 						//If the space probe crashed on Titan, we are done
@@ -170,9 +177,11 @@ public class GUIV2 extends Application {
 							//Then, we compute the angles
 							spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
 							titanAngle = planets[9].getPosition().angle(planetPositions[0]);
-							//Both angles will now be between 0 and 360 degrees
+							//Both angles should now be between 0 and 360 degrees
+							System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
 
-							if (spaceProbeAngle - titanAngle > 0) {
+
+							if (spaceProbeAngle > titanAngle) {
 								//the spaceProbe is to the right of Titan (or in the exact opposite direction)
 								//Thus, we make the angle smaller
 
@@ -188,7 +197,7 @@ public class GUIV2 extends Application {
 								//And set the latest made move to -1 (decreasing the angle, turning to the right)
 								previousMove = -1;
 							}
-							else if (spaceProbeAngle - titanAngle < 0){
+							else if (spaceProbeAngle < titanAngle){
 								//The spaceProbe is to the left of Titan
 								//Thus, we make the angle bigger
 
@@ -282,6 +291,9 @@ public class GUIV2 extends Application {
 				System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
 				double launch_angle = S.nextDouble();
 
+				System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
+				int numberOfIterations = S.nextInt();
+
 				//Reset the solar system
 				createSolarSystem();
 
@@ -289,8 +301,13 @@ public class GUIV2 extends Application {
 				spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
 
 				//Show the simulation of the solar system with the space probe
+				showNumIterations = true;
 				gc = createGUI(stage);
-				launchGUI(1, true);
+				if (numberOfIterations == -1) {
+					launchGUI(1, true);
+				} else {
+					launchGUI(1, true, numberOfIterations);
+				}
 				timeline.play();
 				stage.show();
 			}
@@ -361,7 +378,18 @@ public class GUIV2 extends Application {
 			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
 	*/
 	public void launchGUI (double updateInterval, boolean spaceProbePresent) {
-		launchGUI(updateInterval, spaceProbePresent, 0);
+		//Reset the number of iterations of the current simulation
+		numIterations = 0;
+
+		//Create the objects needed for the GUI, here the Timeline
+		timeline = new Timeline();
+		timeline.setCycleCount(Timeline.INDEFINITE);
+
+		KeyFrame kf = new KeyFrame(
+			Duration.millis(updateInterval),
+			new SolarSystemUpdater(spaceProbePresent));
+
+		timeline.getKeyFrames().add(kf);
 	}
 
 	/** Alternative version! Makes the last preparations for the GUI
@@ -370,8 +398,42 @@ public class GUIV2 extends Application {
 			@param waitAtStartTime, the number of seconds to wait before the planets start moving
 	*/
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime) {
+		//Reset the number of iterations of the current simulation
+		numIterations = 0;
+
+		//Create the objects needed for the GUI, here the Timeline
 		timeline = new Timeline();
 		timeline.setCycleCount(Timeline.INDEFINITE);
+
+		KeyFrame kf = new KeyFrame(
+			Duration.millis(updateInterval),
+			new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
+
+		timeline.getKeyFrames().add(kf);
+	}
+
+	public void launchGUI (double updateInterval, boolean spaceProbePresent, int endNumIterations) {
+			//Reset the number of iterations of the current simulation
+			numIterations = 0;
+
+			//Create the objects needed for the GUI, here the Timeline
+			timeline = new Timeline();
+			timeline.setCycleCount(endNumIterations);
+
+			KeyFrame kf = new KeyFrame(
+				Duration.millis(updateInterval),
+				new SolarSystemUpdater(spaceProbePresent));
+
+			timeline.getKeyFrames().add(kf);
+	}
+
+	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime, int endNumIterations) {
+		//Reset the number of iterations of the current simulation
+		numIterations = 0;
+
+		//Create the objects needed for the GUI, here the Timeline
+		timeline = new Timeline();
+		timeline.setCycleCount(endNumIterations);
 
 		KeyFrame kf = new KeyFrame(
 			Duration.millis(updateInterval),
@@ -385,8 +447,7 @@ public class GUIV2 extends Application {
 	*/
 	class SolarSystemUpdater implements EventHandler<ActionEvent> {
 		private boolean isSpaceProbeIncluded;
-		private double waitStartTime;
-		private long startTime;
+		private double waitStartTime = 0;
 		private boolean updatedFrameOnce = false;
 
 		/** Default constructor for this class
@@ -394,20 +455,16 @@ public class GUIV2 extends Application {
 		*/
 		public SolarSystemUpdater (boolean spaceProbeIncluded) {
 			isSpaceProbeIncluded = spaceProbeIncluded;
+			startTime = System.nanoTime();
 		}
 
 		public SolarSystemUpdater (boolean spaceProbeIncluded, double waitAtStartTime) {
 			this(spaceProbeIncluded);
-			this.startTime = System.nanoTime();
 			waitStartTime = waitAtStartTime;
 		}
 
 		public void handle (ActionEvent e) {
-			if ((updatedFrameOnce) || (System.nanoTime() > startTime + waitStartTime*Math.pow(10, 9))) {
-				updateFrame(gc, isSpaceProbeIncluded);
-				if (! updatedFrameOnce)
-					updatedFrameOnce = true;
-			}
+			updateFrame(gc, isSpaceProbeIncluded, waitStartTime);
 		}
 	}
 
@@ -415,7 +472,7 @@ public class GUIV2 extends Application {
 		@param gc, the graphicsContext on which we draw the planets' positions
 		@param spaceProbeIncluded determines whether the space probe also has to be taken into account or not
 	*/
-	private void updateFrame(GraphicsContext gc, boolean spaceProbeIncluded) {
+	private void updateFrame(GraphicsContext gc, boolean spaceProbeIncluded, double waitTime) {
 		this.canvasWidth = gc.getCanvas().getWidth();
 		this.canvasHeight = gc.getCanvas().getHeight();
 		gc.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -446,8 +503,18 @@ public class GUIV2 extends Application {
 			gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
 		}
 
-		update(DELTA_T, spaceProbeIncluded);
+		numIterations ++;
+
+		//If the starting wait time is over, update the positions of the planets, otherwise not
+		if (System.nanoTime() >= startTime + waitTime*Math.pow(10, 9)) {
+			update(DELTA_T, spaceProbeIncluded);
+		}
+
+		//set the text of the timelabel and make the timeLabel large enough to
 		timeLabel.setText(getElapsedTimeAsString());
+		if (showNumIterations)
+			timeLabel.setText(timeLabel.getText() + "				Number of iterations: " + numIterations);
+		timeLabel.setPrefWidth(new Text(timeLabel.getText()).getLayoutBounds().getWidth());
 	}
 
 	/** This method updates acceleration, then the velocity and the position of the planets
