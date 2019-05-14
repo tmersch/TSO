@@ -17,7 +17,7 @@ public class SpaceProbe extends CelestialBody {
 		//Adjust the thrusters in the correct angle
 		thrusters = new Vector2D(angle);
 		//Then, scale them by their strength
-		thrusters.multiply();														//NEEDS TO BE MULTIPLIED BY THE TOTAL FORCE EXERTED BY THE THRUSTERS
+		//thrusters.multiply();														//NEEDS TO BE MULTIPLIED BY THE TOTAL FORCE EXERTED BY THE THRUSTERS
 	}
 
 	public void shutThrustersOff () {
