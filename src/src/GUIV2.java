@@ -65,7 +65,7 @@ public class GUIV2 extends Application {
 	private static SpaceProbe spaceProbe;
 	private static final double voyagerMass = 800;
 		//in kg
-	private static final double averageVelocitySpaceProbe = 40e3;
+	private static final double averageVelocitySpaceProbe = 48e3;
 		//in meters/secs
 
 	//GUI parts
