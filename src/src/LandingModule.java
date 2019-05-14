@@ -31,6 +31,8 @@ public class LandingModule {
 		this.velocity = velocity;
 	}
 
+
+
 	/** Use the back thruster
 	 *
 	 * @return effect on modules velocity (so de-acceleration)
@@ -45,14 +47,22 @@ public class LandingModule {
 	}
 	
 	public void useSideThruster(int side) {
-		
+		updateAngle();
+
 	}
+
+    /** Updates angle at which the module is positioned
+     *
+     */
+    public void updateAngle() {
+
+    }
 
 	/** Simple implementation for landing on titan, only taking gravitational acceleration into account
 	 *
 	 * @param timestep timestep you calculate the new position and velocity over
 	 */
-	public void crashOnTitan(double timestep) {
+	public void landingTitan(double timestep) {
 		boolean thrust = false;
 		double landingTime = 0;
 		double y0 = position.getY();
@@ -75,12 +85,15 @@ public class LandingModule {
 			y0 = y1;
 
 			// Slow down for landing
-			if ((y0/(v0/2)) < (v0/(GRAVITYTITAN+useMainThruster())) && counter > 75) {
-				thrust = true;
-			}
-			if (v0 > -1) {
-				thrust = false;
-			}
+            // Time it takes to reach velocity 0 = vmax/(acceleration titan + acceleration main thruster)
+            // Distance traveled during deacceleration = t * vmax * .5 (assuming linear deacceleration)
+            if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 50 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
+                thrust = true;
+            }
+            // Ensures it doesn't reach positive velocity (start going up again)
+            if (v0 > -0.1) {
+                thrust = false;
+            }
 
 			/* Possible Runge-Kutta implementation but probably not necessary
 			double k1 = timestep * (w0 + GRAVITYTITAN*currentTime);
@@ -99,7 +112,7 @@ public class LandingModule {
  	 */
 
 	public boolean hasLanded() {
-		if () {
+		if (position.getY() =< 0) {
 			return true;
 		}
 		return false;
