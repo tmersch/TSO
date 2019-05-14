@@ -182,42 +182,74 @@ public class GUIV2 extends Application {
 
 							/* IDEA !!! Instead of doing spaceProbeAngle > titanAngle, try to see modulo 360 if it is closer to the lef or the right
 							*/
+							boolean tryOutNewWay = false;
 
-							if (spaceProbeAngle > titanAngle) {
-								//the spaceProbe is to the right of Titan (or in the exact opposite direction)
-								//Thus, we make the angle smaller
+							if (tryOutNewWay) {
+								int tmp = signum(spaceProbeAngle-titanAngle);
+								if (Math.abs(titanAngle-spaceProbeAngle) > 180) {
+									if (previousMove == -tmp) {
+										System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+										if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+										else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
 
-								//If the previous angle change was the other way, we can reduce the angleChange by half
-								if (previousMove == 1) {
-									System.out.println("Move == -1: \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", \n   The angle should be between " + (launch_angle-angleChange) + " and " + launch_angle);
-									angleChange = angleChange/2;
+										angleChange = angleChange/2;
+									}
+
+									launch_angle += tmp * angleChange;
+
+									previousMove = tmp;
 								}
+								else {
+									if (previousMove == tmp) {
+										System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+										if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+										else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
 
-								//Then, apply the angleChange to the angle
-								launch_angle -= angleChange;
+										angleChange = angleChange/2;
+									}
 
-								//And set the latest made move to -1 (decreasing the angle, turning to the right)
-								previousMove = -1;
-							}
-							else if (spaceProbeAngle < titanAngle){
-								//The spaceProbe is to the left of Titan
-								//Thus, we make the angle bigger
+									launch_angle += -tmp * angleChange;
 
-								//If the previous angle change was the other way, we can reduce the angle by half
-								if (previousMove == -1) {
-									System.out.println("Move == 1: \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", \n   The angle should be between " + launch_angle + " and " + (launch_angle+angleChange));
-									angleChange = angleChange/2;
+									previousMove = -tmp;
 								}
-
-								//Then, apply the angleChange to the angle
-								launch_angle += angleChange;
-
-								//And set the latest made move to +1 (increasing the angle, turning to the left)
-								previousMove = 1;
 							}
 							else {
-								crashedTitan = true;
-								System.out.println("SpaceProbeAngle = titanAngle !");
+								if (spaceProbeAngle > titanAngle) {
+									//the spaceProbe is to the right of Titan (or in the exact opposite direction)
+									//Thus, we make the angle smaller
+
+									//If the previous angle change was the other way, we can reduce the angleChange by half
+									if (previousMove == 1) {
+										System.out.println("Move == -1: \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", \n   The angle should be between " + (launch_angle-angleChange) + " and " + launch_angle);
+										angleChange = angleChange/2;
+									}
+
+									//Then, apply the angleChange to the angle
+									launch_angle -= angleChange;
+
+									//And set the latest made move to -1 (decreasing the angle, turning to the right)
+									previousMove = -1;
+								}
+								else if (spaceProbeAngle < titanAngle){
+									//The spaceProbe is to the left of Titan
+									//Thus, we make the angle bigger
+
+									//If the previous angle change was the other way, we can reduce the angle by half
+									if (previousMove == -1) {
+										System.out.println("Move == 1: \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", \n   The angle should be between " + launch_angle + " and " + (launch_angle+angleChange));
+										angleChange = angleChange/2;
+									}
+
+									//Then, apply the angleChange to the angle
+									launch_angle += angleChange;
+
+									//And set the latest made move to +1 (increasing the angle, turning to the left)
+									previousMove = 1;
+								}
+								else {
+									crashedTitan = true;
+									System.out.println("SpaceProbeAngle = titanAngle !");
+								}
 							}
 						}
 
@@ -564,5 +596,14 @@ public class GUIV2 extends Application {
     long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
     long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
     return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+	}
+
+	/** Auxiliary method
+
+			@param double n, a double number
+			@return the sign of the double parameter
+	*/
+	private int signum (double n) {
+		return (int)(Math.abs(n)/n);
 	}
 }
