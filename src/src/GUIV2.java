@@ -65,7 +65,7 @@ public class GUIV2 extends Application {
 	private static SpaceProbe spaceProbe;
 	private static final double voyagerMass = 800;
 		//in kg
-	private static final double averageVelocitySpaceProbe = 48e3;
+	private static final double averageVelocitySpaceProbe = 40e3;
 		//in meters/secs
 
 	//GUI parts
@@ -180,6 +180,8 @@ public class GUIV2 extends Application {
 							//Both angles should now be between 0 and 360 degrees
 							System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
 
+							/* IDEA !!! Instead of doing spaceProbeAngle > titanAngle, try to see modulo 360 if it is closer to the lef or the right
+							*/
 
 							if (spaceProbeAngle > titanAngle) {
 								//the spaceProbe is to the right of Titan (or in the exact opposite direction)
@@ -291,9 +293,10 @@ public class GUIV2 extends Application {
 				System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
 				double launch_angle = S.nextDouble();
 
+				/*
 				System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
 				int numberOfIterations = S.nextInt();
-
+				*/
 				//Reset the solar system
 				createSolarSystem();
 
@@ -303,11 +306,11 @@ public class GUIV2 extends Application {
 				//Show the simulation of the solar system with the space probe
 				showNumIterations = true;
 				gc = createGUI(stage);
-				if (numberOfIterations == -1) {
+				//if (numberOfIterations == -1) {
 					launchGUI(1, true);
-				} else {
+				/*} else {
 					launchGUI(1, true, numberOfIterations);
-				}
+				} */
 				timeline.play();
 				stage.show();
 			}
@@ -523,12 +526,12 @@ public class GUIV2 extends Application {
 		@param time, the time interval which we update the position after
 		@param spaceProbeIncluded indicates whether the space probe's position is also updated or not
 	*/
-	private void update (double time, boolean spaceProbeIncluded) {
+	private void update(double time, boolean spaceProbeIncluded) {
 		for (int step = 0; step < 8; step ++) {
 			for (int i = 0; i < planets.length; i ++) {
-				planets[i].updatePosition(DELTA_T, step);
+				planets[i].updatePosition(time, step);
 			}
-			if (spaceProbeIncluded) spaceProbe.updatePosition(DELTA_T, step);
+			if (spaceProbeIncluded) spaceProbe.updatePosition(time, step);
 		}
 
 		//Increment the seconds

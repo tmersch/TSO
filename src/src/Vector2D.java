@@ -1,4 +1,4 @@
-class Vector2D {
+public class Vector2D {
 	protected double x;
 	protected double y;
 

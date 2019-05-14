@@ -26,7 +26,7 @@ public class SpaceProbe extends CelestialBody {
 		//Then compute the initialPosition and initialVelocity of the spaceProbe
 		Vector2D initialPosition = new Vector2D(launchPlanetPos);
 			//NOTE ! We are starting in the direction of launchAngle, at a distance of 1000 meters of the surface
-		initialPosition.add(new Vector2D(angleScaler).multiply(1000 + planetRadius));
+		initialPosition.add(new Vector2D(angleScaler).multiply(/*1000 + */ planetRadius));
 		Vector2D initialVelocity = new Vector2D(angleScaler).multiply(velocity);
 
 
