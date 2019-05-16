@@ -43,6 +43,9 @@ public class LandingModule {
 		// These are formulas from the booklet
 		// accel x = (mainForce/weight) * Math.sin(angle));
 		// accel y = (mainForce/weight) * Math.cos(angle));
+		// Different strengths of thruster
+		// Constant speed + landing
+		// Research max speed you want to reach
 		Vector2D thrust = new Vector2D((mainForce/weight)*Math.sin(angle),(mainForce/weight)*Math.cos(angle));
 		this.acceleration.add(thrust);
 	}
@@ -100,6 +103,7 @@ public class LandingModule {
 		if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 50 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
 			useMainThruster();
 		}
+		// Add wind
 	}
 
 	/** Updates the velocity of the module
