@@ -9,13 +9,19 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import javafx.scene.Group;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import java.util.Scanner;
+import javafx.scene.text.*;
+import javafx.scene.transform.Rotate;
+import javafx.scene.chart.NumberAxis;
+import javafx.geometry.Side;
 
 /** GUI representing the solar system using javafx
 */
@@ -102,169 +108,225 @@ public class GUIV2 extends Application {
 		Scanner s = new Scanner(System.in);
 		String input = "";
 
-		while ((! input.equals("1")) && (! input.equals("2")) && (! input.equals("3"))) {
-			System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 for the space probe launch, 3 for the space probe test)");
+		while ((!input.equals("1")) && (!input.equals("2"))) {
+			System.out.println("Do you want to see the solar system simulation (enter 1) or see the landing (enter 2) ?");
 			input = s.next();
 
+			//Simulation of the solar system
 			if (input.equals("1")) {
-				//GUI part
-				gc = createGUI(stage);
-				launchGUI(1, false);
-				timeline.play();
-				stage.show();
-			}
-			//Launch of space probe
-			else if (input.equals("2")) {
-				//Choice = 1 launches the binary search for the angle to reach Titan, choice = 2 launches a very crude direct approximation of the angle to reach Titan
-				int choice = 2;
+				//Initialize the planets
+				createSolarSystem();
 
-				if (DEBUG) System.out.println("Launching space probe shooting module");
+				//CoordinateTransformer
+				coordinates.setScale(SCALE);
+				coordinates.setModifiedX(700);
+				coordinates.setModifiedY(350);
 
-				//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
-				if (DEBUG) System.out.println("Launching binary search angle calibration");
-				double launch_angle = 259;
-				boolean crashedTitan = false;
-				double DISTANCE_SUN_PLUTO = 5906376272e3;
-				double angleChange = 1;
-				int previousMove = 0;
-				int numberIterations = 0;
-				double spaceProbeAngle = 0;
-				double titanAngle  = 0;
-				while (! crashedTitan) {
-					if (DEBUG) System.out.println("Iteration #" + numberIterations);
+				input = "";
 
-					//Initialize the space probe and the solar system
-					createSolarSystem();
+				while ((! input.equals("1")) && (! input.equals("2")) && (! input.equals("3"))) {
+					System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 for the space probe launch, 3 for the space probe test)");
+					input = s.next();
 
-					//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
-					if (angleChange < Math.ulp(launch_angle))
-						crashedTitan = true;
-
-					//Create a new spaceProbe launched with a new angle from planet Earth
-					spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
-
-					int method = 2;
-					Vector2D oldPos;
-					if (method == 1) {
-						//Run the simulation
+					if (input.equals("1")) {
+						//GUI part
 						gc = createGUI(stage);
-						launchGUI(1, true);
+						launchGUI(1, false);
 						timeline.play();
 						stage.show();
 					}
-					else if (method == 2) {
-						//While the space probe has not crashed into a planet or its distance to the sun is greater than the distance from Neptune to the sun
-						int num = 1;
-						while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
-							//oldPos = new Vector2D(spaceProbe.getPosition());
-							update(DELTA_T, true);
-							//System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
-							num ++;
-						}
-						if (DEBUG) System.out.println(num + " iterations needed to end simulation");
-					}
+					//Launch of space probe
+					else if (input.equals("2")) {
+						//Choice = 1 launches the binary search for the angle to reach Titan, choice = 2 launches a very crude direct approximation of the angle to reach Titan
+						int choice = 2;
 
-					//If the space probe crashed on Titan, we are done
-					if (planets[9].equals(spaceProbe.getCrashedPlanet())) {
-						crashedTitan = true;
-						if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
-					}
-					else {
-						//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
-						if (spaceProbe.getCrashedPlanet() != null)
-							if (DEBUG) System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
-						spaceProbe.resetCrashedPlanet();
+						if (DEBUG) System.out.println("Launching space probe shooting module");
 
-						//Then, we compute the angles
-						spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
-						titanAngle = planets[9].getPosition().angle(planetPositions[0]);
-						//Both angles should now be between 0 and 360 degrees
-						if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
+						//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
+						if (DEBUG) System.out.println("Launching binary search angle calibration");
+						double launch_angle = 259;
+						boolean crashedTitan = false;
+						double DISTANCE_SUN_PLUTO = 5906376272e3;
+						double angleChange = 1;
+						int previousMove = 0;
+						int numberIterations = 0;
+						double spaceProbeAngle = 0;
+						double titanAngle  = 0;
+						while (! crashedTitan) {
+							if (DEBUG) System.out.println("Iteration #" + numberIterations);
 
-						int tmp = signum(spaceProbeAngle-titanAngle);
-						if (Math.abs(titanAngle-spaceProbeAngle) > 180) {
-							if (previousMove == -tmp) {
-								if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
-									if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-									else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+							//Initialize the space probe and the solar system
+							createSolarSystem();
+
+							//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
+							if (angleChange < Math.ulp(launch_angle))
+								crashedTitan = true;
+
+							//Create a new spaceProbe launched with a new angle from planet Earth
+							spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
+
+							int method = 2;
+							Vector2D oldPos;
+							if (method == 1) {
+								//Run the simulation
+								gc = createGUI(stage);
+								launchGUI(1, true);
+								timeline.play();
+								stage.show();
+							}
+							else if (method == 2) {
+								//While the space probe has not crashed into a planet or its distance to the sun is greater than the distance from Neptune to the sun
+								int num = 1;
+								while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
+									//oldPos = new Vector2D(spaceProbe.getPosition());
+									update(DELTA_T, true);
+									//System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
+									num ++;
 								}
-
-								angleChange = angleChange/2;
+								if (DEBUG) System.out.println(num + " iterations needed to end simulation");
 							}
 
-							launch_angle += tmp * angleChange;
+							//If the space probe crashed on Titan, we are done
+							if (planets[9].equals(spaceProbe.getCrashedPlanet())) {
+								crashedTitan = true;
+								if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
+							}
+							else {
+								//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
+								if (spaceProbe.getCrashedPlanet() != null)
+									if (DEBUG) System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
+								spaceProbe.resetCrashedPlanet();
 
-							previousMove = tmp;
-						}
-						else if (Math.abs(titanAngle-spaceProbeAngle) > 0) {
-							if (previousMove == tmp) {
-								if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
-									if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-									else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+								//Then, we compute the angles
+								spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
+								titanAngle = planets[9].getPosition().angle(planetPositions[0]);
+								//Both angles should now be between 0 and 360 degrees
+								if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
+
+								int tmp = signum(spaceProbeAngle-titanAngle);
+								if (Math.abs(titanAngle-spaceProbeAngle) > 180) {
+									if (previousMove == -tmp) {
+										if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+											if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+											else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+										}
+
+										angleChange = angleChange/2;
+									}
+
+									launch_angle += tmp * angleChange;
+
+									previousMove = tmp;
 								}
+								else if (Math.abs(titanAngle-spaceProbeAngle) > 0) {
+									if (previousMove == tmp) {
+										if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+											if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+											else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+										}
 
-								angleChange = angleChange/2;
+										angleChange = angleChange/2;
+									}
+
+									launch_angle += -tmp * angleChange;
+
+									previousMove = -tmp;
+								}
+								else {
+									crashedTitan = true;
+								}
 							}
 
-							launch_angle += -tmp * angleChange;
+							System.out.println("New space probe launch angle: " + launch_angle);
 
-							previousMove = -tmp;
+							numberIterations ++;
+							elapsedSeconds = 0;
 						}
-						else {
-							crashedTitan = true;
-						}
+
+						//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
+						//Reset the solar System
+						createSolarSystem();
+
+						//Print out all angles ...
+						//System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
+						//System.out.println("TitanAngle: " + titanAngle);
+						System.out.println("'Optimal' launch angle: " + launch_angle);
+
+						//Reset the spaceProbe with the new launch_angle
+						spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
+
+						//Launch the simulation
+					  gc = createGUI(stage);
+						launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
+						timeline.play();
+						stage.show();
 					}
+					//Test of space probe angle
+					else if (input.equals("3")) {
+						Scanner S = new Scanner(System.in);
+						System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
+						double launch_angle = S.nextDouble();
 
-					System.out.println("New space probe launch angle: " + launch_angle);
+						/*
+						System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
+						int numberOfIterations = S.nextInt();
+						*/
+						//Reset the solar system
+						createSolarSystem();
 
-					numberIterations ++;
-					elapsedSeconds = 0;
+						//Create a new spaceProbe with the starting angle
+						spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
+
+						//Show the simulation of the solar system with the space probe
+						showNumIterations = true;
+						gc = createGUI(stage);
+						//if (numberOfIterations == -1) {
+							launchGUI(1, true);
+						/*} else {
+							launchGUI(1, true, numberOfIterations);
+						} */
+						timeline.play();
+						stage.show();
+					}
 				}
-
-				//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
-				//Reset the solar System
-				createSolarSystem();
-
-				//Print out all angles ...
-				//System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
-				//System.out.println("TitanAngle: " + titanAngle);
-				System.out.println("'Optimal' launch angle: " + launch_angle);
-
-				//Reset the spaceProbe with the new launch_angle
-				spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
-
-				//Launch the simulation
-			  gc = createGUI(stage);
-				launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
-				timeline.play();
-				stage.show();
 			}
-			//Test of space probe angle
-			else if (input.equals("3")) {
-				Scanner S = new Scanner(System.in);
-				System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
-				double launch_angle = S.nextDouble();
+			//Landing on titan
+			else if (input.equals("2")) {
+				Group grid = new Group();
+        stage.setTitle("Landing");
+        Rectangle a = new Rectangle(10, 20);
+        a.translateXProperty().set(300);
+        a.translateYProperty().set(75);
 
-				/*
-				System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
-				int numberOfIterations = S.nextInt();
-				*/
-				//Reset the solar system
-				createSolarSystem();
+        Text t = new Text();
+        t.setFont(new Font(15));
+        t.translateXProperty().set(40);
+        t.translateYProperty().set(30);
 
-				//Create a new spaceProbe with the starting angle
-				spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
+        Text y = new Text();
+        y.setFont(new Font(15));
+        y.translateXProperty().set(40);
+        y.translateYProperty().set(60);
 
-				//Show the simulation of the solar system with the space probe
-				showNumIterations = true;
-				gc = createGUI(stage);
-				//if (numberOfIterations == -1) {
-					launchGUI(1, true);
-				/*} else {
-					launchGUI(1, true, numberOfIterations);
-				} */
-				timeline.play();
-				stage.show();
+        Text z = new Text();
+        z.setFont(new Font(15));
+        z.translateXProperty().set(40);
+        z.translateYProperty().set(90);
+
+        t.setText("Altitude : ");
+        y.setText("Vertical Speed : ");
+        z.setText("Elapsed time : ");
+
+        NumberAxis axis = new NumberAxis(0,1400,100);
+        axis.setSide(Side.RIGHT);
+        axis.setPrefHeight(550);
+
+        Line line = new Line(0, 550, 900, 550);
+        grid.getChildren().addAll(line, a, t, y, axis, z);
+        Scene scene = new Scene(grid, 900, 600);
+        //scene.setCamera(cam);
+        stage.setScene(scene);
+        stage.show();
 			}
 		}
 	}
