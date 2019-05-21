@@ -1,5 +1,6 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.animation.Animation;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -31,7 +32,7 @@ public class GUIV2 extends Application {
 	private double canvasHeight = 0;	// ------------------------------------------------------------
 
 	//Number of seconds between each update
-	private static final double DELTA_T = 60 * 30;
+	private static double DELTA_T = 60 * 30;
 	//debug boolean (un)locking println statements
 	private final boolean DEBUG = true;
 	//scaling factor
@@ -123,17 +124,30 @@ public class GUIV2 extends Application {
 				coordinates.setModifiedY(350);
 
 				input = "";
-
 				while ((! input.equals("1")) && (! input.equals("2")) && (! input.equals("3"))) {
 					System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 for the space probe launch, 3 for the space probe test)");
 					input = s.next();
 
 					if (input.equals("1")) {
+						System.out.println("Which timestep do you want to use (in secs)?");
+						DELTA_T = s.nextDouble();
+						System.out.println("After how much time (in secs) do you want to end the simulation ?");
+						double endTime = s.nextLong();
+						boolean spaceProbeIncluded = false;
+						int numIterations = (int)Math.ceil(endTime/DELTA_T);
+
 						//GUI part
 						gc = createGUI(stage);
-						launchGUI(1, false);
+						launchGUI(1, spaceProbeIncluded, numIterations);
 						timeline.play();
 						stage.show();
+
+						while (!timeline.getStatus().equals(Animation.Status.STOPPED)) {
+						}
+
+						for (int i = 0; i < planets.length; i ++) {
+							System.out.println("Planet " + planets[i].getName() + ": \nPosition: " + planets[i].getPosition());
+						}
 					}
 					//Launch of space probe
 					else if (input.equals("2")) {
