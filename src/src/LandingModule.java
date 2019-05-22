@@ -1,9 +1,14 @@
 public class LandingModule {
-	
+
+
 	private double weight; // weight of landing module (kg)
 	private Vector2D acceleration = new Vector2D(0, 0); // Acceleration on module (m/s^2)
 	private Vector2D velocity; // Velocity of module (m/s)
 	private Vector2D position; // Position of module (m)
+
+	private State state;
+	private Derivative derivative;
+
 	private double angle; // Landing module's angle of rotation
     private double torque; // Torque is N*m, calculated by multiplying the position vector from center of mass to the point
     // where force is exerted and the perpendicular force at this point
@@ -30,23 +35,27 @@ public class LandingModule {
 		this.weight = weight;
 		this.position = position;
 		this.velocity = velocity;
+
+		state = new State();
+		state.position = this.position;
+		state.velocity = state.position;
+
+		derivative = new Derivative();
 	}
-
-
 
 	/** Use the back thruster
 	 *
 	 * @return effect on modules velocity (so de-acceleration)
 	 */
 
-	public double useMainThruster() {
+	public void useMainThruster() {
 		// These are formulas from the booklet
 		// accel x = (mainForce/weight) * Math.sin(angle));
 		// accel y = (mainForce/weight) * Math.cos(angle));
 		// Different strengths of thruster
 		// Constant speed + landing
 		// Research max speed you want to reach
-		Vector2D thrust = new Vector2D((mainForce/weight)*Math.sin(angle),(mainForce/weight)*Math.cos(angle));
+		Vector2D thrust = new Vector2D(Math.sin(angle),Math.cos(angle)).multiply(mainForce).divide(weight);
 		this.acceleration.add(thrust);
 	}
 
@@ -99,6 +108,7 @@ public class LandingModule {
 	 */
 
 	private void updateAcceleration() {
+
 		// Condition needs to be edited for vector use
 		if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 50 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
 			useMainThruster();
@@ -188,6 +198,54 @@ public class LandingModule {
 		}
 	}
 
+	public void updateRK (double deltaT) {
+		//k1
+		Vector2D intermediateState = new State(state);
+		intermediateState.applyDerivative(new Derivative(), deltaT);
 
-	
+		Vector2D acc = computeAcceleration();
+		Derivative k1 = new Derivative(intermediateState.velocity, acc);
+
+		//k2
+		intermediateState = new State(state);
+		intermediateState.applyDerivative(k1, deltaT/2);
+
+		acc = computeAcceleration();
+		Derivative k2 = new Derivative(intermediateState.velocity, acc);
+
+		//k3
+		intermediateState = new State(state);
+		intermediateState.applyDerivative(k2, deltaT/2);
+
+		acc = computeAcceleration();
+		Derivative k3 = new Derivative(intermediateState.velocity, acc);
+
+		//k4
+		intemediateState = new State(state);
+		intermediateState.applyDerivative(k3, deltaT);
+
+		acc = computeAcceleration();
+		Derivative k4 = new Derivative(intermediateState.velocity, acc);
+
+		//Final result
+		derivative = (new Derivative(k1).add((new Derivative(k2).add(k3)).multiply(2)).add(k4)).divide(6);
+		state.applyDerivative(derivative, deltaT);
+	}
+
+	private Vector2D computeAcceleration() {
+		resetAcceleration();
+
+		acceleration = new Vector2D(0, -GRAVITYTITAN);
+
+		//if (condition for use mainThrusters) {
+			//useMainThruster();
+		//}
+
+		return acceleration;
+	}
+
+	private void resetAcceleration () {
+		acceleration = new Vector2D();
+	}
+
 }
