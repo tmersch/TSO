@@ -45,7 +45,6 @@ public class LandingModule {
 
 	/** Use the back thruster
 	 *
-	 * @return effect on modules velocity (so de-acceleration)
 	 */
 
 	public void useMainThruster() {
@@ -63,11 +62,11 @@ public class LandingModule {
      *
      * @param side 0 for rotation left, 1 for rotation right
      */
-	public void useSideThruster(int side) {
-	    if (side = 0) {
+	public void useSideThruster(final int side) {
+	    if (side == 0) {
 	        angle -= 1;
         }
-        else {
+        else if (side == 1){
             angle += 1;
         }
 	}
@@ -76,14 +75,25 @@ public class LandingModule {
     /** This method calls on all necessary methods to simulate the landing
      *
      */
-    public void updateModule(double timestep) {
+    public void updateModule(final double timestep) {
+    	double time = 0;
     	while (!hasLanded()) {
 			updateAngle(); // Need wind model to make this useful, as it just stays upright otherwise
 			updateAcceleration(); // Gravitational force and main thruster (+ air resistance in future?)
 			updateVelocity(timestep);
 			updatePosition(timestep);
+			resetAcceleration();
+			time += timestep;
 		}
+		System.out.println("Landing finished with speed " + velocity.getY() + " and time " + time);
     }
+
+	/** Sets acceleration back to 0
+	 *
+	 */
+	public void resetAcceleration() {
+    	this.acceleration = new Vector2D(0,0);
+	}
 
 	/** Updates angle at which the module is positioned
 	 *
@@ -108,11 +118,36 @@ public class LandingModule {
 	 */
 
 	private void updateAcceleration() {
-
+		boolean thrust = false;
+		Vector2D gravity = new Vector2D(0, GRAVITYTITAN);
+		acceleration.add(gravity);
 		// Condition needs to be edited for vector use
-		if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 50 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
+		int value = 11000;
+
+		if (position.getY() < value) {
+			this.mainForce = 2500;
+		}
+
+		if (((velocity.getY()/(GRAVITYTITAN + (mainForce/weight)))*velocity.getY()*.5) < position.getY() + 25 && ((velocity.getY()/(GRAVITYTITAN + (mainForce/weight)))*velocity.getY()*.5) < position.getY() + 25) {
+			thrust = true;
+		}
+
+
+		if (velocity.getY() > -5) {
+			thrust = false;
+		}
+
+		if (position.getY() < 50) {
+			thrust = true;
+		}
+		if (velocity.getY() > -TOLVELX) {
+			thrust = false;
+		}
+
+		if (thrust) {
 			useMainThruster();
 		}
+
 		// Add wind
 	}
 
@@ -142,8 +177,8 @@ public class LandingModule {
 	 * @return boolean value
 	 */
 
-	public boolean hasLanded() {
-		if (position.getY() =< 0) {
+	private boolean hasLanded() {
+		if (position.getY() <= 0) {
 			return true;
 		}
 		return false;
@@ -154,7 +189,7 @@ public class LandingModule {
 	 *
 	 * @param timestep timestep you calculate the new position and velocity over (from experiments, I'd suggest using 0.1)
 	 */
-	public void landingTitan(final double timestep) {
+	/*public void landingTitan(final double timestep) {
 		boolean thrust = false;
 		double landingTime = 0;
 		double y0 = position.getY();
@@ -179,7 +214,7 @@ public class LandingModule {
 			// Slow down for landing
             // Time it takes to reach velocity 0 = vmax/(acceleration titan + acceleration main thruster)
             // Distance traveled during deacceleration = t * vmax * .5 (assuming linear deacceleration)
-            if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 50 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
+            if ((v0/(GRAVITYTITAN + useMainThruster())*v0*.5) < y0 + 500 && (v0/(GRAVITYTITAN + useMainThruster())*v0*.5) > y0 - 50) {
                 thrust = true;
             }
             // Ensures it doesn't reach positive velocity (start going up again)
@@ -194,9 +229,9 @@ public class LandingModule {
 			position.setY(w1);
 			currentTime += timestep;
 			w0 = w1;*/
-			landingTime += timestep;
-		}
-	}
+			/*landingTime += timestep;
+		}*/
+}
 
 	public void updateRK (double deltaT) {
 		//k1
@@ -248,4 +283,4 @@ public class LandingModule {
 		acceleration = new Vector2D();
 	}
 
-}
+
