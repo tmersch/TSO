@@ -20,7 +20,7 @@ public class Vector2D {
 		this.y = a.y;
 	}
 
-	/** Constructs a vector representing a certain angle, of total length 1
+	/** Constructs a vector representing a certain angle (in degrees), of total length 1
 	*/
 	public Vector2D (double angle) {
 		this(Math.cos(Math.toRadians(angle)), Math.sin(Math.toRadians(angle)));
@@ -98,6 +98,18 @@ public class Vector2D {
 		}
 
 		return resultAngle;
+	}
+
+	/** Returns the value of the double x variable
+	*/
+	public double getX() {
+		return x;
+	}
+
+	/** Returns the value of the double y value
+	*/
+	public double getY() {
+		return y;
 	}
 
 	public String toString () {
