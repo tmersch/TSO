@@ -19,7 +19,7 @@ import javafx.util.Duration;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import java.util.Scanner;
-import javafx.scene.text.*;
+import javafx.scene.text.*; 		//needed ?
 import javafx.scene.transform.Rotate;
 import javafx.scene.chart.NumberAxis;
 import javafx.geometry.Side;
@@ -27,10 +27,7 @@ import javafx.geometry.Side;
 /** GUI representing the solar system using javafx
 */
 public class GUIV2 extends Application {
-	//Width and height of the window
-	private double canvasWidth = 0;		// ------------------------------------------------------------
-	private double canvasHeight = 0;	// ------------------------------------------------------------
-
+	// !!! Variables only used by the GUI of the solar simulation !!!
 	//Number of seconds between each update
 	private static double DELTA_T = 60 * 30;
 	//debug boolean (un)locking println statements
@@ -41,21 +38,18 @@ public class GUIV2 extends Application {
 	private static final double PLANET_RADIUS = 2;
 	//height of the part at the top
 	private static final int TOP_AREA_HEIGHT = 100;
-	//the gravitational constant
-	public static final double G = 6.67300E-11;
 
-	//Seconds conversion
-	private static final int SEC_IN_MINUTE = 60;
-  private static final int SEC_IN_HOUR = SEC_IN_MINUTE * 60;
-  private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
-  private static final int SEC_IN_YEAR = 31556926;
-	//and the long keeping track of the number of seconds elapsed from the start
-  private long elapsedSeconds = 0;
+	//GUI parts only used for the solar system simulation GUI
+	private Label timeLabel;
+	private long startTime = -1;				//variable used internally
+	private int numIterations;					//number of iterations in the current simulation
+	private boolean showNumIterations = false;
 
-	//Array containing the planets/moons
+	//Everything about the planets
+		//Array containing the planets/moons
 	protected static CelestialBody[] planets;
-	//Arrays containing all the information about the planets/moons
-	// Indexes: --------------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
+		//Arrays containing all the information about the planets/moons
+		// Indexes: ----------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
 	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede"};
 		//names of the planets
 	private static final double[] planetMasses = {	1.9885e30, 		3.302e23, 		4.8685e24, 		5.97219e24, 	6.4171e23, 		1.8981e27, 			5.6834e26, 			8.6813e25, 			1.02413e26, 		1.34553e23, 	7.349e22, 		1.482e23};
@@ -70,24 +64,53 @@ public class GUIV2 extends Application {
 	private static final int[] initialTime = {18, 3, 2019};
 		//the day for which the positions and velocities of the planets are taken
 
-	//The space probe object
-	private static SpaceProbe spaceProbe;
-	private static final double voyagerMass = 800;
-		//in kg
-	private static final double averageVelocitySpaceProbe = 48e3;
-		//in meters/secs
+	//All the variables concerning the spaceprobe
+	private static SpaceProbe spaceProbe;							//the spaceProbe object
+	private static final double voyagerMass = 800;					//in kg
+	private static final double averageVelocitySpaceProbe = 48e3;	//in meters/secs
 
-	//GUI parts
+	//the gravitational constant
+	public static final double G = 6.67300E-11;
+
+	// !!! Variables used only by the landing GUI !!!
+	private static final double LANDINGSCALE = 2.0e3;	//in meters/pixel
+	private final double LANDINGDELTA_T = 1;			//in seconds
+
+	//Variables concerning the size of the window and the position of the x- and y-axes concerning the landing
+	private final int LANDINGWINDOWWIDTH = 1920;
+    private final int LANDINGWINDOWHEIGHT = 1080;
+    private final int LANDINGXAXISHEIGHT = 700;
+    private final int LANDINGYAXISWIDTH = 750;
+	//Variables concerning the size of the rectangle displayed representing the landing module
+	protected final int RECT_WIDTH = 10;
+    protected final int RECT_HEIGHT = 20;
+
+	//Text variables to show the current state of the landing module
+	private Text altitudeText;
+    private Text verticalSpeedText;
+    private Text timeText;
+
+	//The landingModule
+	private LandingModuleFeedbackController landingModule;
+	private final int landingModuleWeight = 800;			//in kgs
+
+    // !!! Variables used by both GUI's !!!
+	//Seconds conversion
+	private static final int SEC_IN_MINUTE = 60;
+  	private static final int SEC_IN_HOUR = SEC_IN_MINUTE * 60;
+  	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
+  	private static final int SEC_IN_YEAR = 31556926;
+	//and the long keeping track of the number of seconds elapsed from the start
+  	private long elapsedSeconds = 0;
+
+	//GUI parts shared by the two GUI's
 	private Timeline timeline;
 	private CoordinatesTransformer coordinates = new CoordinatesTransformer();
 	private GraphicsContext gc;
-	private Label timeLabel;
-		//the startTime of the simulation according to System.nanoTime()
-	private long startTime = -1;
-		//number of iterations in the current simulation
-	private int numIterations;
-	private boolean showNumIterations = false;
 
+	//Width and height of the window
+	private double canvasWidth = 0;
+	private double canvasHeight = 0;
 
 	/** Main method, gets called when the program is executed
 	*/
@@ -306,44 +329,140 @@ public class GUIV2 extends Application {
 			}
 			//Landing on titan
 			else if (input.equals("2")) {
-				Group grid = new Group();
-        stage.setTitle("Landing");
-        Rectangle a = new Rectangle(10, 20);
-        a.translateXProperty().set(300);
-        a.translateYProperty().set(75);
+				//Set the coordinatesTransformer with the correct parameters for the landing GUI
+		        coordinates.setScale(LANDINGSCALE);
+		        coordinates.setModifiedX(LANDINGYAXISWIDTH);
+		        coordinates.setModifiedY(LANDINGXAXISHEIGHT);
 
-        Text t = new Text();
-        t.setFont(new Font(15));
-        t.translateXProperty().set(40);
-        t.translateYProperty().set(30);
+		        //Create a landing module with certain starting parameters
+		        Vector2D landModStartPos = new Vector2D(0, 1200000);
+		        Vector2D landModStartVeloc = new Vector2D(0, 0);
+		        landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc);
 
-        Text y = new Text();
-        y.setFont(new Font(15));
-        y.translateXProperty().set(40);
-        y.translateYProperty().set(60);
-
-        Text z = new Text();
-        z.setFont(new Font(15));
-        z.translateXProperty().set(40);
-        z.translateYProperty().set(90);
-
-        t.setText("Altitude : ");
-        y.setText("Vertical Speed : ");
-        z.setText("Elapsed time : ");
-
-        NumberAxis axis = new NumberAxis(0,1400,100);
-        axis.setSide(Side.RIGHT);
-        axis.setPrefHeight(550);
-
-        Line line = new Line(0, 550, 900, 550);
-        grid.getChildren().addAll(line, a, t, y, axis, z);
-        Scene scene = new Scene(grid, 900, 600);
-        //scene.setCamera(cam);
-        stage.setScene(scene);
-        stage.show();
+		        //And launch the landing GUI
+		        gc = createLandingGUI(stage);
+		        launchLandingGUI(1);
+		        stage.show();
+		        timeline.play();
 			}
 		}
 	}
+
+	/** Creates the different GUI elements necessary for the landing GUI, or at least initializes them
+      */
+    private GraphicsContext createLandingGUI (Stage stage) {
+        //Create the borderPane
+        BorderPane border = new BorderPane();
+
+        //Create the different labels showing information
+        altitudeText = new Text();
+        altitudeText.setFont(new Font(15));
+        altitudeText.translateXProperty().set(40);
+        altitudeText.translateYProperty().set(30);
+
+        verticalSpeedText = new Text();
+        verticalSpeedText.setFont(new Font(15));
+        verticalSpeedText.translateXProperty().set(40);
+        verticalSpeedText.translateYProperty().set(60);
+
+        timeText = new Text();
+        timeText.setFont(new Font(15));
+        timeText.translateXProperty().set(40);
+        timeText.translateYProperty().set(90);
+
+        //And set their initial texts
+        altitudeText.setText("Altitude : ");
+        verticalSpeedText.setText("Vertical Speed : ");
+        timeText.setText("Elapsed time : ");
+
+        //Draw the line marking the ground of Titan
+        Line line = new Line(0, LANDINGXAXISHEIGHT, LANDINGWINDOWWIDTH, LANDINGXAXISHEIGHT);
+
+        //Create the canvas
+        Canvas canvas = new Canvas();
+        //add the zooming capability
+        canvas.setOnScroll((event) -> {
+            if (event.getDeltaY() > 0) {
+                coordinates.setScale(coordinates.getScale() * 0.9);
+            } else {
+                coordinates.setScale(coordinates.getScale() * 1.1);
+            }
+        });
+
+        //and set it in the center of the borderpane
+        border.setCenter(canvas);
+        Scene scene = new Scene(border);
+        border.getChildren().addAll(line, altitudeText, verticalSpeedText, timeText);
+
+        //Set the title, scene of the stage and set the window to full screen
+        stage.setTitle("Landing");
+        stage.setScene(scene);
+        stage.setMaximized(true);
+
+        // Bind canvas size to stack pane size
+        canvas.widthProperty().bind(stage.widthProperty());
+        canvas.heightProperty().bind(stage.heightProperty());
+        return canvas.getGraphicsContext2D();
+    }
+
+	/** Makes the last preparations for launching the landing GUI
+      *
+      */
+    private void launchLandingGUI (double updateInterval) {
+        //Reset the seconds counter
+        elapsedSeconds = 0;
+
+        //Create the new timeline
+        timeline = new Timeline();
+        timeline.setCycleCount(Timeline.INDEFINITE);
+
+        //Create a keyFrame to update the landing frame
+        KeyFrame kf = new KeyFrame(
+          Duration.millis(updateInterval),
+          new EventHandler<ActionEvent> () {
+              public void handle (ActionEvent e) {
+                  updateLandingGUI(gc);
+              }
+          }
+        );
+
+        //And link it to the timeline
+        timeline.getKeyFrames().add(kf);
+    }
+
+	/** Draws the landing module at it's current position, then calls another method of the landing module class to update the position of the spaceProbe
+      *
+      */
+    private void updateLandingGUI(GraphicsContext gc) {
+        //Clear the window's previous contents, not sure if it's really needed
+        double canvasWidth = gc.getCanvas().getWidth();
+        double canvasHeight = gc.getCanvas().getHeight();
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        //Retrieve the landing module's position and modifiy it to pixel coordinates
+        Vector2D pos = new Vector2D(landingModule.getPosition().getX(), -landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
+        Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
+
+        //Draw the landing module at the correct position
+        gc.setFill(Color.BLACK);
+        gc.fillRect(otherPosition.x - RECT_WIDTH, otherPosition.y - RECT_HEIGHT, RECT_WIDTH, RECT_HEIGHT);
+
+        //Set the labels
+        altitudeText.setText("Altitude: " + landingModule.getPosition().getY());
+        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY());
+        timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
+
+        // update rectPos if the landing module has not yet landed
+        if (! landingModule.hasLanded()) {
+            landingModule.updateModuleOneIteration(LANDINGDELTA_T);
+        }
+        else { //else, the landing module has landed and we stop the simulation
+            timeline.stop();
+        }
+
+        //Keep track of the time elapsed since the start of the simulation
+        elapsedSeconds += LANDINGDELTA_T;
+    }
 
 	/** Initialize the Planet and the Moon objects with their default properties, contained in
 	*/
@@ -587,11 +706,11 @@ public class GUIV2 extends Application {
 	*/
 	private String getTimeAsString (long time) {
 		long years = time / SEC_IN_YEAR;
-    long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
-    long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-    long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-    long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+    	long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
+    	long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+    	long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+    	long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+    	return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 
 	/** Auxiliary method

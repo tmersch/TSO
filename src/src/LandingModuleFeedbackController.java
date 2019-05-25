@@ -35,6 +35,8 @@ public class LandingModuleFeedbackController {
 
 	private double angleChange = 1;
 
+	private int numMaxAngleIterations = 0;		//number of times when the landing module's x-position is out of the interval [-TOLPOSX, TOLPOSX] and the angle should have gone over MAXANGLE (or under -MAXANGLE)
+
     /** Constructs landing module
      *
      * @param weight weight of module
@@ -80,12 +82,11 @@ public class LandingModuleFeedbackController {
     public void updateModule(final double timestep) {
         time = 0;
 		numIterations = 0;
-		double thrusterForceUsed = MINMAINFORCE;
 
 		System.out.println("Starting landing from \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle);
 
         while (!hasLanded()) {
-	        updateModuleOneIteration(timestep, thrusterForceUsed);
+	        updateModuleOneIteration(timestep);
         }
 
 		time = numIterations * timestep;
@@ -93,10 +94,10 @@ public class LandingModuleFeedbackController {
 		System.out.println("\nLanding finished with \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle + "\nand time = \n  " + getTimeAsString(time));
 	}
 
-	public void updateModuleOneIteration(final double timestep, final double thrusterForceUsed) {
+	public void updateModuleOneIteration(final double timestep) {
 		//System.out.printf("Iteration #%d: \n", numIterations);
 		correctXPosition();
-		updateAcceleration(timestep, thrusterForceUsed);	// Gravitational force and main thruster (+ air resistance in future?)
+		updateAcceleration(timestep, MINMAINFORCE);	// Gravitational force and main thruster (+ air resistance in future?)
 		updateVelocity(timestep);
 		updatePosition(timestep);
 		resetAcceleration();
@@ -120,43 +121,61 @@ public class LandingModuleFeedbackController {
 		else if (position.getX() < -TOLPOSX) {
 			if (velocity.getX() < 0) {					//if we continue to go away from the correct x-position,
 				if (angle < MAXANGLE) {					//try to make the angle bigger to go back to the correct x-position
-					if (angle+angleChange < MAXANGLE) {
+					if (angle+angleChange <= MAXANGLE) {
 						angle += angleChange;
 					}
 					else {
 						angle = MAXANGLE;
+						numMaxAngleIterations ++;
 					}
+				}
+				else {
+					numMaxAngleIterations ++;
 				}
 			}
 			else {										//otherwise, if we are going back to the correct x-position,
-				if (angle > MINANGLEXCORRECTION) {		//try to make the angle smaller
-					if (angle-angleChange > MINANGLEXCORRECTION) {
-						angle -= MINANGLEXCORRECTION;
+				if (angle > MINANGLEXCORRECTION) {		//try to make the angle smaller if numMaxAngleIterations == 0
+					if (numMaxAngleIterations == 0) {
+						if (angle-angleChange > MINANGLEXCORRECTION) {
+							angle -= MINANGLEXCORRECTION;
+						}
+						else {
+							angle = MINANGLEXCORRECTION;
+						}
 					}
-					else {
-						angle = MINANGLEXCORRECTION;
-					}
+				}
+				else {
+					numMaxAngleIterations --;
 				}
 			}
 		}
 		else { //then position.getX() > TOLPOSX
 			if (velocity.getY() > 0) {					//If we are going away from the correct x-position,
 				if (angle > -MAXANGLE) {				//try to make the angle more negative to correct the x-position
-					if (angle-angleChange > -MAXANGLE) {
+					if (angle-angleChange >= -MAXANGLE) {
 						angle -= angleChange;
 					}
 					else {
-						angle = MAXANGLE;
+						angle = -MAXANGLE;
+						numMaxAngleIterations ++;
 					}
+				}
+				else {
+					numMaxAngleIterations ++;
 				}
 			}
 			else {										//Otherwise, if we are going back to the correct x-position,
-				if (angle < -MINANGLEXCORRECTION) {		//try to make the angle less negative
-					if (angle+angleChange < -MINANGLEXCORRECTION) {
-						angle += angleChange;
+				if (angle < -MINANGLEXCORRECTION) {		//try to make the angle less negative if numMaxAngleIterations == 0
+					if (numMaxAngleIterations == 0) {
+						if (angle+angleChange < -MINANGLEXCORRECTION) {
+							angle += angleChange;
+						}
+						else {
+							angle = -MINANGLEXCORRECTION;
+						}
 					}
 					else {
-						angle = -MINANGLEXCORRECTION;
+						numMaxAngleIterations --;
 					}
 				}
 			}
@@ -169,13 +188,18 @@ public class LandingModuleFeedbackController {
      */
 	 /*
     public void useSideThruster(final int side) {
-		Vector2D sideThrust = new Vector2D();
-
 		if (side == -1) {
-			sideThrust.add(new Vector2D(Math.sin(Math.toRadians(90 + angle)), Math.cos(Math.toRadians(90 + angle)))).multiply(sideForce).divide(weight);
+			if (angle > -MAXANGLE) {					//check whether we can still decrease the angle
+				if (angle-angleChange > -MAXANGLE) {	//if it is, decrease it by angleChange if possible
+					angle -= angleChange;
+				}
+				else {									//if that would make it smaller than -MAXANGLE, just set it to -MAXANGLE
+					angle = -MAXANGLE;
+				}
+			}
 		}
 		else if (side == 1){
-			sideThrust.add(new Vector2D(Math.sin(Math.toRadians(angle - 90)), Math.cos(Math.toRadians(angle - 90)))).multiply(sideForce).divide(weight);
+
 		}
     }
 	*/
@@ -266,7 +290,7 @@ public class LandingModuleFeedbackController {
      * Will need to do something with tolerance values to determine this (Red booklet)
      * @return boolean value
      */
-    private boolean hasLanded() {
+    public boolean hasLanded() {
         if (position.getY() <= 0) {
             return true;
         }
@@ -280,6 +304,14 @@ public class LandingModuleFeedbackController {
     public void resetAcceleration() {
     	this.acceleration = new Vector2D(0, 0);
     }
+
+	public Vector2D getPosition () {
+		return new Vector2D(position);
+	}
+
+	public Vector2D getVelocity() {
+		return new Vector2D(velocity);
+	}
 
 	/** Mainly for debugging purposes, could be deleted in the end product
 
