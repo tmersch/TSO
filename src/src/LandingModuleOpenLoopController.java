@@ -42,7 +42,6 @@ public class LandingModuleOpenLoopController {
      *
      */
     public void updateModule(final long timestep) {
-        time = 0;
         numIterations = 0;
         forceUsed = 1351.9999;
 
@@ -53,9 +52,10 @@ public class LandingModuleOpenLoopController {
             updateVelocity(timestep);
             updatePosition(timestep);
             resetAcceleration();
-            time += timestep;
             numIterations ++;
         }
+
+        time = numIterations * timestep;
 
         System.out.println("Landing finished with \nposition = " + position + "\nspeed " + velocity + "\nand time = \n" + getTimeAsString(time));
     }
