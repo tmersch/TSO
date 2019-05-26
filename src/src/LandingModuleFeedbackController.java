@@ -27,10 +27,10 @@ public class LandingModuleFeedbackController implements LandingModule {
     private final double MAXANGLE = 45;	//maximum angle the spaceship should have with respect to the y-axis (in degrees)
 	private final double MINMAINFORCE = mainForce * Math.cos(Math.toRadians(MAXANGLE));
 
-	private final double MINANGLEXCORRECTION = 3;	//minimum angle to keep outside of the [-TOLPOSX, TOLPOSX] x-position
+	private final double MINANGLEXCORRECTION = 2;	//minimum angle to keep outside of the [-TOLPOSX, TOLPOSX] x-position
 
     private final boolean considerWind;
-	private final double MAXWINDFORCE = 120;
+	private final double MAXWINDFORCE = 2;
 
 	private double angleChange = 1;            //the amount of degrees which we maximally change at each iteration
 
@@ -124,7 +124,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 	  */
 	public void correctXPosition() {
 		if (position.getX() >= -TOLPOSX && position.getX() <= TOLPOSX) {
-			if (angle < -TOLANGLE) {
+            if (angle < -TOLANGLE) {
 				angle += angleChange;
 			}
 			else if (angle > TOLANGLE) {
@@ -150,7 +150,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 					numMaxAngleIterations ++;
 				}
 			}
-			else {										//otherwise, if we are going back to the correct x-position,
+			else if (velocity.getX() > 0) {										//otherwise, if we are going back to the correct x-position,
 				if (angle > MINANGLEXCORRECTION) {		//try to make the angle smaller if numMaxAngleIterations == 0
 					if (numMaxAngleIterations == 0) {
 						if (angle-angleChange > MINANGLEXCORRECTION) {
@@ -164,13 +164,31 @@ public class LandingModuleFeedbackController implements LandingModule {
                         numMaxAngleIterations --;
                     }
 				}
+                else {
+                    if (angle+angleChange <= MINANGLEXCORRECTION) {
+                        angle += angleChange;
+                    }
+                    else {
+                        angle = MINANGLEXCORRECTION;
+                    }
+                }
 			}
+            else {                                          //x-velocity is 0, but x-position is < -TOLPOSX
+                if (angle < MAXANGLE) {                     //try to make the angle bigger, but don't make it bigger than MAXANGLE (angle is >= 0)
+                    if (angle+angleChange < MAXANGLE) {
+                        angle += angleChange;
+                    }
+                    else {
+                        angle = MAXANGLE;
+                    }
+                }
+            }
 		}
 		else { //then position.getX() > TOLPOSX
             if (angle > 0) {
                 angle -= angleChange;
             }
-			else if (velocity.getY() > 0) {					//If we are going away from the correct x-position,
+			else if (velocity.getX() > 0) {					//If we are going away from the correct x-position,
 				if (angle > -MAXANGLE) {				//try to make the angle more negative to correct the x-position
 					if (angle-angleChange >= -MAXANGLE) {
 						angle -= angleChange;
@@ -184,8 +202,8 @@ public class LandingModuleFeedbackController implements LandingModule {
 					numMaxAngleIterations ++;
 				}
 			}
-			else {										//Otherwise, if we are going back to the correct x-position,
-				if (angle < -MINANGLEXCORRECTION) {		//try to make the angle less negative if numMaxAngleIterations == 0
+			else if (velocity.getX() < 0) {			       //Otherwise, if we are going back to the correct x-position,
+				if (angle < -MINANGLEXCORRECTION) {		   //try to make the angle less negative if numMaxAngleIterations == 0
 					if (numMaxAngleIterations == 0) {
 						if (angle+angleChange < -MINANGLEXCORRECTION) {
 							angle += angleChange;
@@ -198,7 +216,25 @@ public class LandingModuleFeedbackController implements LandingModule {
 						numMaxAngleIterations --;
 					}
 				}
+                else {
+                    if (angle-angleChange >= - MINANGLEXCORRECTION) {
+                        angle -= angleChange;
+                    }
+                    else {
+                        angle = -MINANGLEXCORRECTION;
+                    }
+                }
 			}
+            else {          //x-velocity is 0, but the x-position is bigger than TOLPOSX
+                if (angle > -MAXANGLE) {                    //try to make the angle smaller, but don't make it smaller than -MAXANGLE (angle is <= 0)
+                    if (angle-angleChange > -MAXANGLE) {
+                        angle -= angleChange;
+                    }
+                    else {
+                        angle = -MAXANGLE;
+                    }
+                }
+            }
 		}
 	}
 
