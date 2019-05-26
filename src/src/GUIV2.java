@@ -436,7 +436,7 @@ public class GUIV2 extends Application {
 					}
 				}
 
-				boolean showGUI = false;
+				boolean showGUI = true;
 				if (showGUI) {
 					//Set the coordinatesTransformer with the correct parameters for the landing GUI
 			        coordinates.setScale(LANDINGSCALE);
@@ -568,8 +568,8 @@ public class GUIV2 extends Application {
         Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
 
 		//Set the rectangle representing the landingModule to the correct x- and y-position
-		landingModule.getRectangle().setX(otherPosition.getX() - RECT_WIDTH/2);
-		landingModule.getRectangle().setY(otherPosition.getY() - RECT_HEIGHT/2);
+		landingModule.getRectangle().setX(otherPosition.getX() - RECT_WIDTH);
+		landingModule.getRectangle().setY(otherPosition.getY() - RECT_HEIGHT);
 
 		//Retrieve the rotate object, and set it the new angle and new position
 		Rotate rectRotation = (Rotate)landingModule.getRectangle().getTransforms().get(0);
