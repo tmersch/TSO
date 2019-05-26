@@ -427,16 +427,35 @@ public class GUIV2 extends Application {
 						choice = "";
 						System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
 						choice = s.next().toLowerCase();
+						double windStrength = 2;
+						double thrusterForce = 2500;
 						//If the user wants to have wind, give it to him !!!
 						if (choice.equals("yes")) {
 							addWind = true;
+
+							String windChoice = "";
+							System.out.println("Do you want to set the maximum acceleration of the wind ?");
+							windChoice = s.next().toLowerCase();
+							if (windChoice.equals("yes")) {
+								System.out.println("What should the maximum acceleration of the wind be ?");
+								windStrength = s.nextDouble();
+							}
+
+							System.out.println("Do you want to set the force of the main thruster ?");
+							windChoice = s.next().toLowerCase();
+							if (windChoice.equals("yes")) {
+								System.out.println("What should the force of the main thruster be ?");
+								thrusterForce = s.nextDouble();
+							}
 						}
 
 						landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
+						((LandingModuleFeedbackController)landingModule).setMaxWindStrength(windStrength);
+						((LandingModuleFeedbackController)landingModule).setThrusterForce(thrusterForce);
 					}
 				}
 
-				boolean showGUI = false;
+				boolean showGUI = true;
 				if (showGUI) {
 					//Set the coordinatesTransformer with the correct parameters for the landing GUI
 			        coordinates.setScale(LANDINGSCALE);
@@ -494,10 +513,10 @@ public class GUIV2 extends Application {
 		//Apply the rotation to the rectangle
 		landingModule.getRectangle().getTransforms().add(rectRotation);
 
-        //And set their initial texts
-        altitudeText.setText("Altitude : ");
-        verticalSpeedText.setText("Vertical Speed : ");
-        timeText.setText("Elapsed time : ");
+		//And set the label's initial texts
+        altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
+        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
+        timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
 
         //Draw the line marking the ground of Titan
         Line line = new Line(0, LANDINGXAXISHEIGHT, LANDINGWINDOWWIDTH, LANDINGXAXISHEIGHT);
@@ -821,11 +840,11 @@ public class GUIV2 extends Application {
 	*/
 	private String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
-    long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
-    long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-    long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-    long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+		long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
+	    long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+	    long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+	    long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+	    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 
 	/** Mainly for debugging purposes, could be deleted in the end product
