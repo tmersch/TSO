@@ -436,7 +436,7 @@ public class GUIV2 extends Application {
 					}
 				}
 
-				boolean showGUI = true;
+				boolean showGUI = false;
 				if (showGUI) {
 					//Set the coordinatesTransformer with the correct parameters for the landing GUI
 			        coordinates.setScale(LANDINGSCALE);

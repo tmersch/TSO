@@ -98,7 +98,7 @@ public class LandingModuleFeedbackController implements LandingModule {
         time = 0;
 		numIterations = 0;
 
-		System.out.println("Starting landing from \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle);
+		System.out.println("Starting landing from \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle + "\nWind taken into account: " + considerWind);
 
         while (!hasLanded()) {
 	        updateModuleOneIteration(timestep);
