@@ -1,3 +1,5 @@
+import javafx.scene.shape.Rectangle;
+
 public interface LandingModule {
     //Landing simulation
         //Simulates the whole landing, from start until landing
@@ -16,4 +18,9 @@ public interface LandingModule {
     public Vector2D getVelocity ();
         //Getter for the angle of the landing module
     public double getAngle();
+        //Getter for the Rectangle object
+    public Rectangle getRectangle();
+
+    //Setter
+    public void setRectangle(Rectangle rect);
 }

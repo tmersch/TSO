@@ -1,9 +1,13 @@
+import javafx.scene.shape.Rectangle;
+
 public class LandingModuleFeedbackController implements LandingModule {
     private double weight; // weight of landing module (kg)
     private Vector2D acceleration = new Vector2D(0, 0); // Acceleration on module (m/s^2)
     private Vector2D velocity; // Velocity of module (m/s)
     private Vector2D position; // Position of module (m)
     private double angle; // Landing module's angle of rotation
+
+    private Rectangle rectangle;
 
 	private double time;
 	private int numIterations;
@@ -395,4 +399,19 @@ public class LandingModuleFeedbackController implements LandingModule {
     	double seconds = (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
     	return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02.4f", years, days, hours, minutes, seconds);
 	}
+
+    /** Setter for the rectangle
+      *
+      * @param rect the new rectangle to set the "rectangle" variable to
+      */
+    public void setRectangle (Rectangle rect) {
+        rectangle = rect;
+    }
+
+    /** Getter for the rectangle variable
+      * @return the rectangle
+      */
+    public Rectangle getRectangle () {
+        return rectangle;
+    }
 }

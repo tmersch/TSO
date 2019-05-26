@@ -436,23 +436,29 @@ public class GUIV2 extends Application {
 					}
 				}
 
-				//Set the coordinatesTransformer with the correct parameters for the landing GUI
-		        coordinates.setScale(LANDINGSCALE);
-		        coordinates.setModifiedX(LANDINGYAXISWIDTH);
-		        coordinates.setModifiedY(LANDINGXAXISHEIGHT);
+				boolean showGUI = false;
+				if (showGUI) {
+					//Set the coordinatesTransformer with the correct parameters for the landing GUI
+			        coordinates.setScale(LANDINGSCALE);
+			        coordinates.setModifiedX(LANDINGYAXISWIDTH);
+			        coordinates.setModifiedY(LANDINGXAXISHEIGHT);
 
-		        //And launch the landing GUI
-		        gc = createLandingGUI(stage);
-		        launchLandingGUI(1);
-		        stage.show();
-		        timeline.play();
+			        //And launch the landing GUI
+			        gc = createLandingGUI(stage, landingModule);
+			        launchLandingGUI(1);
+			        stage.show();
+			        timeline.play();
+				}
+				else {
+					landingModule.updateModule(LANDINGDELTA_T);
+				}
 			}
 		}
 	}
 
 	/** Creates the different GUI elements necessary for the landing GUI, or at least initializes them
       */
-    private GraphicsContext createLandingGUI (Stage stage) {
+    private GraphicsContext createLandingGUI (Stage stage, LandingModule landingMod) {
         //Create the borderPane
         BorderPane border = new BorderPane();
 
@@ -471,6 +477,22 @@ public class GUIV2 extends Application {
         timeText.setFont(new Font(15));
         timeText.translateXProperty().set(40);
         timeText.translateYProperty().set(90);
+
+		//Create the rectangle representing the landing module at it's starting position
+		Vector2D pos = new Vector2D(landingMod.getPosition().getX(), -landingMod.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
+		Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
+		Rectangle rect = new Rectangle(otherPosition.getX() - RECT_WIDTH, otherPosition.getY() - RECT_HEIGHT, RECT_WIDTH, RECT_HEIGHT);
+		rect.setFill(Color.BLACK);
+		landingMod.setRectangle(rect);
+
+		//Create a rotate object, and set it the correct angle and position of center of rotation
+		Rotate rectRotation = new Rotate();
+		rectRotation.setAngle(landingModule.getAngle());
+		rectRotation.setPivotX(otherPosition.getX());
+		rectRotation.setPivotY(otherPosition.getY());
+
+		//Apply the rotation to the rectangle
+		landingModule.getRectangle().getTransforms().add(rectRotation);
 
         //And set their initial texts
         altitudeText.setText("Altitude : ");
@@ -494,7 +516,7 @@ public class GUIV2 extends Application {
         //and set it in the center of the borderpane
         border.setCenter(canvas);
         Scene scene = new Scene(border);
-        border.getChildren().addAll(line, altitudeText, verticalSpeedText, timeText);
+        border.getChildren().addAll(line, altitudeText, verticalSpeedText, timeText, rect);
 
         //Set the title, scene of the stage and set the window to full screen
         stage.setTitle("Landing");
@@ -545,9 +567,15 @@ public class GUIV2 extends Application {
         Vector2D pos = new Vector2D(landingModule.getPosition().getX(), -landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
         Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
 
-        //Draw the landing module at the correct position
-        gc.setFill(Color.BLACK);
-        gc.fillRect(otherPosition.x - RECT_WIDTH, otherPosition.y - RECT_HEIGHT, RECT_WIDTH, RECT_HEIGHT);
+		//Set the rectangle representing the landingModule to the correct x- and y-position
+		landingModule.getRectangle().setX(otherPosition.getX() - RECT_WIDTH/2);
+		landingModule.getRectangle().setY(otherPosition.getY() - RECT_HEIGHT/2);
+
+		//Retrieve the rotate object, and set it the new angle and new position
+		Rotate rectRotation = (Rotate)landingModule.getRectangle().getTransforms().get(0);
+		rectRotation.setAngle(landingModule.getAngle());
+		rectRotation.setPivotX(otherPosition.getX());
+		rectRotation.setPivotY(otherPosition.getY());
 
         //Set the labels
         altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
