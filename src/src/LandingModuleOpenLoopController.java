@@ -1,4 +1,4 @@
-public class LandingModuleOpenLoopController {
+public class LandingModuleOpenLoopController implements LandingModule {
     private double weight; // weight of landing module (kg)
     private Vector2D acceleration = new Vector2D(0, 0); // Acceleration on module (m/s^2)
     private Vector2D velocity; // Velocity of module (m/s)
@@ -13,6 +13,11 @@ public class LandingModuleOpenLoopController {
   	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
   	private static final int SEC_IN_YEAR = 31556926;
 
+    //the time-recording variable
+    private double time;
+    //number of iterations done so far from the starting position
+    private int numIterations;
+
     // Tolerance values
     private final double TOLPOSX = 0.1;
     private final double TOLANGLE = 0.02;
@@ -22,37 +27,50 @@ public class LandingModuleOpenLoopController {
 
     private final double GRAVITYTITAN = -1.352; // gravity acceleration on titan
 
-    private long time;
-    private int numIterations;
+    private final double landingDistance;
+
     private double forceUsed;
 
-    /** Constructs landing module
+    /** Fully parametric constructor for the landing module open-loop controller
      *
      * @param weight weight of module
      * @param position position of module
      * @param velocity velocity of module
+     * @param angle the angle of the module with respect to the y-axis
      */
-    public LandingModuleOpenLoopController(double weight, Vector2D position, Vector2D velocity) {
+    public LandingModuleOpenLoopController(double weight, Vector2D position, Vector2D velocity, double angle) {
         this.weight = weight;
         this.position = new Vector2D(position);
         this.velocity = new Vector2D(velocity);
+        this.angle = angle;
+
+        landingDistance = position.getY();
+        forceUsed = 1.3519999916666666 * weight;//1352 - 10/landingDistance;
     }
 
-    /** This method calls on all necessary methods to simulate the landing
+    /** Constructs a landing module with one less parameter than the full constructor
+      * By default, we consider the angle to be 0
+      *
+      * @param weight weight of module
+      * @param position position of module
+      * @param velocity velocity of module
+      */
+    public LandingModuleOpenLoopController (double weight, Vector2D position, Vector2D velocity) {
+        this(weight, position, velocity, 0);
+    }
+
+    /** This method calls on all necessary methods to simulate the landing from start until the actual landing
      *
      */
-    public void updateModule(final long timestep) {
+    public void updateModule(final double timestep) {
+        time = 0;
         numIterations = 0;
-        forceUsed = 1351.9999;
 
+        //System.out.println("Force used = " + forceUsed);
 		System.out.println("Starting landing from \nposition = " + position + "\nvelocity = " + velocity + "\n");
 
         while (!hasLanded()) {
-            updateAcceleration(forceUsed); // Gravitational force and main thruster (+ air resistance in future?)
-            updateVelocity(timestep);
-            updatePosition(timestep);
-            resetAcceleration();
-            numIterations ++;
+            updateModuleOneIteration(timestep);
         }
 
         time = numIterations * timestep;
@@ -60,16 +78,16 @@ public class LandingModuleOpenLoopController {
         System.out.println("Landing finished with \nposition = " + position + "\nspeed " + velocity + "\nand time = \n" + getTimeAsString(time));
     }
 
-	/** Determines whether module has landed.
-     * Will need to do something with tolerance values to determine this (Red booklet)
-     * @return boolean value
-     */
-    private boolean hasLanded() {
-        if (position.getY() <= 0.1) {
-            return true;
-        }
-
-        return false;
+    /** Updates the landing module's acceleration, velocity and position for one iteration
+      *
+      */
+    public void updateModuleOneIteration (final double timestep) {
+        //System.out.printf("Iteration #%d: \nPosition = %s, \nVelocity = %s\n\n", numIterations, position, velocity);
+        updateAcceleration(forceUsed); // Gravitational force and main thruster (+ air resistance in future?)
+        updateVelocity(timestep);
+        updatePosition(timestep);
+        resetAcceleration();
+        numIterations ++;
     }
 
     /** Updates the acceleration of module
@@ -120,11 +138,44 @@ public class LandingModuleOpenLoopController {
         this.position.add(addAccel);
     }
 
+    /** Determines whether module has landed.
+     * Will need to do something with tolerance values to determine this (Red booklet)
+     * @return boolean value
+     */
+    public boolean hasLanded() {
+        if (position.getY() <= 0.1) {
+            return true;
+        }
+
+        return false;
+    }
+
     /** Sets acceleration back to 0
      *
      */
     public void resetAcceleration() {
     	this.acceleration = new Vector2D(0,0);
+    }
+
+    /** Getter for the position variable
+      * @return a copy of the position variable
+      */
+    public Vector2D getPosition() {
+        return new Vector2D(position);
+    }
+
+    /** Getter for the velocity variable
+      * @return a copy of the velocity variable
+      */
+    public Vector2D getVelocity() {
+        return new Vector2D(velocity);
+    }
+
+    /** Getter for the angle variable
+      * @return the value angle variable
+      */
+    public double getAngle() {
+        return angle;
     }
 
     /** Mainly for debugging purposes, could be deleted in the end product
@@ -133,12 +184,12 @@ public class LandingModuleOpenLoopController {
 
 		@return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
 	*/
-	private String getTimeAsString (long time) {
-		long years = time / SEC_IN_YEAR;
-    	long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
-    	long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-    	long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-    	long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-    	return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+	private String getTimeAsString (double time) {
+		long years = (long)(time / SEC_IN_YEAR);
+    	long days = (long)((time % SEC_IN_YEAR) / SEC_IN_DAY);
+    	long hours = (long)(((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR);
+    	long minutes = (long)((((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE);
+    	double seconds = (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+    	return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02.4f", years, days, hours, minutes, seconds);
 	}
 }
