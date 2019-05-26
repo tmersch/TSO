@@ -550,8 +550,8 @@ public class GUIV2 extends Application {
         gc.fillRect(otherPosition.x - RECT_WIDTH, otherPosition.y - RECT_HEIGHT, RECT_WIDTH, RECT_HEIGHT);
 
         //Set the labels
-        altitudeText.setText("Altitude: " + landingModule.getPosition().getY());
-        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY());
+        altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
+        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
         timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
 
         // update rectPos if the landing module has not yet landed
