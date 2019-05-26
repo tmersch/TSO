@@ -74,7 +74,7 @@ public class GUIV2 extends Application {
 
 	// !!! Variables used only by the landing GUI !!!
 	private static final double LANDINGSCALE = 2.0e3;	//in meters/pixel
-	private final double LANDINGDELTA_T = 1;			//in seconds
+	private static double LANDINGDELTA_T = 1;			//in seconds
 
 	//Variables concerning the size of the window and the position of the x- and y-axes concerning the landing
 	private final int LANDINGWINDOWWIDTH = 1920;
@@ -91,7 +91,7 @@ public class GUIV2 extends Application {
     private Text timeText;
 
 	//The landingModule
-	private LandingModuleFeedbackController landingModule;
+	private LandingModule landingModule;
 	private final int landingModuleWeight = 800;			//in kgs
 
     // !!! Variables used by both GUI's !!!
@@ -329,15 +329,117 @@ public class GUIV2 extends Application {
 			}
 			//Landing on titan
 			else if (input.equals("2")) {
+				//Initialize the landModChoice variable to an empty string
+				String landModChoice = "";
+				//And initialize the starting position, starting velocity and starting angle to default values
+				Vector2D landModStartPos = new Vector2D(0, 1200000);
+				Vector2D landModStartVeloc = new Vector2D(0, 0);
+				double landModStartAngle = 0;
+
+				//Ask the user which kind of controller he would like to have
+				while ((!landModChoice.equals("1")) && (!landModChoice.equals("2"))) {
+					System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller)?");
+					landModChoice = s.next();
+
+					//open-loop controller
+					if (landModChoice.equals("1")) {
+						//For the open-loop controller, we make the timestep bigger as it takes a lot of time to land
+						LANDINGDELTA_T = 100;
+
+						//Initialize choice
+						String choice = "";
+
+						//Ask the user if he wants to specify a certain starting position for the landing module
+						System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
+						choice = s.next();
+						//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the x-position and y-position separated by a space");
+							double startX = s.nextDouble();
+							double startY = s.nextDouble();
+							landModStartPos = new Vector2D(startX, startY);
+						}
+
+						//Ask the user if he wants to specify a certain starting velocity for the landing module
+						choice = "";
+						System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
+						choice = s.next().toLowerCase();
+						//If the user wants to specify a starting velocity, retrieve the input velocity and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the x-velocity and y-velocity separated by a space");
+							double startXVeloc = s.nextDouble();
+							double startYVeloc = s.nextDouble();
+							landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
+						}
+
+						//Ask the user if he wants to specify a certain starting angle
+						choice = "";
+						System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
+						choice = s.next().toLowerCase();
+						//If the user wants to specify a starting angle, retrieve the input angle and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the angle");
+							landModStartAngle = s.nextDouble();
+						}
+
+						landingModule = new LandingModuleOpenLoopController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle);
+					}
+					//Feedback controller
+					else if (landModChoice.equals("2")) {
+						//Initialize choice
+						String choice = "";
+
+						//Ask the user if he wants to specify a certain starting position for the landing module
+						System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
+						choice = s.next();
+						//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the x-position and y-position separated by a space");
+							double startX = s.nextDouble();
+							double startY = s.nextDouble();
+							landModStartPos = new Vector2D(startX, startY);
+						}
+
+						//Ask the user if he wants to specify a certain starting velocity for the landing module
+						choice = "";
+						System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
+						choice = s.next().toLowerCase();
+						//If the user wants to specify a starting velocity, retrieve the input velocity and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the x-velocity and y-velocity separated by a space");
+							double startXVeloc = s.nextDouble();
+							double startYVeloc = s.nextDouble();
+							landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
+						}
+
+						//Ask the user if he wants to specify a certain starting angle
+						choice = "";
+						System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
+						choice = s.next().toLowerCase();
+						//If the user wants to specify a starting angle, retrieve the input angle and save it
+						if (choice.equals("yes")) {
+							System.out.println("Please enter the angle");
+							landModStartAngle = s.nextDouble();
+						}
+
+						//Ask the user if he wants to add wind to the simulation or not
+						boolean addWind = false;
+						choice = "";
+						System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
+						choice = s.next().toLowerCase();
+						//If the user wants to have wind, give it to him !!!
+						if (choice.equals("yes")) {
+							addWind = true;
+						}
+
+						landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
+					}
+				}
+
 				//Set the coordinatesTransformer with the correct parameters for the landing GUI
 		        coordinates.setScale(LANDINGSCALE);
 		        coordinates.setModifiedX(LANDINGYAXISWIDTH);
 		        coordinates.setModifiedY(LANDINGXAXISHEIGHT);
-
-		        //Create a landing module with certain starting parameters
-		        Vector2D landModStartPos = new Vector2D(0, 1200000);
-		        Vector2D landModStartVeloc = new Vector2D(0, 0);
-		        landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc);
 
 		        //And launch the landing GUI
 		        gc = createLandingGUI(stage);
