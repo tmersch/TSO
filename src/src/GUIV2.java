@@ -154,23 +154,25 @@ public class GUIV2 extends Application {
 					if (input.equals("1")) {
 						System.out.println("Which timestep do you want to use (in secs)?");
 						DELTA_T = s.nextDouble();
-						System.out.println("After how much time (in secs) do you want to end the simulation ?");
-						double endTime = s.nextLong();
+						//System.out.println("After how much time (in secs) do you want to end the simulation ?");
+						//double endTime = s.nextLong();
 						boolean spaceProbeIncluded = false;
-						int numIterations = (int)Math.ceil(endTime/DELTA_T);
+						//int numIterations = (int)Math.ceil(endTime/DELTA_T);
 
 						//GUI part
 						gc = createGUI(stage);
-						launchGUI(1, spaceProbeIncluded, numIterations);
+						launchGUI(1, spaceProbeIncluded/*, numIterations*/);
 						timeline.play();
 						stage.show();
 
+						/*
 						while (!timeline.getStatus().equals(Animation.Status.STOPPED)) {
 						}
 
 						for (int i = 0; i < planets.length; i ++) {
 							System.out.println("Planet " + planets[i].getName() + ": \nPosition: " + planets[i].getPosition());
 						}
+						*/
 					}
 					//Launch of space probe
 					else if (input.equals("2")) {
