@@ -328,6 +328,9 @@ public class LandingModuleFeedbackController implements LandingModule {
 
 		//System.out.println("Activated main thruster");
 		Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(weight);
+
+        //Improvement possible ??? Should actually be Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), 0).multiply(mainForce).divide(weight).add(new Vector2D(0, thrusterForceY));
+
 	    this.acceleration.add(thrust);
     }
 

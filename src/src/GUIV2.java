@@ -346,7 +346,7 @@ public class GUIV2 extends Application {
 					//open-loop controller
 					if (landModChoice.equals("1")) {
 						//For the open-loop controller, we make the timestep bigger as it takes a lot of time to land
-						LANDINGDELTA_T = 100;
+						//LANDINGDELTA_T = 100;
 
 						//Initialize choice
 						String choice = "";
