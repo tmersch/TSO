@@ -65,9 +65,10 @@ public class GUIV2 extends Application {
 		//the day for which the positions and velocities of the planets are taken
 
 	//All the variables concerning the spaceprobe
-	private static SpaceProbe spaceProbe;							//the spaceProbe object
-	private static final double voyagerMass = 800;					//in kg
-	private static final double averageVelocitySpaceProbe = 48e3;	//in meters/secs
+	private static SpaceProbe spaceProbe;											//the spaceProbe object
+	private static final double voyagerMass = 800;									//in kg
+	private static final double averageVelocitySpaceProbe = 48e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbeReturnTravel = 30e3;		//in meters/secs
 
 	//the gravitational constant
 	public static final double G = 6.67300E-11;
@@ -129,208 +130,144 @@ public class GUIV2 extends Application {
 		coordinates.setModifiedX(700);
 		coordinates.setModifiedY(350);
 
+		//Initialize variables
 		Scanner s = new Scanner(System.in);
 		String input = "";
+		boolean choiceMade = false;
 
-		while ((!input.equals("1")) && (!input.equals("2"))) {
-			System.out.println("Do you want to see the solar system simulation (enter 1) or see the landing (enter 2) ?");
+		//As long as the User does not make a valid choice, we repeat asking him what he wants to do
+		do {
+			System.out.println("Do you want to see the solar system simulation, travel to Titan or back (enter 1) or see the landing (enter 2) ?");
+			//Set input to the user's input
 			input = s.next();
 
-			//Simulation of the solar system
-			if (input.equals("1")) {
-				//Initialize the planets
-				createSolarSystem();
+			switch (input) {
+				case "1":				//Simulation of the solar system
+					//Initialize the planets
+					createSolarSystem();
 
-				//CoordinateTransformer
-				coordinates.setScale(SCALE);
-				coordinates.setModifiedX(700);
-				coordinates.setModifiedY(350);
+					//Initialize the CoordinateTransformer to have the coordinate system's center be somewhere in the center of the screen
+					coordinates.setScale(SCALE);
+					coordinates.setModifiedX(700);
+					coordinates.setModifiedY(350);
 
-				input = "";
-				while ((! input.equals("1")) && (! input.equals("2")) && (! input.equals("3"))) {
-					System.out.println("Do you want to see the GUI or shoot the space probe to Titan ? (enter 1 for the GUI, 2 for the space probe launch, 3 for the space probe test)");
-					input = s.next();
+					//Initialize a new string and a new boolean for the user input
+					String choice = "";
+					boolean validInput = false;
+					do {
+						System.out.println("Do you want to see the GUI of the solar simulation (enter 1), shoot the space probe to Titan (enter 2), shoot the spaceProbe from Titan back to Earth (enter 3) or test the spaceProbe launch (enter 4) ?");
+						choice = s.next();
 
-					if (input.equals("1")) {
-						System.out.println("Which timestep do you want to use (in secs)?");
-						DELTA_T = s.nextDouble();
-						//System.out.println("After how much time (in secs) do you want to end the simulation ?");
-						//double endTime = s.nextLong();
-						boolean spaceProbeIncluded = false;
-						//int numIterations = (int)Math.ceil(endTime/DELTA_T);
+						switch (choice) {
+							case "1":
+								//Solar system simulation
 
-						//GUI part
-						gc = createGUI(stage);
-						launchGUI(1, spaceProbeIncluded/*, numIterations*/);
-						timeline.play();
-						stage.show();
+								//Let the user select a custom timestep (after which interval of simulated time do we update the position of the planets)
+								System.out.println("Which timestep do you want to use (in secs)?");
+								DELTA_T = s.nextDouble();
 
-						/*
-						while (!timeline.getStatus().equals(Animation.Status.STOPPED)) {
-						}
+								//Optionally, let the User select an ending time for the simulation (in simulated time)
+								//System.out.println("After how much time (in secs) do you want to end the simulation ?");
+								//double endTime = s.nextLong();
+								//int numIterations = (int)Math.ceil(endTime/DELTA_T);
 
-						for (int i = 0; i < planets.length; i ++) {
-							System.out.println("Planet " + planets[i].getName() + ": \nPosition: " + planets[i].getPosition());
-						}
-						*/
-					}
-					//Launch of space probe
-					else if (input.equals("2")) {
-						//Choice = 1 launches the binary search for the angle to reach Titan, choice = 2 launches a very crude direct approximation of the angle to reach Titan
-						int choice = 2;
+								boolean spaceProbeIncluded = false;
 
-						if (DEBUG) System.out.println("Launching space probe shooting module");
-
-						//Approach 1: Trying out an angle, then adjusting to the left or right to get closer to Titan
-						if (DEBUG) System.out.println("Launching binary search angle calibration");
-						double launch_angle = 259;
-						boolean crashedTitan = false;
-						double DISTANCE_SUN_PLUTO = 5906376272e3;
-						double angleChange = 1;
-						int previousMove = 0;
-						int numberIterations = 0;
-						double spaceProbeAngle = 0;
-						double titanAngle  = 0;
-						while (! crashedTitan) {
-							if (DEBUG) System.out.println("Iteration #" + numberIterations);
-
-							//Initialize the space probe and the solar system
-							createSolarSystem();
-
-							//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
-							if (angleChange < Math.ulp(launch_angle))
-								crashedTitan = true;
-
-							//Create a new spaceProbe launched with a new angle from planet Earth
-							spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
-
-							int method = 2;
-							Vector2D oldPos;
-							if (method == 1) {
-								//Run the simulation
+								//GUI part
 								gc = createGUI(stage);
-								launchGUI(1, true);
+								launchGUI(1, spaceProbeIncluded/*, numIterations*/);
 								timeline.play();
 								stage.show();
-							}
-							else if (method == 2) {
-								//While the space probe has not crashed into a planet or its distance to the sun is greater than the distance from Neptune to the sun
-								int num = 1;
-								while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(planets[0].getPosition()) < planets[9].getPosition().distance(planets[0].getPosition()))) {
-									//oldPos = new Vector2D(spaceProbe.getPosition());
-									update(DELTA_T, true);
-									//System.out.println("Iteration #" + numberIterations + " . " + num + ": Difference in position: \n   - " + oldPos.subtract(spaceProbe.getPosition()));
-									num ++;
+
+								/*	Debugging part used for printing the planet's position after a certain time
+								while (!timeline.getStatus().equals(Animation.Status.STOPPED)) {
 								}
-								if (DEBUG) System.out.println(num + " iterations needed to end simulation");
-							}
 
-							//If the space probe crashed on Titan, we are done
-							if (planets[9].equals(spaceProbe.getCrashedPlanet())) {
-								crashedTitan = true;
-								if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
-							}
-							else {
-								//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
-								if (spaceProbe.getCrashedPlanet() != null)
-									if (DEBUG) System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
-								spaceProbe.resetCrashedPlanet();
-
-								//Then, we compute the angles
-								spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
-								titanAngle = planets[9].getPosition().angle(planetPositions[0]);
-								//Both angles should now be between 0 and 360 degrees
-								if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
-
-								int tmp = signum(spaceProbeAngle-titanAngle);
-								if (Math.abs(titanAngle-spaceProbeAngle) > 180) {
-									if (previousMove == -tmp) {
-										if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
-											if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-											else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
-										}
-
-										angleChange = angleChange/2;
-									}
-
-									launch_angle += tmp * angleChange;
-
-									previousMove = tmp;
+								for (int i = 0; i < planets.length; i ++) {
+									System.out.println("Planet " + planets[i].getName() + ": \nPosition: " + planets[i].getPosition());
 								}
-								else if (Math.abs(titanAngle-spaceProbeAngle) > 0) {
-									if (previousMove == tmp) {
-										if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
-											if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-											else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
-										}
+								*/
 
-										angleChange = angleChange/2;
-									}
+								//Set validInput to true and break the switch statement to end the loop of asking the User to choose what he wants to do
+								validInput = true;
+								break;
+							//Launch of space probe from Earth to Titan
+							case "2":
+								//Initialize some variables for the launchAngleBinarySearch method
+								double startLaunchAngle = 259.84639616224865;			//Should already be the end result
+								double startAngleChange = 0.1;
+								int originPlanetIndex = 3;
+								int destinationPlanetIndex = 9;
 
-									launch_angle += -tmp * angleChange;
+								//Reset the spaceProbe with the new launch_angle
+								spaceProbe = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
-									previousMove = -tmp;
-								}
-								else {
-									crashedTitan = true;
-								}
-							}
+								//Launch the simulation
+							  	gc = createGUI(stage);
+								launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
+								timeline.play();
+								stage.show();
 
-							System.out.println("New space probe launch angle: " + launch_angle);
+								validInput = true;
+								break;
+							//Return of the spaceProbe from Titan to earth
+							case "3":
+								//Initialize some variables for the launchAngleBinarySearch method
+								startLaunchAngle = 110;
+								startAngleChange = 5;
+								originPlanetIndex = 9;
+								destinationPlanetIndex = 3;
 
-							numberIterations ++;
-							elapsedSeconds = 0;
+								//Reset the spaceProbe with the new launch_angle
+								spaceProbe = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel);
+
+								//Launch the simulation
+							  	gc = createGUI(stage);
+								launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
+								timeline.play();
+								stage.show();
+
+								validInput = true;
+								break;
+							//Test of space probe angle
+							case "4":
+								Scanner S = new Scanner(System.in);
+								System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
+								double launch_angle = S.nextDouble();
+
+								/*
+								System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
+								int numberOfIterations = S.nextInt();
+								*/
+								//Reset the solar system
+								createSolarSystem();
+
+								CelestialBody originPlanet = planets[9];
+
+								//Create a new spaceProbe with the starting angle
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, originPlanet.getPosition(), averageVelocitySpaceProbe, originPlanet.getRadius(), launch_angle);
+
+								//Show the simulation of the solar system with the space probe
+								showNumIterations = true;
+								gc = createGUI(stage);
+								//if (numberOfIterations == -1) {
+									launchGUI(1, true);
+								/*} else {
+									launchGUI(1, true, numberOfIterations);
+								} */
+								timeline.play();
+								stage.show();
+
+								validInput = true;
+								break;
 						}
+					} while (! validInput);
 
-						//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
-						//Reset the solar System
-						createSolarSystem();
-
-						//Print out all angles ...
-						//System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
-						//System.out.println("TitanAngle: " + titanAngle);
-						System.out.println("'Optimal' launch angle: " + launch_angle);
-
-						//Reset the spaceProbe with the new launch_angle
-						spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
-
-						//Launch the simulation
-					  gc = createGUI(stage);
-						launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
-						timeline.play();
-						stage.show();
-					}
-					//Test of space probe angle
-					else if (input.equals("3")) {
-						Scanner S = new Scanner(System.in);
-						System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
-						double launch_angle = S.nextDouble();
-
-						/*
-						System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
-						int numberOfIterations = S.nextInt();
-						*/
-						//Reset the solar system
-						createSolarSystem();
-
-						//Create a new spaceProbe with the starting angle
-						spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3].getPosition(), averageVelocitySpaceProbe, planetRadius[3], launch_angle);
-
-						//Show the simulation of the solar system with the space probe
-						showNumIterations = true;
-						gc = createGUI(stage);
-						//if (numberOfIterations == -1) {
-							launchGUI(1, true);
-						/*} else {
-							launchGUI(1, true, numberOfIterations);
-						} */
-						timeline.play();
-						stage.show();
-					}
-				}
-			}
-			//Landing on titan
-			else if (input.equals("2")) {
+					//Set choideMade to true, meaning that a simulation has been done and we do not need to ask the user what he wants to choose another time
+					choiceMade = true;
+					//And break to exit the switch statement
+					break;
+			case "2": 					//Landing on titan
 				//Initialize the landModChoice variable to an empty string
 				String landModChoice = "";
 				//And initialize the starting position, starting velocity and starting angle to default values
@@ -343,121 +280,123 @@ public class GUIV2 extends Application {
 					System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller)?");
 					landModChoice = s.next();
 
-					//open-loop controller
-					if (landModChoice.equals("1")) {
-						//For the open-loop controller, we make the timestep bigger as it takes a lot of time to land
-						//LANDINGDELTA_T = 100;
+					switch (landModChoice) {
+						case "1": 					//open-loop controller
+							//For the open-loop controller, we could make the timestep bigger as it takes a lot of time to land
+							//LANDINGDELTA_T = 100;
 
-						//Initialize choice
-						String choice = "";
+							//Initialize selection
+							String selection = "";
 
-						//Ask the user if he wants to specify a certain starting position for the landing module
-						System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
-						choice = s.next();
-						//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the x-position and y-position separated by a space");
-							double startX = s.nextDouble();
-							double startY = s.nextDouble();
-							landModStartPos = new Vector2D(startX, startY);
-						}
-
-						//Ask the user if he wants to specify a certain starting velocity for the landing module
-						choice = "";
-						System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
-						choice = s.next().toLowerCase();
-						//If the user wants to specify a starting velocity, retrieve the input velocity and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the x-velocity and y-velocity separated by a space");
-							double startXVeloc = s.nextDouble();
-							double startYVeloc = s.nextDouble();
-							landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
-						}
-
-						//Ask the user if he wants to specify a certain starting angle
-						choice = "";
-						System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
-						choice = s.next().toLowerCase();
-						//If the user wants to specify a starting angle, retrieve the input angle and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the angle");
-							landModStartAngle = s.nextDouble();
-						}
-
-						landingModule = new LandingModuleOpenLoopController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle);
-					}
-					//Feedback controller
-					else if (landModChoice.equals("2")) {
-						//Initialize choice
-						String choice = "";
-
-						//Ask the user if he wants to specify a certain starting position for the landing module
-						System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
-						choice = s.next();
-						//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the x-position and y-position separated by a space");
-							double startX = s.nextDouble();
-							double startY = s.nextDouble();
-							landModStartPos = new Vector2D(startX, startY);
-						}
-
-						//Ask the user if he wants to specify a certain starting velocity for the landing module
-						choice = "";
-						System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
-						choice = s.next().toLowerCase();
-						//If the user wants to specify a starting velocity, retrieve the input velocity and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the x-velocity and y-velocity separated by a space");
-							double startXVeloc = s.nextDouble();
-							double startYVeloc = s.nextDouble();
-							landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
-						}
-
-						//Ask the user if he wants to specify a certain starting angle
-						choice = "";
-						System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
-						choice = s.next().toLowerCase();
-						//If the user wants to specify a starting angle, retrieve the input angle and save it
-						if (choice.equals("yes")) {
-							System.out.println("Please enter the angle");
-							landModStartAngle = s.nextDouble();
-						}
-
-						//Ask the user if he wants to add wind to the simulation or not
-						boolean addWind = false;
-						choice = "";
-						System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
-						choice = s.next().toLowerCase();
-						double windStrength = 2;
-						double thrusterForce = 2500;
-						//If the user wants to have wind, give it to him !!!
-						if (choice.equals("yes")) {
-							addWind = true;
-
-							String windChoice = "";
-							System.out.println("Do you want to set the maximum acceleration of the wind ?");
-							windChoice = s.next().toLowerCase();
-							if (windChoice.equals("yes")) {
-								System.out.println("What should the maximum acceleration of the wind be ?");
-								windStrength = s.nextDouble();
+							//Ask the user if he wants to specify a certain starting position for the landing module
+							System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
+							selection = s.next();
+							//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the x-position and y-position separated by a space");
+								double startX = s.nextDouble();
+								double startY = s.nextDouble();
+								landModStartPos = new Vector2D(startX, startY);
 							}
 
-							System.out.println("Do you want to set the force of the main thruster ?");
-							windChoice = s.next().toLowerCase();
-							if (windChoice.equals("yes")) {
-								System.out.println("What should the force of the main thruster be ?");
-								thrusterForce = s.nextDouble();
+							//Ask the user if he wants to specify a certain starting velocity for the landing module
+							selection = "";
+							System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
+							selection = s.next().toLowerCase();
+							//If the user wants to specify a starting velocity, retrieve the input velocity and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the x-velocity and y-velocity separated by a space");
+								double startXVeloc = s.nextDouble();
+								double startYVeloc = s.nextDouble();
+								landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
 							}
-						}
 
-						landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
-						((LandingModuleFeedbackController)landingModule).setMaxWindStrength(windStrength);
-						((LandingModuleFeedbackController)landingModule).setThrusterForce(thrusterForce);
+							//Ask the user if he wants to specify a certain starting angle
+							selection = "";
+							System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
+							selection = s.next().toLowerCase();
+							//If the user wants to specify a starting angle, retrieve the input angle and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the angle");
+								landModStartAngle = s.nextDouble();
+							}
+
+							landingModule = new LandingModuleOpenLoopController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle);
+
+							break;
+						case "2":					//Feedback controller
+							//Initialize selection
+							selection = "";
+
+							//Ask the user if he wants to specify a certain starting position for the landing module
+							System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
+							selection = s.next();
+							//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the x-position and y-position separated by a space");
+								double startX = s.nextDouble();
+								double startY = s.nextDouble();
+								landModStartPos = new Vector2D(startX, startY);
+							}
+
+							//Ask the user if he wants to specify a certain starting velocity for the landing module
+							selection = "";
+							System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
+							selection = s.next().toLowerCase();
+							//If the user wants to specify a starting velocity, retrieve the input velocity and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the x-velocity and y-velocity separated by a space");
+								double startXVeloc = s.nextDouble();
+								double startYVeloc = s.nextDouble();
+								landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
+							}
+
+							//Ask the user if he wants to specify a certain starting angle
+							selection = "";
+							System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
+							selection = s.next().toLowerCase();
+							//If the user wants to specify a starting angle, retrieve the input angle and save it
+							if (selection.equals("yes")) {
+								System.out.println("Please enter the angle");
+								landModStartAngle = s.nextDouble();
+							}
+
+							//Ask the user if he wants to add wind to the simulation or not
+							boolean addWind = false;
+							selection = "";
+							System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
+							selection = s.next().toLowerCase();
+							double windStrength = 2;
+							double thrusterForce = 2500;
+							//If the user wants to have wind, give it to him !!!
+							if (selection.equals("yes")) {
+								addWind = true;
+
+								String windChoice = "";
+								System.out.println("Do you want to set the maximum acceleration of the wind ?");
+								windChoice = s.next().toLowerCase();
+								if (windChoice.equals("yes")) {
+									System.out.println("What should the maximum acceleration of the wind be ?");
+									windStrength = s.nextDouble();
+								}
+
+								System.out.println("Do you want to set the force of the main thruster ?");
+								windChoice = s.next().toLowerCase();
+								if (windChoice.equals("yes")) {
+									System.out.println("What should the force of the main thruster be ?");
+									thrusterForce = s.nextDouble();
+								}
+							}
+
+							landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
+							((LandingModuleFeedbackController)landingModule).setMaxWindStrength(windStrength);
+							((LandingModuleFeedbackController)landingModule).setThrusterForce(thrusterForce);
+
+							break;
 					}
 				}
 
-				boolean showGUI = false;
+				boolean showGUI = true;
 				if (showGUI) {
 					//Set the coordinatesTransformer with the correct parameters for the landing GUI
 			        coordinates.setScale(LANDINGSCALE);
@@ -473,8 +412,143 @@ public class GUIV2 extends Application {
 				else {
 					landingModule.updateModule(LANDINGDELTA_T);
 				}
+
+				//Set choiceMade to true to signify that a simulation has been done, and we do not need to ask the User what he wants to choose anymore
+				choiceMade = true;
+				break;
 			}
+		} while (! choiceMade);
+	}
+
+	/** Overloads method launchAngleBinarySearch with one less parameter than the original: the boolean DEBUG
+	  */
+	private SpaceProbe launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+		boolean DEBUG_MODE_ON = false;
+		return launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
+	}
+
+	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
+	  *
+	  * @param originPlanet, the planet from which the spaceProbe starts off
+	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
+	  * @param startLaunchAngle, a starting guess for the correct launch angle
+	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
+	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	  * @param DEBUG, a boolean unlocking debug print statements
+	  */
+	private SpaceProbe launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+		//Initialize variables
+		double launch_angle = startLaunchAngle;
+		double angleChange = startAngleChange;
+		boolean crashedTitan = false;
+		double DISTANCE_SUN_PLUTO = 5906376272e3;
+		int previousMove = 0;
+		int numberIterations = 0;
+		double spaceProbeAngle = 0;
+		double titanAngle  = 0;
+
+		//As long as we have not reached our goal of crashing into destinationPlanet
+		while (! crashedTitan) {
+			if (DEBUG) System.out.println("Iteration #" + numberIterations);
+
+			//Initialize the space probe and the solar system
+			createSolarSystem();
+
+			//Create variables representing the originPlanet, the destinationPlanet and the Sun
+			CelestialBody Sun = planets[0];
+			CelestialBody originPlanet = planets[originPlanetIndex];
+			CelestialBody destinationPlanet = planets[destinationPlanetIndex];
+
+			//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
+			if (angleChange < Math.ulp(launch_angle))
+				crashedTitan = true;
+
+			//Create a new spaceProbe launched with a new angle from planet Earth
+			spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, originPlanet.getPosition(), spaceProbeVelocity, originPlanet.getRadius(), launch_angle);
+
+			int num = 0;
+			//As long as the spaceProbe has not crashed into a planet, or gone further away from the originPlanet than the destinationPlanet's distance from the originPlanet or gone further away from the Sun than Pluto's distance to the Sun
+			while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(originPlanet.getPosition()) < destinationPlanet.getPosition().distance(originPlanet.getPosition())) && spaceProbe.getPosition().distance(Sun.getPosition()) < DISTANCE_SUN_PLUTO)  {
+				//Update the position and the number of iterations
+				update(DELTA_T, true);
+				num ++;
+			}
+
+			if (DEBUG) System.out.println(num + " iterations needed to end simulation");
+
+			//If the space probe crashed on Titan, we are done
+			if (planets[destinationPlanetIndex].equals(spaceProbe.getCrashedPlanet())) {
+				crashedTitan = true;
+				if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
+			}
+			else {
+				//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
+				if (spaceProbe.getCrashedPlanet() != null)
+					if (DEBUG) System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
+				spaceProbe.resetCrashedPlanet();
+
+				//Then, we compute the angles with respect to a certain CelestialBody
+				// TO CORRECT
+				spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
+				titanAngle = planets[destinationPlanetIndex].getPosition().angle(planetPositions[0]);
+
+				//Both angles should now be between 0 and 360 degrees
+				if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
+
+				int tmp = signum(spaceProbeAngle-titanAngle);
+
+				if (Math.abs(titanAngle-spaceProbeAngle) > 180) {
+					if (previousMove == -tmp) {
+						if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+							if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+							else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+						}
+
+						angleChange = angleChange/2;
+					}
+
+					launch_angle += tmp * angleChange;
+
+					previousMove = tmp;
+				}
+				else if (Math.abs(titanAngle-spaceProbeAngle) > 0) {
+					if (previousMove == tmp) {
+						if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + titanAngle + ", ");
+							if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
+							else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
+						}
+
+						angleChange = angleChange/2;
+					}
+
+					launch_angle += -tmp * angleChange;
+
+					previousMove = -tmp;
+				}
+				else {
+					crashedTitan = true;
+				}
+			}
+
+			System.out.println("New space probe launch angle: " + launch_angle);
+
+			numberIterations ++;
+			elapsedSeconds = 0;
 		}
+
+		//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
+		//Reset the solar System
+		createSolarSystem();
+
+		//Print out all angles ...
+		//System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
+		//System.out.println("TitanAngle: " + titanAngle);
+		System.out.println("'Optimal' launch angle: " + launch_angle);
+
+		//Reset the spaceProbe with the new launch_angle
+		SpaceProbe result = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex].getPosition(), spaceProbeVelocity, planets[originPlanetIndex].getRadius(), launch_angle);
+
+		return result;
 	}
 
 	/** Creates the different GUI elements necessary for the landing GUI, or at least initializes them
@@ -615,12 +689,12 @@ public class GUIV2 extends Application {
         elapsedSeconds += LANDINGDELTA_T;
     }
 
-	/** Initialize the Planet and the Moon objects with their default properties, contained in
+	/** Initialize the Planet and the Moon objects with their default properties, contained in the planet... arrays
 	*/
 	public void createSolarSystem() {
 		planets = new CelestialBody[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
-			planets[i] = new CelestialBody(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i]);
+			planets[i] = new CelestialBody(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i], planetRadius[i]);
 		}
 	}
 
