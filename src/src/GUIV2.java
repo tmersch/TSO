@@ -32,8 +32,8 @@ public class GUIV2 extends Application {
 	private static double DELTA_T = 60 * 30;
 	//debug boolean (un)locking println statements
 	private final boolean DEBUG = true;
-	//scaling factor
-	private static final double SCALE = 5e9;
+
+	private static final double SCALE = 5e9;		//Scaling factor in meters/pixels
 	//radius of the planets
 	private static final double PLANET_RADIUS = 2;
 	//height of the part at the top
@@ -68,7 +68,7 @@ public class GUIV2 extends Application {
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	private static final double voyagerMass = 800;									//in kg
 	private static final double averageVelocitySpaceProbe = 48e3;					//in meters/secs
-	private static final double averageVelocitySpaceProbeReturnTravel = 30e3;		//in meters/secs
+	private static final double averageVelocitySpaceProbeReturnTravel = 16e3;		//in meters/secs
 
 	//the gravitational constant
 	public static final double G = 6.67300E-11;
@@ -213,8 +213,8 @@ public class GUIV2 extends Application {
 							//Return of the spaceProbe from Titan to earth
 							case "3":
 								//Initialize some variables for the launchAngleBinarySearch method
-								startLaunchAngle = 110;
-								startAngleChange = 5;
+								startLaunchAngle = 110.25108742952477;					//102.59067723856454;		//Should already be the final resulting value (for velocity = 30 km/s)
+								startAngleChange = 1;
 								originPlanetIndex = 9;
 								destinationPlanetIndex = 3;
 
@@ -488,9 +488,10 @@ public class GUIV2 extends Application {
 				spaceProbe.resetCrashedPlanet();
 
 				//Then, we compute the angles with respect to a certain CelestialBody
-				// TO CORRECT
-				spaceProbeAngle = spaceProbe.getPosition().angle(planetPositions[0]);
-				titanAngle = planets[destinationPlanetIndex].getPosition().angle(planetPositions[0]);
+				Vector2D referencePoint = new Vector2D(planetPositions[originPlanetIndex]);//planetPositions[0]);
+
+				spaceProbeAngle = spaceProbe.getPosition().angle(referencePoint);
+				titanAngle = planets[destinationPlanetIndex].getPosition().angle(referencePoint);
 
 				//Both angles should now be between 0 and 360 degrees
 				if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, titanAngle);
@@ -876,6 +877,10 @@ public class GUIV2 extends Application {
 			//draw a fitting label
 			Text text = new Text(spaceProbe.getName());
 			gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+
+			if (spaceProbe.getPosition().distance(planets[3].getPosition()) < 5e8) {
+				System.out.println("Distance to Earth: " + (spaceProbe.getPosition().distance(planets[3].getPosition()) - planets[3].getRadius()));
+			}
 		}
 
 		numIterations ++;
@@ -903,7 +908,7 @@ public class GUIV2 extends Application {
 			for (int i = 0; i < planets.length; i ++) {
 				planets[i].updatePosition(time, step);
 			}
-			if (spaceProbeIncluded) spaceProbe.updatePosition(time, step);
+			if (spaceProbeIncluded && spaceProbe.didNotCrash()) spaceProbe.updatePosition(time, step);
 		}
 
 		//Increment the seconds
