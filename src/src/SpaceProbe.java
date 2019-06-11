@@ -1,6 +1,8 @@
 public class SpaceProbe extends CelestialBody {
 	private CelestialBody crashedPlanet;
 	private Vector2D thrusters = new Vector2D();
+	private boolean crashed;
+	private Vector2D positionWithRespectToCrashedPlanet;
 
 	/** Default constructor for SpaceProbe
 		It has parameters
@@ -10,7 +12,24 @@ public class SpaceProbe extends CelestialBody {
 			and startingV[] which represents the starting velocities (on x and y)
 	*/
 	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV) {
-		super(name, mass, startingPos, startingV);
+		super(name, mass, startingPos, startingV, 10);
+
+		crashed = false;
+	}
+
+	/** Returns the result of the super-class method unless the spacecraft has crashed on a planet
+	  * If the spaceProbe has crashed on a planet, we make it follow the planet's position,
+	  * 	with a difference in position equals to the relative position of the spaceProbe with respect to the planet
+	  */
+	@Override
+	public Vector2D getPosition () {
+		if (! crashed) {
+			return super.getPosition();
+		}
+		else {
+			Vector2D crashedPos = new Vector2D(crashedPlanet.getPosition()).add(positionWithRespectToCrashedPlanet);
+			return crashedPos;
+		}
 	}
 
 	public void activateThrustersInAngle (double angle) {
@@ -62,14 +81,20 @@ public class SpaceProbe extends CelestialBody {
 		If the spaceProbe crashed into a planet, it stores the planet in which the spaceProbe crashed in "crashedPlanet"
 	*/
 	public boolean didNotCrash() {
-		for (int i = 0; i < GUIV2.planets.length; i ++) {
-			if (new Vector2D(GUIV2.planets[i].getPosition()).distance(this.getPosition()) <= GUIV2.planetRadius[i]) {
-				crashedPlanet = GUIV2.planets[i];
-				return false;
+		if (crashed) {
+			return false;
+		} else {
+			for (int i = 0; i < GUIV2.planets.length; i ++) {
+				if (new Vector2D(GUIV2.planets[i].getPosition()).distance(this.getPosition()) <= GUIV2.planetRadius[i]) {
+					crashedPlanet = GUIV2.planets[i];
+					positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
+					crashed = true;
+					return false;
+				}
 			}
-		}
 
-		return true;
+			return true;
+		}
 	}
 
 	/** Returns the value of the variable crashedPlanet
