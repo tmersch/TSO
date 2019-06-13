@@ -43,7 +43,13 @@ public class CelestialBody {
             //Save the different parameter's values
             this.name = name;
             this.mass = mass;
-            this.radius = radius;
+            if (radius > 0) {
+                this.radius = radius;
+            }
+            else {
+                this.radius = -1;
+            }
+
             this.position = new Vector2D(startingPos);
             this.velocity = new Vector2D(startingVelocity);
 
@@ -56,6 +62,12 @@ public class CelestialBody {
             derivative = new Derivative();
       }
 
+      /** Additional constructor with all parameters except one, radius, provided:
+      */
+      public CelestialBody (String name, double mass, Vector2D startingPos, Vector2D startingVelocity) {
+            this(name, mass, startingPos, startingVelocity, -1);
+      }
+
       public String getName() {
           return name;
       }
@@ -64,6 +76,9 @@ public class CelestialBody {
           return mass;
       }
 
+      /** Returns radius if it has been provided in the constructor and it was > 0
+        * Otherwise, returns -1
+        */
       public double getRadius() {
           return radius;
       }
@@ -98,7 +113,7 @@ public class CelestialBody {
         }
       }
 
-      public void updatePosition (double deltaT, int step) {
+      public void updatePosition (final double deltaT, int step) {
         if (step/2 == 0) {
           k1 = nextDerivative(initialState, new Derivative(), 0, step%2);
         }
@@ -115,9 +130,16 @@ public class CelestialBody {
           if (step%2 == 1) {
             derivative = (new Derivative(k1).add((new Derivative(k2).add(k3)).multiply(2)).add(k4)).divide(6);
 
-            initialState.applyDerivative(derivative, deltaT);
+            applyDerivative(derivative, deltaT);
           }
         }
+      }
+
+      /** Given the final derivative for the velocity and position and the time interval deltaT,
+        * computes the new position and velocity
+        */
+      protected void applyDerivative (Derivative d, final double deltaT) {
+          initialState.applyDerivative(d, deltaT);
       }
 
       public Vector2D computeAccelerationRK (State state) {
@@ -143,56 +165,13 @@ public class CelestialBody {
 
             //      Calculate the gravitational force
             Vector2D force = new Vector2D(direction);
-            force.multiply(GUIV2.G).multiply(this.mass).multiply(other.getMass()).divide(dist * dist);
+            force.multiply(GUIV2.G).multiply(this.getMass()).multiply(other.getMass()).divide(dist * dist);
 
             //From that, add the corresponding acceleration to the planet's acceleration
-            acceleration.add(new Vector2D(force).divide(mass));
+            acceleration.add(new Vector2D(force).divide(this.getMass()));
       }
-
 
       public void resetAcceleration() {
             acceleration = new Vector2D();
       }
-
-      /* These methods are old methods used for Euler's method
-      public Vector2D computeAcceleration () {
-            resetAcceleration();
-
-            for (int i = 0; i < GUIV2.planets.length; i ++) {
-                  if (! GUIV2.planets[i].equals(this)) {
-                        addGToAcceleration(GUIV2.planets[i]);
-                  }
-            }
-
-            return new Vector2D(acceleration);
-      }
-
-      public void addGToAcceleration (CelestialBody other) {
-            //Compute the gravitational force
-            //      Make a unity vector in the correct direction
-            Vector2D direction = new Vector2D(this.position);
-            direction.subtract(other.getPosition()).normalize().multiply(-1);
-
-            //      Compute the distance between the two planets
-            double dist = this.position.distance(other.getPosition());
-
-            //      Calculate the gravitational force
-            Vector2D force = new Vector2D(direction);
-            force.multiply(GUIV2.G).multiply(this.mass).multiply(other.getMass()).divide(dist * dist);
-
-            //From that, add the corresponding acceleration to the planet's acceleration
-            acceleration.add(new Vector2D(force).divide(mass));
-      }
-
-      public void updateVelocityAndPosition (double time) {
-            //Save the velocity before applying the acceleration
-            Vector2D oldVelocity = new Vector2D(this.velocity);
-
-            //Calculate the final velocity
-            velocity.add(new Vector2D(acceleration).multiply(time));
-
-            //Update location with the averageVelocity
-            position.add(new Vector2D(oldVelocity).add(velocity).divide(2.0).multiply(time));
-      }
-      */
 }
