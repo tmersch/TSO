@@ -1,20 +1,33 @@
 public class SpaceProbe extends CelestialBody {
-	private CelestialBody crashedPlanet;
-	private Vector2D thrusters = new Vector2D();
-	private boolean crashed;
 	private Vector2D positionWithRespectToCrashedPlanet;
+	private CelestialBody crashedPlanet;
+	private boolean crashed;
+	private double angle = -1;
 
-	/** Default constructor for SpaceProbe
+	/** Default constructor for SpaceProbe with all parameters
 		It has parameters
-			name, which is the name of the SpaceProbe,
-			mass, which represents the mass of the space probe (constant, because it has no engines that could burn up fuel),
-			startingPos[] which represents the starting position of the SpaceProbe,
-			and startingV[] which represents the starting velocities (on x and y)
-	*/
-	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV) {
-		super(name, mass, startingPos, startingV, 10);
+			@param name which is the name of the SpaceProbe,
+			@param mass which represents the mass of the space probe (constant, because it has no engines that could burn up fuel),
+			@param startingPos[] which represents the starting position of the SpaceProbe,
+			@param startingV[] which represents the starting velocities (on x and y) and
+			@param initialAngle the angle in which the SpaceProbe points in
+	  */
+	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
+		super(name, mass, startingPos, startingV);
 
+		//Initialize the angle to initialAngle
+		angle = initialAngle;
+
+		//Initialize crashed to false
 		crashed = false;
+	}
+
+	/** Additionnal constructor for SpaceProbe with one less parameter than the fully parametric constructor:
+	  * initialAngle
+	  */
+	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV) {
+		//Set the default angle to 0
+		this(name, mass, startingPos, startingV, 0);
 	}
 
 	/** Returns the result of the super-class method unless the spacecraft has crashed on a planet
@@ -32,17 +45,6 @@ public class SpaceProbe extends CelestialBody {
 		}
 	}
 
-	public void activateThrustersInAngle (double angle) {
-		//Adjust the thrusters in the correct angle
-		thrusters = new Vector2D(angle);
-		//Then, scale them by their strength
-		//thrusters.multiply();														//NEEDS TO BE MULTIPLIED BY THE TOTAL FORCE EXERTED BY THE THRUSTERS
-	}
-
-	public void shutThrustersOff () {
-		thrusters = new Vector2D();
-	}
-
 	/** Additional indirect constructor for SpaceProbe
 		It has some parameters that are the same than in the default constructor (name and mass), but also new parameters:
 			launchPlanetPos, the position of the center of the planet the spaceProbe is launched from,
@@ -50,31 +52,19 @@ public class SpaceProbe extends CelestialBody {
 			launchAngle, the angle which the spaceProbe is launched in (angle in degrees),
 			and planetRadius, the radius of the planet the spaceProbe is launched from
 	*/
-	public static SpaceProbe createSpaceProbeWithStartingAngle (String name, double mass, Vector2D launchPlanetPos, double velocity, double planetRadius, double launchAngle) {
+	public static SpaceProbe createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle) {
 		//Get a scaler according to the angle
 		Vector2D angleScaler = new Vector2D(launchAngle);
 
 		//Then compute the initialPosition and initialVelocity of the spaceProbe
-		Vector2D initialPosition = new Vector2D(launchPlanetPos);
+		Vector2D initialPosition = new Vector2D(launchPlanet.getPosition());
 			//NOTE ! We are starting in the direction of launchAngle, at a distance of 1000 meters of the surface
-		initialPosition.add(new Vector2D(angleScaler).multiply(1000 +  planetRadius));
+		initialPosition.add(new Vector2D(angleScaler).multiply(1000 + launchPlanet.getRadius()));
 		Vector2D initialVelocity = new Vector2D(angleScaler).multiply(velocity);
 
 
 		//Finally, call the default constructor with the computed values
-		return new SpaceProbe(name, mass, initialPosition, initialVelocity);
-	}
-
-	/** Needs to also take into account the force exerted by the thrusters
-	*/
-	@Override
-	public Vector2D computeAccelerationRK (State state) {
-		Vector2D accel = super.computeAccelerationRK(state);
-
-		//Add the force exerted by the thrusters (or 0 if the thrusters are off)
-		accel.add(thrusters);
-
-		return accel;
+		return new SpaceProbe(name, mass, initialPosition, initialVelocity, launchAngle);
 	}
 
 	/** This method computes whether the spaceProbe crashed into a planet or not.
@@ -109,7 +99,23 @@ public class SpaceProbe extends CelestialBody {
 		crashedPlanet = null;
 	}
 
+	/** Return the angle in which the spaceProbe was created if it was created in a specific angle,
+	  * otherwise return -1
+	  */
+	public double getAngle() {
+		return angle;
+	}
+
 	public String toString () {
 		return "SpaceProbe[mass=" + this.getMass() + ", position: " + this.getPosition().toString() + ", velocity: " + this.getVelocity().toString() + "]";
+	}
+
+	public SpaceProbe clone() {
+		String name = this.getName();		//Safe, because strings are immutable
+		double mass = this.getMass();
+		Vector2D pos = new Vector2D(this.getPosition());
+		Vector2D vel = new Vector2D(this.getVelocity());
+
+		return new SpaceProbe(name, mass, pos, vel);
 	}
 }
