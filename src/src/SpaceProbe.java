@@ -97,6 +97,7 @@ public class SpaceProbe extends CelestialBody {
 	*/
 	public void resetCrashedPlanet() {
 		crashedPlanet = null;
+		crashed = false;
 	}
 
 	/** Return the angle in which the spaceProbe was created if it was created in a specific angle,
