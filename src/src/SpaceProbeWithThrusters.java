@@ -15,7 +15,9 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     //the amount of degrees we can maximally change the angle by in one iteration
     private final double angleChange = 1;
     //the mass of the fuel
-    private double fuelMass = 0;                            //in kgs
+    private final double fuelMass;                          //in kgs
+    //the mass of the fuel burnt so far
+    private double burntFuelMass;                           //in kgs
 
     /** Default constructor with the same parameters as the full constructor from the superclass
       * Additionnally, two new parameters:
@@ -30,6 +32,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         //Set the fuelMass to the given value
         this.fuelMass = fuelMass;
+        //and initialize the burntFuelMass to 0
+        burntFuelMass = 0;
     }
 
     /** Additional constructor with one less parameter than the full constructor: fuelMass
@@ -69,9 +73,29 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 		thrusterForce = new Vector2D(angle).multiply(massFlowRate).multiply(exhaustVelocity);
 	}
 
+    /** Returns the total mass of the spaceProbe
+      */
     @Override
     public double getMass() {
-        return super.getMass() + fuelMass;
+        return getSpaceProbeMass() + getFuelMass();
+    }
+
+    /** Returns the leftover fuelMass
+      */
+    public double getFuelMass() {
+        return (fuelMass - burntFuelMass);
+    }
+
+    /** Returns the mass of the fuel consumed so far
+      */
+    public double getBurntFuelMass () {
+        return burntFuelMass;
+    }
+
+    /** Return only the mass of the SpaceProbe, without taking into account the fuel
+      */
+    public double getSpaceProbeMass () {
+        return super.getMass();
     }
 
     @Override
@@ -82,10 +106,10 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         //Then, we compute the fuelMass burnt to get the exhaustGasMass
         double burntOxidizerFactor = oxidizerToFuelRatio; // * burntFuelMass
-        double burntFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
         //Subtract the burnt mass from the total mass
-        fuelMass -= burntFuelMass;
+        this.burntFuelMass += consumedFuelMass;
 
         //Add the thruster force to the derivative
         Derivative derivativeThrusterForce = new Derivative(new Vector2D(), thrusterForce);
