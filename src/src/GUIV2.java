@@ -67,7 +67,7 @@ public class GUIV2 extends Application {
 	//All the variables concerning the spaceprobe
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	private static final double voyagerMass = 800;									//in kg
-	private static final double averageVelocitySpaceProbe = 48e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbe = 45e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;		//in meters/secs
 
 	//the gravitational constant
@@ -195,7 +195,8 @@ public class GUIV2 extends Application {
 							case "2":
 								//Initialize some variables for the launchAngleBinarySearch method
 								double startLaunchAngle = 259.84639616224865;			//Should already be the end result
-								double startAngleChange = 0.1;
+								startLaunchAngle = new Vector2D(planets[3].getPosition()).normalize().angle(new Vector2D());
+								double startAngleChange = 5;
 								int originPlanetIndex = 3;
 								int destinationPlanetIndex = 9;
 
@@ -242,7 +243,7 @@ public class GUIV2 extends Application {
 								//Reset the solar system
 								createSolarSystem();
 
-								CelestialBody originPlanet = planets[9];
+								CelestialBody originPlanet = planets[3];
 
 								//Create a new spaceProbe with the starting angle
 								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
@@ -603,6 +604,20 @@ public class GUIV2 extends Application {
 		}
 		*/
 
+		//Other idea:
+		/* Computing the smallest distance to the destination planet we get with the ideal angle, d_min
+		//NOTE !!! PROBLEM !!! we pass like 5*10^6 meters away from Titan's surface, too far away for gravity assist ???
+			Then compute the speed we would need to have to enter orbit using the formula http://www.uphysicsc.com/2013-GM-A-538.PDF
+				v = sqrt((G * M)/r)
+					with M being the mass of the planet you would like to orbit around,
+					 r the radius of the orbit we would like to have (which we could set as the closest distance we get to Titan)
+					 and G the constant
+
+			This would then be v_orbit
+
+			And then we would just need to run the simulation, then once we are at a distance d_min from the destination planet, we modify the velocity in order to reach the desired velocity
+		*/
+
 		//Return the resulting spaceProbe with the "perfect" stats
 		//This is a placeholder to avoid getting a "missing return statement" error
 		return spaceProbeClone;
@@ -936,9 +951,9 @@ public class GUIV2 extends Application {
 			gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
 
 			// Optionnally, print the distance between the spaceProbe and Earth when it is smaller than 5*10^8 to see the closest it gets to Earth
-			if (spaceProbe.getPosition().distance(planets[3].getPosition()) < 1e8) {
-				System.out.println("Distance to Earth: " + (spaceProbe.getPosition().distance(planets[3].getPosition()) - planets[3].getRadius()));
-				System.out.println("Distance to the center of Earth: " + (spaceProbe.getPosition().distance(planets[3].getPosition())));
+			if (spaceProbe.getPosition().distance(planets[9].getPosition()) < 1e8) {
+				System.out.println("Distance to Earth: " + (spaceProbe.getPosition().distance(planets[9].getPosition()) - planets[9].getRadius()));
+				System.out.println("Distance to the center of Earth: " + (spaceProbe.getPosition().distance(planets[9].getPosition())));
 			}
 		}
 
