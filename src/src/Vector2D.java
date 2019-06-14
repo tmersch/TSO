@@ -90,11 +90,11 @@ public class Vector2D {
 			resultAngle = acos;						//Second quadrant
 
 			if (asin < 0) {
-				resultAngle = acos + 90;		//Third quadrant
+				resultAngle = acos + 90;			//Third quadrant
 			}
 		}
 		else {
-			resultAngle = asin+360;						//Fourth quadrant
+			resultAngle = asin+360;					//Fourth quadrant
 		}
 
 		return resultAngle;
