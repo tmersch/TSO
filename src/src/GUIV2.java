@@ -35,7 +35,7 @@ public class GUIV2 extends Application {
 
 	private static final double SCALE = 5e9;		//Scaling factor in meters/pixels
 	//radius of the planets
-	private static final double PLANET_RADIUS = 2;
+	public static final double PLANET_RADIUS = 2;
 	//height of the part at the top
 	private static final int TOP_AREA_HEIGHT = 100;
 
@@ -47,7 +47,7 @@ public class GUIV2 extends Application {
 
 	//Everything about the planets
 		//Array containing the planets/moons
-	protected static CelestialBody[] planets;
+	public static CelestialBody[] planets;
 		//Arrays containing all the information about the planets/moons
 		// Indexes: ----------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
 	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede"};
@@ -67,7 +67,7 @@ public class GUIV2 extends Application {
 	//All the variables concerning the spaceprobe
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	private static final double voyagerMass = 800;									//in kg
-	private static final double averageVelocitySpaceProbe = 45e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbe = 44e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;		//in meters/secs
 
 	//the gravitational constant
@@ -476,7 +476,7 @@ public class GUIV2 extends Application {
 			//If the space probe crashed on Titan, we are done
 			if (planets[destinationPlanetIndex].equals(spaceProbe.getCrashedPlanet())) {
 				crashedDestinationPlanet = true;
-				System.out.println("\n\n\nIteration #" + numberIterations + "A launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
+				System.out.println("\n\n\nIteration #" + numberIterations + "\nA launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
 			}
 			else {
 				//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
@@ -767,7 +767,12 @@ public class GUIV2 extends Application {
 	public void createSolarSystem() {
 		planets = new CelestialBody[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
-			planets[i] = new CelestialBody(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i], planetRadius[i]);
+			if (i < 9) {
+				planets[i] = new CelestialBody(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i], planetRadius[i]);
+			}
+			else {
+				planets[i] = new Moon(planetNames[i], planetMasses[i], planetPositions[i], planetVelocities[i], planetRadius[i]);
+			}
 		}
 	}
 
@@ -933,8 +938,8 @@ public class GUIV2 extends Application {
 			gc.fillOval(otherPosition.x - PLANET_RADIUS, otherPosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
 
 			//Draw the labels
-			Text text = new Text(p.getName());
-			gc.fillText(p.getName(), otherPosition.x - (text.getLayoutBounds().getWidth() / 2), otherPosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+			Vector2D textPos = p.getLabelPositionModifier();
+			gc.fillText(p.getName(), otherPosition.x + textPos.getX(), otherPosition.y + textPos.getY());
 		}
 
 		//if the space probe is also simulated, then
@@ -951,9 +956,9 @@ public class GUIV2 extends Application {
 			gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
 
 			// Optionnally, print the distance between the spaceProbe and Earth when it is smaller than 5*10^8 to see the closest it gets to Earth
-			if (spaceProbe.getPosition().distance(planets[9].getPosition()) < 1e8) {
-				System.out.println("Distance to Earth: " + (spaceProbe.getPosition().distance(planets[9].getPosition()) - planets[9].getRadius()));
-				System.out.println("Distance to the center of Earth: " + (spaceProbe.getPosition().distance(planets[9].getPosition())));
+			if (spaceProbe.didNotCrash() && spaceProbe.getPosition().distance(planets[9].getPosition()) < 1e8) {
+				System.out.println("Distance to Titan: " + (spaceProbe.getPosition().distance(planets[9].getPosition()) - planets[9].getRadius()));
+				System.out.println("Distance to the center of Titan: " + (spaceProbe.getPosition().distance(planets[9].getPosition())));
 			}
 		}
 
