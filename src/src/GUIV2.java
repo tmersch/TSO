@@ -146,6 +146,9 @@ public class GUIV2 extends Application {
 					//Initialize the planets
 					createSolarSystem();
 
+					spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3], averageVelocitySpaceProbe, 0);
+					((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
+
 					//Initialize the CoordinateTransformer to have the coordinate system's center be somewhere in the center of the screen
 					coordinates.setScale(SCALE);
 					coordinates.setModifiedX(700);
@@ -197,11 +200,15 @@ public class GUIV2 extends Application {
 								double startLaunchAngle = 259.84639616224865;			//Should already be the end result
 								startLaunchAngle = new Vector2D(planets[3].getPosition()).normalize().angle(new Vector2D());
 								double startAngleChange = 5;
-								int originPlanetIndex = 3;
-								int destinationPlanetIndex = 9;
+								int originPlanetIndex = 3;				//going from Earth (=planets[3])
+								int destinationPlanetIndex = 9;			//to Titan (= planets[9])
 
-								//Reset the spaceProbe with the new launch_angle
-								spaceProbe = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								//Find out the ideal starting angle
+								double idealAngle = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+
+								//Reset the solar system and create a new space probe with the ideal angle
+								createSolarSystem();
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -216,11 +223,15 @@ public class GUIV2 extends Application {
 								//Initialize some variables for the launchAngleBinarySearch method
 								startLaunchAngle = 121.57024271172554;				//110.25108742952477;					//Should already be the final resulting value (for velocity = 30 km/s)
 								startAngleChange = 0.1;
-								originPlanetIndex = 9;
-								destinationPlanetIndex = 3;
+								originPlanetIndex = 9;			//going from Titan (= planets[9])
+								destinationPlanetIndex = 3;		//to Earth (= planets[3])
 
-								//Reset the spaceProbe with the new launch_angle
-								spaceProbe = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel);
+								//Find out the ideal starting angle
+								idealAngle = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel);
+
+								//Reset the solar system and create a new space probe with the ideal angle
+								createSolarSystem();
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle);
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -423,12 +434,16 @@ public class GUIV2 extends Application {
 
 	/** Overloads method launchAngleBinarySearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private SpaceProbe launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
-		boolean DEBUG_MODE_ON = false;
+	private double launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+		boolean DEBUG_MODE_ON = true;
 		return launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
+	  * The idea is basically to start with the given launchAngle from the origin planet,
+	  * then run the simulation until either the spaceProbe crashes or gets further away from the originPlanet than the destinationPlanet is.
+	  * Then, evaluate the result and if the spaceProbe is too much to the left, make the angle smaller, else if it is too much to the right, make the angle bigger
+	  * once either the angle is as precise as it could be or the spaceProbe crashes on Titan, we found the supposedly best possible angle (without using any thrust during the travel)
 	  *
 	  * @param originPlanet, the planet from which the spaceProbe starts off
 	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
@@ -437,7 +452,7 @@ public class GUIV2 extends Application {
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private SpaceProbe launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchAngleBinarySearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
 		double angleChange = startAngleChange;
@@ -450,8 +465,6 @@ public class GUIV2 extends Application {
 
 		//As long as we have not reached our goal of crashing into destinationPlanet
 		while (! crashedDestinationPlanet) {
-			if (DEBUG) System.out.println("Iteration #" + numberIterations);
-
 			//Initialize the space probe and the solar system
 			createSolarSystem();
 
@@ -471,18 +484,15 @@ public class GUIV2 extends Application {
 				num ++;
 			}
 
-			if (DEBUG) System.out.println(num + " iterations needed to end simulation");
-
 			//If the space probe crashed on Titan, we are done
 			if (planets[destinationPlanetIndex].equals(spaceProbe.getCrashedPlanet())) {
 				crashedDestinationPlanet = true;
-				System.out.println("\n\n\nIteration #" + numberIterations + "\nA launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
+				if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "\nA launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
 			}
 			else {
 				//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
 				if (spaceProbe.getCrashedPlanet() != null)
-					if (DEBUG) System.out.println("Crashed in " + spaceProbe.getCrashedPlanet().getName());
-				spaceProbe.resetCrashedPlanet();
+					spaceProbe.resetCrashedPlanet();
 
 				//Then, we compute the angles with respect to a certain CelestialBody
 				Vector2D referencePoint = new Vector2D(planetPositions[originPlanetIndex]);//planetPositions[0]);
@@ -490,37 +500,31 @@ public class GUIV2 extends Application {
 				spaceProbeAngle = spaceProbe.getPosition().angle(referencePoint);
 				destinationPlanetAngle = planets[destinationPlanetIndex].getPosition().angle(referencePoint);
 
-				//Both angles should now be between 0 and 360 degrees
-				if (DEBUG) System.out.printf("Arrival SpaceProbeAngle: %f, Titan angle: %f\n", spaceProbeAngle, destinationPlanetAngle);
-
+				//Save an intermediate value, the sign of the difference of the angles
 				int tmp = signum(spaceProbeAngle-destinationPlanetAngle);
 
 				if (Math.abs(destinationPlanetAngle-spaceProbeAngle) > 180) {
+					//If the previous move was the opposite move,
 					if (previousMove == -tmp) {
-						if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + destinationPlanetAngle + ", ");
-							if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-							else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
-						}
-
+						//We reduce the angleChange by half
 						angleChange = angleChange/2;
 					}
 
+					//In any case, modify the launch_angle
 					launch_angle += tmp * angleChange;
-
+					//and save this move as the previous move for the next iteration
 					previousMove = tmp;
 				}
 				else if (Math.abs(destinationPlanetAngle-spaceProbeAngle) > 0) {
+					//If the previous move was the opposite move,
 					if (previousMove == tmp) {
-						if (DEBUG) { System.out.println("Move == " + tmp + ": \nSpaceProbe angle: " + spaceProbeAngle + ", Titan angle: " + destinationPlanetAngle + ", ");
-							if (previousMove > 0) System.out.println("   The angle should be between " + (launch_angle-previousMove*angleChange) + " and " + launch_angle);
-							else System.out.println("   The angle should be between " + launch_angle + " and " + (launch_angle-previousMove*angleChange));
-						}
-
+						//We reduce the angleChange by half
 						angleChange = angleChange/2;
 					}
 
+					//In any case, modify the launch_angle
 					launch_angle += -tmp * angleChange;
-
+					//and save this move as the previous move for the next iteration
 					previousMove = -tmp;
 				}
 				else {
@@ -528,33 +532,28 @@ public class GUIV2 extends Application {
 					//Modify the angle in some direction
 					launch_angle += tmp * angleChange;
 
+					//and set the previous move for the next iteration as the move just made
 					previousMove = tmp;
 				}
 			}
 
 			//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
 			if (angleChange < Math.ulp(launch_angle)) {
-				/*if (DEBUG) */System.out.println("Final angleChange = " + angleChange);
+				if (DEBUG) System.out.println("Final angleChange = " + angleChange);
 				crashedDestinationPlanet = true;
 			}
 
-			System.out.println("New space probe launch angle: " + launch_angle);
+			if (DEBUG) System.out.println("New space probe launch angle: " + launch_angle);
 
 			numberIterations ++;
 			elapsedSeconds = 0;
 		}
 
-		//Now, launch_angle has a supposedly optimal angle to reach Titan, and we show the result
-		//Reset the solar System
-		createSolarSystem();
+		//Save the ideal angle
+		double result = launch_angle
 
-		//Print out all angles ...
-		//System.out.println("\n\nSpaceProbeAngle: " + spaceProbeAngle);
-		//System.out.println("destinationPlanetAngle: " + destinationPlanetAngle);
-		System.out.println("'Optimal' launch angle: " + launch_angle);
-
-		//Reset the spaceProbe with the new launch_angle
-		SpaceProbe result = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex], spaceProbeVelocity, launch_angle);
+		//Now, we print out the supposedly ideal angle if debugging mode is on
+		if (DEBUG) System.out.println("'Optimal' launch angle: " + result);
 
 		return result;
 	}
