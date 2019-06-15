@@ -75,7 +75,7 @@ public class SpaceProbe extends CelestialBody {
 			return false;
 		} else {
 			for (int i = 0; i < GUIV2.planets.length; i ++) {
-				if (new Vector2D(GUIV2.planets[i].getPosition()).distance(this.getPosition()) <= GUIV2.planetRadius[i]) {
+				if (new Vector2D(GUIV2.planets[i].getPosition()).distance(this.getPosition()) <= GUIV2.planets[i].getRadius()) {
 					crashedPlanet = GUIV2.planets[i];
 					positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
 					crashed = true;
