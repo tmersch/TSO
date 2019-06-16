@@ -139,35 +139,36 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         SpaceProbe tmp = SpaceProbe.createSpaceProbeWithStartingAngle(name, mass, launchPlanet, velocity, launchAngle);
 
         //Transform it into a SpaceProbeWithThrusters
-        return spaceProbeToSpaceProbeWithThrusters(tmp);
+        return spaceProbeToSpaceProbeWithThrusters(tmp, launchAngle);
     }
 
-    public static SpaceProbeWithThrusters spaceProbeToSpaceProbeWithThrusters(SpaceProbe spaceProbe) {
+    public static SpaceProbeWithThrusters spaceProbeToSpaceProbeWithThrusters(SpaceProbe spaceProbe, double launchAngle) {
         String name = spaceProbe.getName();
         double mass = spaceProbe.getMass();
         Vector2D pos = spaceProbe.getPosition();
         Vector2D vel = spaceProbe.getVelocity();
-        double angle = spaceProbe.getAngle();
+        double angle = launchAngle;
 
-        SpaceProbeWithThrusters res = new SpaceProbeWithThrusters(name, mass, pos, vel, angle
-
-
-
-        );
+        SpaceProbeWithThrusters res = new SpaceProbeWithThrusters(name, mass, pos, vel, angle);
 
         return res;
     }
 
-    /** Returns a deep copy of this object
+    /** Returns a deep copy of this object at its current state
       */
+    @Override
     public SpaceProbeWithThrusters clone () {
         String name = this.getName();                       //safe because strings are immutable
         double mass = this.getMass() - this.fuelMass;       //this.getMass() - fuelMass to make it be only the mass of the space Probe itself
         double fuelMass = this.fuelMass;
-        Vector2D pos = new Vector2D(this.getPosition());
-        Vector2D vel = new Vector2D(this.getVelocity());
+        double burntFuelMass = this.burntFuelMass;
+        Vector2D pos = this.getPosition();
+        Vector2D vel = this.getVelocity();
         double angle = this.angle;
 
-        return new SpaceProbeWithThrusters(name, mass, fuelMass, pos, vel, angle);
+        SpaceProbeWithThrusters res = new SpaceProbeWithThrusters(name, mass, fuelMass, pos, vel, angle);
+        res.burntFuelMass = burntFuelMass;
+
+        return res;
     }
 }
