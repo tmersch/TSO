@@ -98,6 +98,14 @@ public class FlightPlan {
 
     /** Sets the value of useThrusters and correctAngle at a given iteration
       *
+      * @param iteration the number of the iteration which we reset its useThrusters and correctAngle value
+      */
+    public void resetIterationToInactive(int iteration) {
+        setIteration(iteration, false, 0);
+    }
+
+    /** Sets the value of useThrusters and correctAngle at a given iteration
+      *
       * @param iterationIndex the number of the iteration we want to modify
       * @param useThrustersAtIteration the new value of useThrusters of the given iteration
       * @param correctAngleAtIteration the new value of correctAngle of the given iteration
