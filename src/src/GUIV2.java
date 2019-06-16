@@ -580,21 +580,68 @@ public class GUIV2 extends Application {
 		final Vector2D INITIAL_VELOCITY = spaceProbe.getVelocity();
 		//the mass is saved in voyagerMass
 		//the name is saved in spaceProbeName
+		final SpaceProbeWithThrusters correctStartingConditionsSpaceProbe = new SpaceProbeWithThrusters(spaceProbeName, voyagerMass, INITIAL_POSITION, INITIAL_VELOCITY, IDEAL_ANGLE);
 
-		//Make one simulation and then save the state of the solar system towards the end + the final position as well as the final velocity and the number of iterations
-		int numIterations = 0;
-		Vector2D finalPosition = new Vector2D();
-		Vector2D finalVelocity = new Vector2D();
+		//Make one simulation to compute the final position, the final velocity and the number of iterations
+		//Set starting conditions for the simulation
 		createSolarSystem();
+		spaceProbe = correctStartingConditionsSpaceProbe.clone();
+		//Run the simulation
+		int numIterations = 0;
+		while (spaceProbe.didNotCrash()) {
+			//Update the position of all the objects and the number of iterations
+			update(DELTA_T, true);		//the true is a boolean for whether the spaceProbe is included or not
+			numIterations ++;
+		}
 
-		/*
-		//Transform the spaceProbe into a spaceProbeWithThrusters given the spaceProbe and the originPlanet which we start from
-		SpaceProbeWithThrusters spaceProbeOriginal = SpaceProbeWithThrusters.spaceProbeToSpaceProbeWithThrusters(spaceP);
+		//Then, save the position, number of iterations, spaceProbe position and velocity
+		final int NO_THRUSTERS_NUM_ITERATIONS = numIterations;
+		final Vector2D FINAL_POSITION = new Vector2D(spaceProbe.getPosition());
+		final Vector2D FINAL_VELOCITY = new Vector2D(spaceProbe.getVelocity());
 
-		//Then, use it to launch simulations
-		SpaceProbeWithThrusters spaceProbeClone = spaceProbeOriginal.clone();
-		*/
-		//Run simulations where we try using the thrusters at some positions, then evaluate the result
+		//Do a second iteration, and make a list/array of mementos for the 10/100 or sth last iterations
+		//Reset starting conditions
+		createSolarSystem();
+		spaceProbe = correctStartingConditionsSpaceProbe.clone();
+		numIterations = 0;
+		//Run the simulation and save the state of the solar system towards the end of the simulation (the end being the spaceProbe crashing on Titan)
+		//Set the number days saved in the mementos to a value, then if there are not even as many days in the trip, we set the number of days to the number of days that the trip lasted
+		int numDaysSaved = 100;
+		if (NO_THRUSTERS_NUM_ITERATIONS * DELTA_T <= numDaysSaved * SEC_IN_DAY) {
+			numDaysSaved = (int)(NO_THRUSTERS_NUM_ITERATIONS * DELTA_T)/SEC_IN_DAY;
+		}
+		//Set the solarSystemMemento to contain as many iterations as to have saved the state of the last X days
+		SolarSystemMemento[] solarSystemStates = new SolarSystemMemento[numDaysSaved * (int)(SEC_IN_DAY/DELTA_T)];
+		int nextMementoIndex = 0;
+		while (spaceProbe.didNotCrash()) {
+			//Update the position of all the objects and the number of iterations
+			update(DELTA_T, true);		//the true is a boolean for whether the spaceProbe is included or not
+			numIterations ++;
+
+			//IF we are in the numDaysSaved last days, then we save the current state of things
+			if (numIterations > NO_THRUSTERS_NUM_ITERATIONS - solarSystemStates.length) {
+				solarSystemStates[nextMementoIndex] = new SolarSystemMemento(planets, spaceProbe);
+				nextMementoIndex ++;
+			}
+		}
+
+		//Initialize the flightPlan to a new inactive flightplan with as many iterations as we have without using the thrusters before crashing into Titan
+		FlightPlan plan = FlightPlan.createNewInactivePlan(NO_THRUSTERS_NUM_ITERATIONS);
+
+		//Now we try running simulations starting at a late position, where we try using the thrusters a little to try to get to Titan
+		int currentIteration = solarSystemStates.length - 1;
+		while (currentIteration >= 0) {
+			//We load the memeto we are currently at
+			loadMemento(solarSystemStates[currentIteration]);
+
+			//Try using the thrusters a bit and record that change in the FlightPlan
+
+			//Then finish the simulation until some point (NO_THRUSTERS_NUM_ITERATIONS iterations maybe ?)
+
+			//Then evaluate the simulation
+			//	Either good change, we keep it then go on to the next change
+			//	Or bad change, and we revert it by using plan.resetIterationToInactive(iterationNum)
+		}
 
 		//Pseudo-code could be sth like that:
 		/*
@@ -624,11 +671,20 @@ public class GUIV2 extends Application {
 			And then we would just need to run the simulation, then once we are at a distance d_min from the destination planet, we modify the velocity in order to reach the desired velocity
 		*/
 
-		//Return the resulting spaceProbe with the "perfect" stats
+		//Return the resulting FlightPlan with the "perfect" trajectory
 		//This is a placeholder to avoid getting a "missing return statement" error
 		return null;//spaceProbeClone;
 	}
 
+	/** Auxiliary method for launchAngleBinarySearchImproved()
+	  * Given a solar system memento, it loads it into the global planets and spaceProbe variable
+	  *
+	  * @param memento the solarSystemMemento which we want to load into memory
+	  */
+	private void loadMemento (SolarSystemMemento memento) {
+		planets = memento.getPlanetsState();
+		spaceProbe = memento.getSpaceProbeState();
+	}
 
 	/** Creates the different GUI elements necessary for the landing GUI, or at least initializes them
       */
