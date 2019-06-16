@@ -53,6 +53,23 @@ public class FlightPlan {
         this(other.useThrusters, other.correctAngle);
     }
 
+    /** Create a new "inactive" FlightPlan, meaning that we don't do anything during the whole flight,
+      * so we set all the iterations with useThrusters to false and correctAngle to 0
+      *
+      * @return the newly created FlightPlan
+      */
+    public static FlightPlan createNewInactivePlan (int size) {
+        FlightPlan plan = new FlightPlan();
+        plan.useThrusters = new ArrayList<Boolean>(size);
+        plan.correctAngle = new ArrayList<Integer>(size);
+
+        for (int i = 0; i < size; i ++) {
+            plan.addIteration(false, 0);
+        }
+
+        return plan;
+    }
+
     /** Adds a new iteration to the flightPlan
       *
       * @param useThrustersAtIteration the value for useThrusters at the new iteration
@@ -64,12 +81,16 @@ public class FlightPlan {
     }
 
     /** Should return the item at entry index "iteration" if possible
+      *
+      * @return the value of useThrusters at the given index
       */
     public boolean getUseThrusters (int iteration) {
         return useThrusters.get(iteration);
     }
 
     /** Should return the int at entry index "iteration" if possible
+      *
+      * @return the value of correctAngle at the given index
       */
     public int getCorrectAngle (int iteration) {
         return correctAngle.get(iteration);
@@ -106,6 +127,8 @@ public class FlightPlan {
 
     /** Returns the number of iterations in the plan
       * It should be the size of useThrusters and correctAngle (which should both have the same length)
+      *
+      * @return the number of iterations planned by the FlightPlan
       */
     public int getPlanLength() {
         return useThrusters.size();
