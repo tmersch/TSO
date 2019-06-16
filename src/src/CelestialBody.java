@@ -189,4 +189,16 @@ public class CelestialBody {
     public void resetAcceleration() {
         acceleration = new Vector2D();
     }
+
+    /** Returns a deep clone of this CelestialBody at its current state, copying the values of all properties
+      */
+    public CelestialBody clone () {
+        String name = this.name;
+        double mass = this.mass;
+        Vector2D pos = this.position;
+        Vector2D vel = this.velocity;
+        double radius = this.radius;
+
+        return new CelestialBody(name, mass, pos, vel, radius);
+    }
 }
