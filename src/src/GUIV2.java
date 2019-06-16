@@ -69,6 +69,7 @@ public class GUIV2 extends Application {
 	private static final double voyagerMass = 800;									//in kg
 	private static final double averageVelocitySpaceProbe = 44e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;		//in meters/secs
+	private static final String spaceProbeName = "SpaceProbe";
 
 	//the gravitational constant
 	public static final double G = 6.67300E-11;
@@ -146,9 +147,6 @@ public class GUIV2 extends Application {
 					//Initialize the planets
 					createSolarSystem();
 
-					spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[3], averageVelocitySpaceProbe, 0);
-					((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
-
 					//Initialize the CoordinateTransformer to have the coordinate system's center be somewhere in the center of the screen
 					coordinates.setScale(SCALE);
 					coordinates.setModifiedX(700);
@@ -208,7 +206,7 @@ public class GUIV2 extends Application {
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -231,7 +229,7 @@ public class GUIV2 extends Application {
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, voyagerMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle);
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -257,7 +255,7 @@ public class GUIV2 extends Application {
 								CelestialBody originPlanet = planets[3];
 
 								//Create a new spaceProbe with the starting angle
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, voyagerMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
 
 								//Show the simulation of the solar system with the space probe
 								showNumIterations = true;
@@ -474,7 +472,7 @@ public class GUIV2 extends Application {
 			CelestialBody destinationPlanet = planets[destinationPlanetIndex];
 
 			//Create a new spaceProbe launched with a new angle from planet Earth
-			spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle("SpaceProbe", voyagerMass, originPlanet, spaceProbeVelocity, launch_angle);
+			spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, voyagerMass, originPlanet, spaceProbeVelocity, launch_angle);
 
 			int num = 0;
 			//As long as the spaceProbe has not crashed into a planet, or gone further away from the originPlanet than the destinationPlanet's distance from the originPlanet or gone further away from the Sun than Pluto's distance to the Sun
@@ -550,7 +548,7 @@ public class GUIV2 extends Application {
 		}
 
 		//Save the ideal angle
-		double result = launch_angle
+		double result = launch_angle;
 
 		//Now, we print out the supposedly ideal angle if debugging mode is on
 		if (DEBUG) System.out.println("'Optimal' launch angle: " + result);
@@ -575,18 +573,27 @@ public class GUIV2 extends Application {
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
 	private SpaceProbeWithThrusters launchAngleBinarySearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
-		//Reset the solar system
+		//Use launchAngleBinarySearch() to get the ideal angle without thrust
+		final double IDEAL_ANGLE = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG);
+		spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, voyagerMass, planets[originPlanetIndex], spaceProbeVelocity, IDEAL_ANGLE);
+		final Vector2D INITIAL_POSITION = spaceProbe.getPosition();
+		final Vector2D INITIAL_VELOCITY = spaceProbe.getVelocity();
+		//the mass is saved in voyagerMass
+		//the name is saved in spaceProbeName
+
+		//Make one simulation and then save the state of the solar system towards the end + the final position as well as the final velocity and the number of iterations
+		int numIterations = 0;
+		Vector2D finalPosition = new Vector2D();
+		Vector2D finalVelocity = new Vector2D();
 		createSolarSystem();
 
-		//Use launchAngleBinarySearch() to get a SpaceProbe launched in the correct angle
-		SpaceProbe spaceP = launchAngleBinarySearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG);
-
+		/*
 		//Transform the spaceProbe into a spaceProbeWithThrusters given the spaceProbe and the originPlanet which we start from
 		SpaceProbeWithThrusters spaceProbeOriginal = SpaceProbeWithThrusters.spaceProbeToSpaceProbeWithThrusters(spaceP);
 
 		//Then, use it to launch simulations
 		SpaceProbeWithThrusters spaceProbeClone = spaceProbeOriginal.clone();
-
+		*/
 		//Run simulations where we try using the thrusters at some positions, then evaluate the result
 
 		//Pseudo-code could be sth like that:
@@ -619,7 +626,7 @@ public class GUIV2 extends Application {
 
 		//Return the resulting spaceProbe with the "perfect" stats
 		//This is a placeholder to avoid getting a "missing return statement" error
-		return spaceProbeClone;
+		return null;//spaceProbeClone;
 	}
 
 
