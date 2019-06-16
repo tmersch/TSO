@@ -2,47 +2,19 @@ public class SpaceProbe extends CelestialBody {
 	private Vector2D positionWithRespectToCrashedPlanet;
 	private CelestialBody crashedPlanet;
 	private boolean crashed;
-	private double angle = -1;
 
 	/** Default constructor for SpaceProbe with all parameters
 		It has parameters
 			@param name which is the name of the SpaceProbe,
 			@param mass which represents the mass of the space probe (constant, because it has no engines that could burn up fuel),
-			@param startingPos[] which represents the starting position of the SpaceProbe,
-			@param startingV[] which represents the starting velocities (on x and y) and
-			@param initialAngle the angle in which the SpaceProbe points in
+			@param startingPos[] which represents the starting position of the SpaceProbe and
+			@param startingV[] which represents the starting velocities (on x and y)
 	  */
-	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
+	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV) {
 		super(name, mass, startingPos, startingV);
-
-		//Initialize the angle to initialAngle
-		angle = initialAngle;
 
 		//Initialize crashed to false
 		crashed = false;
-	}
-
-	/** Additionnal constructor for SpaceProbe with one less parameter than the fully parametric constructor:
-	  * initialAngle
-	  */
-	public SpaceProbe (String name, double mass, Vector2D startingPos, Vector2D startingV) {
-		//Set the default angle to 0
-		this(name, mass, startingPos, startingV, 0);
-	}
-
-	/** Returns the result of the super-class method unless the spacecraft has crashed on a planet
-	  * If the spaceProbe has crashed on a planet, we make it follow the planet's position,
-	  * 	with a difference in position equals to the relative position of the spaceProbe with respect to the planet
-	  */
-	@Override
-	public Vector2D getPosition () {
-		if (! crashed) {
-			return super.getPosition();
-		}
-		else {
-			Vector2D crashedPos = new Vector2D(crashedPlanet.getPosition()).add(positionWithRespectToCrashedPlanet);
-			return crashedPos;
-		}
 	}
 
 	/** Additional indirect constructor for SpaceProbe
@@ -64,7 +36,7 @@ public class SpaceProbe extends CelestialBody {
 
 
 		//Finally, call the default constructor with the computed values
-		return new SpaceProbe(name, mass, initialPosition, initialVelocity, launchAngle);
+		return new SpaceProbe(name, mass, initialPosition, initialVelocity);
 	}
 
 	/** This method computes whether the spaceProbe crashed into a planet or not.
@@ -100,23 +72,37 @@ public class SpaceProbe extends CelestialBody {
 		crashed = false;
 	}
 
-	/** Return the angle in which the spaceProbe was created if it was created in a specific angle,
-	  * otherwise return -1
+	/** Returns the result of the super-class method unless the spacecraft has crashed on a planet
+	  * If the spaceProbe has crashed on a planet, we make it follow the planet's position,
+	  * 	with a difference in position equals to the relative position of the spaceProbe with respect to the planet
 	  */
-	public double getAngle() {
-		return angle;
+	@Override
+	public Vector2D getPosition () {
+		if (! crashed) {
+			return super.getPosition();
+		}
+		else {
+			Vector2D crashedPos = new Vector2D(crashedPlanet.getPosition()).add(positionWithRespectToCrashedPlanet);
+			return crashedPos;
+		}
 	}
 
+	@Override
 	public String toString () {
 		return "SpaceProbe[mass=" + this.getMass() + ", position: " + this.getPosition().toString() + ", velocity: " + this.getVelocity().toString() + "]";
 	}
 
+	/** Returns a deep copy of this object at its current state
+	  */
+	@Override
 	public SpaceProbe clone() {
-		String name = this.getName();		//Safe, because strings are immutable
+		//Retrieve this object's current properties and save them
+		String name = this.getName();			//Safe, because strings are immutable
 		double mass = this.getMass();
-		Vector2D pos = new Vector2D(this.getPosition());
-		Vector2D vel = new Vector2D(this.getVelocity());
+		Vector2D pos = this.getPosition();		//Safe, because the constructor uses defensive copying
+		Vector2D vel = this.getVelocity();
 
+		//Then use these values to create a new SpaceProbe with the same properties
 		return new SpaceProbe(name, mass, pos, vel);
 	}
 }
