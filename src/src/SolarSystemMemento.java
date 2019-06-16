@@ -20,6 +20,7 @@ public class SolarSystemMemento {
         //Set spaceProbeIncluded to the correct value
         if (spaceProbe == null) {
             spaceProbeIncluded = false;
+            this.spaceProbe = null;
         }
         else {
             spaceProbeIncluded = true;
@@ -51,26 +52,13 @@ public class SolarSystemMemento {
     }
 
     /** Returns a copy of the saved space probe, the "spaceProbe" variable
+        Warning: could return null if called and there is no spaceProbe saved in this memento
       */
     public SpaceProbe getSpaceProbeState () {
         //Clone spaceProbe
         SpaceProbe result = spaceProbe.clone();
-        
-        resetSpaceProbe();
 
         return result;
-    }
-
-    /** Resets the value of the planets variable
-      */
-    private void resetPlanets () {
-        planets = null;
-    }
-
-    /** Resets the value of the spaceProbe variable
-      */
-    private void resetSpaceProbe () {
-        spaceProbe = null;
     }
 
     /** Make a deep clone of this object and return it
