@@ -26,7 +26,7 @@ import javafx.geometry.Side;
 
 /** GUI representing the solar system using javafx
 */
-public class GUIV2 extends Application {
+public class GUI extends Application {
 	// !!! Variables only used by the GUI of the solar simulation !!!
 	//Number of seconds between each update
 	private static double DELTA_T = 60 * 30;
@@ -634,6 +634,9 @@ public class GUIV2 extends Application {
 			//We load the memeto we are currently at
 			loadMemento(solarSystemStates[currentIteration]);
 
+			/*Also depends on what exactly our aim is ...
+			*/
+			
 			//Try using the thrusters a bit and record that change in the FlightPlan
 
 			//Then finish the simulation until some point (NO_THRUSTERS_NUM_ITERATIONS iterations maybe ?)

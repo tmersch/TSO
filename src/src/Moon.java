@@ -11,7 +11,7 @@ public class Moon extends CelestialBody {
     public Vector2D getLabelPositionModifier () {
         //Compute the position modifier of the text such that the text appears left of the moon
         double distanceBetweenTextAndPlanet = 5;
-        Vector2D pos = new Vector2D(-GUIV2.PLANET_RADIUS-text.getLayoutBounds().getWidth()-distanceBetweenTextAndPlanet, 0);
+        Vector2D pos = new Vector2D(-GUI.PLANET_RADIUS-text.getLayoutBounds().getWidth()-distanceBetweenTextAndPlanet, 0);
 
         return pos;
     }

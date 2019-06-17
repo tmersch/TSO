@@ -93,7 +93,7 @@ public class CelestialBody {
       */
     public Vector2D getLabelPositionModifier () {
         //Compute the position modifier of the text such that the text appears above the CelestialBody
-        Vector2D pos = new Vector2D(-text.getLayoutBounds().getWidth()/2, -GUIV2.PLANET_RADIUS-text.getLayoutBounds().getHeight()/2);
+        Vector2D pos = new Vector2D(-text.getLayoutBounds().getWidth()/2, -GUI.PLANET_RADIUS-text.getLayoutBounds().getHeight()/2);
 
         return pos;
     }
@@ -160,9 +160,9 @@ public class CelestialBody {
     public Vector2D computeAccelerationRK (State state) {
         resetAcceleration();
 
-        for (int i = 0; i < GUIV2.planets.length; i ++) {
-            if (! GUIV2.planets[i].equals(this)) {
-                addGToAccelerationRK(GUIV2.planets[i], state);
+        for (int i = 0; i < GUI.planets.length; i ++) {
+            if (! GUI.planets[i].equals(this)) {
+                addGToAccelerationRK(GUI.planets[i], state);
             }
         }
 
@@ -180,7 +180,7 @@ public class CelestialBody {
 
         //      Calculate the gravitational force
         Vector2D force = new Vector2D(direction);
-        force.multiply(GUIV2.G).multiply(this.getMass()).multiply(other.getMass()).divide(dist * dist);
+        force.multiply(GUI.G).multiply(this.getMass()).multiply(other.getMass()).divide(dist * dist);
 
         //From that, add the corresponding acceleration to the planet's acceleration
         acceleration.add(new Vector2D(force).divide(this.getMass()));
