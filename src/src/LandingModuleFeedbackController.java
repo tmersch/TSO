@@ -124,7 +124,6 @@ public class LandingModuleFeedbackController implements LandingModule {
 	}
 
 	/** Should correct the x-position by turning the landing module (and thus modify the angle)
-	  *
 	  */
 	public void correctXPosition() {
 		if (position.getX() >= -TOLPOSX && position.getX() <= TOLPOSX) {
@@ -243,7 +242,6 @@ public class LandingModuleFeedbackController implements LandingModule {
 	}
 
 	/** Updates the acceleration of module
-	 *
 	 */
 	private void updateAcceleration(final double timestep, final double thrusterForceUsed) {
         boolean thrust = false;
@@ -254,34 +252,30 @@ public class LandingModuleFeedbackController implements LandingModule {
             wind();
         }
 
-        if (computeBrakingDistance(thrusterForceUsed) < position.getY() + Math.abs(velocity.getY())*timestep && computeBrakingDistance(thrusterForceUsed) < position.getY() + Math.abs(velocity.getY())*timestep) {
+        //If the braking distance we would need to get to a full stop is smaller than the next position, we activate the thruster
+        if (computeBrakingDistance(thrusterForceUsed) < position.getY() + velocity.getY()*timestep) {
             thrust = true;
         }
-
+        //Unless the velocity is smaller than 5 m/secs in direction of Titan
         if (velocity.getY() > -5) {
             thrust = false;
         }
+        //But we still use the thrusters to brake when we are close to the ground, even if the velocity gets smaller than 5 m/secs
         if (position.getY() < 50) {
-            /*
-            if (velocity.getY() > -5) {
-                thrust = false;
-            }
-            else {
-            */
-                thrust = true;
-            //}
+            thrust = true;
         }
+        //However, if the velocity gets smaller than the tolerance for the velocity on y, we stop using the thrusters
         if (velocity.getY() > -TOLVELY) {
             thrust = false;
         }
 
+        //If the previous checks determined that we had to use the thruster, we use it
         if (thrust) {
-            useMainThruster(thrusterForceUsed);
+            useMainThruster();
         }
     }
 
     /** Creates a randomized force of a maximum strength of MAXWINDFORCE in a random direction and adds it to the current acceleration
-	  *
 	  */
 	private void wind() {
 		  Vector2D wind = new Vector2D(Math.random()*2 - 1, Math.random()*2-1).normalize().multiply(Math.random() * MAXWINDFORCE);
@@ -317,21 +311,17 @@ public class LandingModuleFeedbackController implements LandingModule {
     /** Use the back thruster. Changes the modules acceleration
      *
      */
-    public void useMainThruster(double thrusterForceExerted) {
-	    // These are formulas from the booklet
+    public void useMainThruster() {
+        //Determine the thrusterForceto to apply in order to always have a force equal to minMainForce on the y-axis
+        double thrusterForceExerted = MINMAINFORCE/Math.cos(Math.toRadians(angle));
+
+        //Then apply that force on the x- and y-axes to get the acceleration using the following formulas from the booklet:
 	    // accel x = (mainForce/weight) * Math.sin(angle));
 	    // accel y = (mainForce/weight) * Math.cos(angle));
-	    // Different strengths of thruster
-	    // Constant speed + landing
-	    // Research max speed you want to reach
-	    // At a certain altitude, increase power main thruster for a safe landing
+        Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(weight);
 
-		//System.out.println("Activated main thruster");
-		Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(weight);
-
-        //Improvement possible ??? Should actually be Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), 0).multiply(mainForce).divide(weight).add(new Vector2D(0, thrusterForceY));
-
-	    this.acceleration.add(thrust);
+        //And add that acceleration to the global acceleration for this iteration
+        this.acceleration.add(thrust);
     }
 
     /** Updates the velocity of the module
