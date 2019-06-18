@@ -6,7 +6,18 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
     private final double exhaustVelocity = 2941;            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
-    private final double oxidizerToFuelRatio = 2.56;        //for kerosene
+    private final double keroseneOxidizerToFuelRatio = 2.56;
+    //prize of kersoene per litre in US dollars, taken from https://www.globalpetrolprices.com/kerosene-prices/
+    private final double kerosenePrizeUSDPerLiter = 0.79;
+    //conversion rate USD --> Euro, taken from https://www.bloomberg.com/quote/EURUSD:CUR
+    private final double conversionUSDPerEuro = 1.1215;
+    //prize of kerosene per gallon in Euros
+    private final double kerosenePrizeEuroPerLiter = kerosenePrizeUSDPerLiter/conversionUSDPerEuro;
+    //volumic mass of kerosene, taken from https://en.wikipedia.org/wiki/Kerosene
+    //We chose 0.8 because the site says the density is 0.78 - 0.81 g/mL
+    private final double keroseneDensity = 0.8;         //g/cm^3 = g/mL = kg/L
+    //prize of kerosene per kg in Euro
+    private final double kerosenePrizeEuroPerKG = kerosenePrizeEuroPerLiter/keroseneDensity;
 
     //The force applied on the space probe by the thrusters
     protected Vector2D thrusterForce = new Vector2D(0, 0);
@@ -32,7 +43,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         //Set the fuelMass to the given value
         this.fuelMass = fuelMass;
-        //and initialize the burntFuelMass to 0
+        //and initialize the burntFuelMass to 0 (or the typical fuel usage to escape the gravity of Earth)
         burntFuelMass = 0;
     }
 
@@ -95,6 +106,12 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return burntFuelMass;
     }
 
+    /** Returns the current prize of the consumed fuel in Euros
+      */
+    public double getFuelPrize() {
+        return burntFuelMass * kerosenePrizeEuroPerKG;
+    }
+
     /** Return only the mass of the SpaceProbe, without taking into account the fuel
       */
     public double getSpaceProbeMass () {
@@ -108,7 +125,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double exhaustGasMass = massFlowRate * deltaT;
 
         //Then, we compute the fuelMass burnt to get the exhaustGasMass
-        double burntOxidizerFactor = oxidizerToFuelRatio; // * burntFuelMass
+        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
         double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
         //Subtract the burnt mass from the total mass
