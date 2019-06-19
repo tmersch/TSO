@@ -13,7 +13,7 @@ public class LandingModuleOpenLoopController implements LandingModule {
     //The following constants are all for kerosene (massFlowRate's value not found anywhere, set randomly)
     private double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
-    private final double exhaustVelocity = 2941;            //in m/secs
+    private final double exhaustVelocity = 3510; // 2941 at 1 atm            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
     private final double keroseneOxidizerToFuelRatio = 2.56;
 
