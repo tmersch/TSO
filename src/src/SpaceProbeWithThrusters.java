@@ -7,20 +7,11 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private final double exhaustVelocity = 2941;            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
     private final double keroseneOxidizerToFuelRatio = 2.56;
-    //prize of kersoene per litre in US dollars, taken from https://www.globalpetrolprices.com/kerosene-prices/
-    private final double kerosenePrizeUSDPerLiter = 0.79;
-    //conversion rate USD --> Euro, taken from https://www.bloomberg.com/quote/EURUSD:CUR
-    private final double conversionUSDPerEuro = 1.1215;
-    //prize of kerosene per gallon in Euros
-    private final double kerosenePrizeEuroPerLiter = kerosenePrizeUSDPerLiter/conversionUSDPerEuro;
-    //volumic mass of kerosene, taken from https://en.wikipedia.org/wiki/Kerosene
-    //We chose 0.8 because the site says the density is 0.78 - 0.81 g/mL
-    private final double keroseneDensity = 0.8;         //g/cm^3 = g/mL = kg/L
-    //prize of kerosene per kg in Euro
-    private final double kerosenePrizeEuroPerKG = kerosenePrizeEuroPerLiter/keroseneDensity;
 
     //The force applied on the space probe by the thrusters
     protected Vector2D thrusterForce = new Vector2D(0, 0);
+    // shows whether we use the thruster or not in this iteration
+    private boolean useThruster = false;
     //the angle in which the spaceProbe points in
     private double angle;
     //the amount of degrees we can maximally change the angle by in one iteration
@@ -83,8 +74,36 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 		//Compute the force of the thrusters
 		thrusterForce = new Vector2D(angle).multiply(massFlowRate).multiply(exhaustVelocity);
 
+        useThruster = true;
+
         //For debugging/testing purposes
         //System.out.println("Thruster force: " + new Vector2D(thrusterForce).divide(this.getMass()));
+	}
+
+    /** Computes the distance the landing module will travel before coming to a stop
+	  *	@return a double value representing the distance needed to brake down to y-velocity = 0
+	  */
+	private double computeBrakingDistance(final double thrusterForce) {
+		//Compute the time needed to brake to a velocity of 0
+		double timeToGetToVelocity0 = computeBrakingTime(thrusterForce);
+
+		//Apply formula: distance = time * maxVelocity * 1/2
+		double brakingDistance = timeToGetToVelocity0 * this.getVelocity().getY() * 0.5;
+
+		return brakingDistance;
+	}
+
+	/** Computes the braking time
+	  * @return the time necessary for the landing module to slow down to velocity = 0 from the current velocity
+	  */
+	private double computeBrakingTime(final double thrusterForce) {
+		//Apply formula timeToGetToVelocity0 = maxVelocity / (gravityAcceleration + thrustAcceleration)
+		// where thrustAcceleration is computed as
+        double thrustAcceleration = massFlowRate * exhaustVelocity;
+
+		double brakingTime = this.getVelocity().getY() / thrustAcceleration;
+
+		return brakingTime;
 	}
 
     /** Returns the total mass of the spaceProbe
@@ -109,7 +128,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     /** Returns the current prize of the consumed fuel in Euros
       */
     public double getFuelPrize() {
-        return burntFuelMass * kerosenePrizeEuroPerKG;
+        return KerosenePrize.getPrizeOfKeroseneInEuros(this.burntFuelMass);
     }
 
     /** Return only the mass of the SpaceProbe, without taking into account the fuel
@@ -120,26 +139,28 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
     @Override
     protected void applyDerivative (Derivative d, final double deltaT) {
-        //massFlowRate = mass of exhaust gas per unit of time
-        //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
-        double exhaustGasMass = massFlowRate * deltaT;
+        if (useThruster) {
+            //massFlowRate = mass of exhaust gas per unit of time
+            //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
+            double exhaustGasMass = massFlowRate * deltaT;
 
-        //Then, we compute the fuelMass burnt to get the exhaustGasMass
-        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
-        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+            //Then, we compute the fuelMass burnt to get the exhaustGasMass
+            double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
+            double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
-        //Subtract the burnt mass from the total mass
-        this.burntFuelMass += consumedFuelMass;
+            //Subtract the burnt mass from the total mass
+            this.burntFuelMass += consumedFuelMass;
 
-        //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
-        Vector2D thrusterAccel = new Vector2D(thrusterForce).divide(this.getMass());
+            //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
+            Vector2D thrusterAccel = new Vector2D(thrusterForce).divide(this.getMass());
 
-        //Add the thruster force to the derivative
-        Derivative derivativeThrusterForce = new Derivative(new Vector2D(), thrusterAccel);
-        d.add(derivativeThrusterForce);
+            //Add the thruster force to the derivative
+            Derivative derivativeThrusterForce = new Derivative(new Vector2D(), thrusterAccel);
+            d.add(derivativeThrusterForce);
 
-        //Reset the thruster force
-        resetThruster();
+            //Reset the thruster force
+            resetThruster();
+        }
 
         //Then, apply the superclass' method for applying the derivative
         super.applyDerivative(d, deltaT);
@@ -149,8 +170,11 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       */
     public void resetThruster () {
 		thrusterForce = new Vector2D();
+        useThruster = false;
 	}
 
+    /** Creates a spaceProbe launched from launchPlanet in the correct angle
+      */
     public static SpaceProbeWithThrusters createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle) {
         //Call the superclass method to get a spaceProbe with the correct parameters
         SpaceProbe tmp = SpaceProbe.createSpaceProbeWithStartingAngle(name, mass, launchPlanet, velocity, launchAngle);
@@ -159,6 +183,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return spaceProbeToSpaceProbeWithThrusters(tmp, launchAngle);
     }
 
+    /** Transforms a given spaceProbe object into a spaceProbeWithThrusters
+      */
     public static SpaceProbeWithThrusters spaceProbeToSpaceProbeWithThrusters(SpaceProbe spaceProbe, double launchAngle) {
         String name = spaceProbe.getName();
         double mass = spaceProbe.getMass();
@@ -170,6 +196,22 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         return res;
     }
+
+    @Override
+    /** Checks whether the space probe crashed into the given planet
+	  */
+	public boolean didNotCrash (CelestialBody p) {
+		if (new Vector2D(p.getPosition()).distance(this.getPosition()) <= p.getRadius()) {
+			crashedPlanet = p;
+			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
+			crashed = true;
+            System.out.println("Burnt fuel Mass: " + this.getBurntFuelMass());
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
 
     /** Returns a deep copy of this object at its current state
       */

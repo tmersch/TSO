@@ -1,7 +1,7 @@
 public class SpaceProbe extends CelestialBody {
-	private Vector2D positionWithRespectToCrashedPlanet;
-	private CelestialBody crashedPlanet;
-	private boolean crashed;
+	protected Vector2D positionWithRespectToCrashedPlanet;
+	protected CelestialBody crashedPlanet;
+	protected boolean crashed;
 
 	/** Default constructor for SpaceProbe with all parameters
 		It has parameters
@@ -47,14 +47,25 @@ public class SpaceProbe extends CelestialBody {
 			return false;
 		} else {
 			for (int i = 0; i < GUI.planets.length; i ++) {
-				if (new Vector2D(GUI.planets[i].getPosition()).distance(this.getPosition()) <= GUI.planets[i].getRadius()) {
-					crashedPlanet = GUI.planets[i];
-					positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
-					crashed = true;
+				if (! didNotCrash(GUI.planets[i])) {
 					return false;
 				}
 			}
 
+			return true;
+		}
+	}
+
+	/** Checks whether the space probe crashed into the given planet
+	  */
+	public boolean didNotCrash (CelestialBody p) {
+		if (new Vector2D(p.getPosition()).distance(this.getPosition()) <= p.getRadius()) {
+			crashedPlanet = p;
+			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
+			crashed = true;
+			return false;
+		}
+		else {
 			return true;
 		}
 	}

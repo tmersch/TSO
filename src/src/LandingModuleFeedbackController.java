@@ -2,10 +2,18 @@ import javafx.scene.shape.Rectangle;
 
 public class LandingModuleFeedbackController implements LandingModule {
     private double weight; // weight of landing module (kg)
+    private double burntFuelMass;       //in kgs
     private Vector2D acceleration = new Vector2D(0, 0); // Acceleration on module (m/s^2)
     private Vector2D velocity; // Velocity of module (m/s)
     private Vector2D position; // Position of module (m)
     private double angle; // Landing module's angle of rotation
+
+    //The following constants are all for kerosene (massFlowRate's value not found anywhere, set randomly)
+    private double massFlowRate = 10;                 //in kg/secs
+    // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
+    private final double exhaustVelocity = 2941;            //in m/secs
+    // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
+    private final double keroseneOxidizerToFuelRatio = 2.56;
 
     private Rectangle rectangle;
 
@@ -54,6 +62,9 @@ public class LandingModuleFeedbackController implements LandingModule {
  		this.velocity = new Vector2D(velocity);
  		this.angle = angle;
         this.considerWind = addWind;
+
+        //Set the burntFuelMass to 0 by default
+        this.burntFuelMass = 0;
     }
 
     /** Constructs a landing module with one less parameter than the full constructor
@@ -107,6 +118,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 		time = numIterations * timestep;
 
 		System.out.println("\nLanding finished with \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle + "\nand time = \n  " + getTimeAsString(time));
+        System.out.println("Burnt fuel Mass: " + this.getBurntFuelMass() + "\nPrize of the burnt fuel (in Euros): " + this.getPrize());
 	}
 
     /** Updates the landing module's acceleration, velocity and position for one iteration
@@ -271,7 +283,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 
         //If the previous checks determined that we had to use the thruster, we use it
         if (thrust) {
-            useMainThruster();
+            useMainThruster(timestep);
         }
     }
 
@@ -311,17 +323,47 @@ public class LandingModuleFeedbackController implements LandingModule {
     /** Use the back thruster. Changes the modules acceleration
      *
      */
-    public void useMainThruster() {
+    public void useMainThruster(final double timestep) {
         //Determine the thrusterForceto to apply in order to always have a force equal to minMainForce on the y-axis
         double thrusterForceExerted = MINMAINFORCE/Math.cos(Math.toRadians(angle));
 
         //Then apply that force on the x- and y-axes to get the acceleration using the following formulas from the booklet:
 	    // accel x = (mainForce/weight) * Math.sin(angle));
 	    // accel y = (mainForce/weight) * Math.cos(angle));
+        //The angle is 0 if it goes straight down
         Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(weight);
+
+        //Compute the massFlowRate used to get that force
+        massFlowRate = thrusterForceExerted/exhaustVelocity;
+
+        //Compute the mass of the exhaustGas, then the oxidizer to Fuel Ratio and compute the mass of the consumed fuel
+        double exhaustGasMass = massFlowRate * timestep;
+        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
+        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+
+        //Add the mass of the consumed fuel to the burnt fuel so far
+        burntFuelMass += consumedFuelMass;
 
         //And add that acceleration to the global acceleration for this iteration
         this.acceleration.add(thrust);
+    }
+
+    /** Returns the mass of the landingModule
+      */
+    public double getMass() {
+        return weight;
+    }
+
+    /** Getter for the mass of the burnt fuel
+      */
+    public double getBurntFuelMass () {
+        return burntFuelMass;
+    }
+
+    /** Returns the prize of the kerosene burnt during the trip in Euros
+      */
+    public double getPrize () {
+        return KerosenePrize.getPrizeOfKeroseneInEuros(this.getBurntFuelMass());
     }
 
     /** Updates the velocity of the module
