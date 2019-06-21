@@ -348,7 +348,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       */
     public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer (CelestialBody originPlanet, CelestialBody destinationPlanet) {
         //Compute deltaV1 and deltaV2
-
+        
         //Create a new spaceProbe from that
 
         //Try to build a flightPlan from that

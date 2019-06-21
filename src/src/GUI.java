@@ -591,9 +591,9 @@ public class GUI extends Application {
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity) {
+	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal start time for the spaceProbe to get into orbit around the destination planet
@@ -604,7 +604,7 @@ public class GUI extends Application {
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final boolean DEBUG) {
 		//Initialize some variables
 		boolean gotIntoOrbit = false;
 		double startTime = initialStartTime;
@@ -621,7 +621,7 @@ public class GUI extends Application {
 
 			//Run the simulation for startTime seconds, without the spaceProbe
 			int time = 0;
-			while (time < startTime) {
+			while (time < startTimeModifier) {
 				update(DELTA_T, false);
 				time += startTime;
 			}
