@@ -346,10 +346,38 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       * @param originPlanet the planet which we start from
       * @param destinationPlanet the planet which we should arrive at
       */
-    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer (CelestialBody originPlanet, CelestialBody destinationPlanet) {
+    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer(CelestialBody originPlanet, CelestialBody destinationPlanet) {
+        // Cheating a bit, orbital periods given
+        double pEarth = 365.26 * 86400; // orbital period Earth
+        double pSaturn = pEarth * 29.456; // orbital period Saturn
+        //Compute distance between Sun and planets
+        double dOrigin = originPlanet.getPosition().length();
+        double dDest = destinationPlanet.getPosition().length();
+
         //Compute deltaV1 and deltaV2
+        double a = (dOrigin + dDest)/2;
+        double pHohmann = Math.sqrt((4 * Math.pow(Math.PI, 2) * Math.pow(a, 3))/(GUI.G * GUI.planets[0].getMass())); //standard gravitational parameter
+        double vEarth = (2 * Math.PI * dOrigin)/pEarth;
+        double vSaturn = (2 * Math.PI * dDest)/pSaturn;
+
+        double vPeriapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dOrigin) - 1);
+        double deltaV1 = vPeriapsis - vEarth;
+
+        // Convert to vector
+        double dV1Y = Math.sin(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
+        double dV1X = Math.cos(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
+        Vector2D dV1Vector = new Vector2D(dV1X, dV1Y);
+
+        double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
+        double deltaV2 = vSaturn - vApoapsis;
+
+        double t = .5 * pHohmann;
+
+        // Keep in mind, deltaV1 is on top of orbital velocity the spacecraft is assumed to have already
+        // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
         
         //Create a new spaceProbe from that
+        SpaceProbe probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(),originPlanet.getVelocity().add(dV1Vector));
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
