@@ -116,26 +116,49 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         Vector2D targetVelocity = new Vector2D(target.getVelocity()).add(resultVelocityWithRespectToTarget);
 
         //Then, given the current velocity and the targetVelocity, compute the necessary acceleration to get from the current velocity to the resulting velocity
-        Vector2D accelerationToGetIntoOrbit = new Vector2D(this.getVelocity()).multiply(-1).add(targetVelocity).divide(timestep);
-        Vector2D normalizedAcceleration = new Vector2D(accelerationToGetIntoOrbit);
+        Vector2D velocityToAchieve = new Vector2D(this.getVelocity()).multiply(-1).add(targetVelocity);
 
-        //Compute the angle and factor of the acceleration
-        angle = accelerationToGetIntoOrbit.angle(new Vector2D());
-        double thrusterForce = (accelerationToGetIntoOrbit.getX()/normalizedAcceleration.getX())/this.getMass();
+        //And compute the fuel burnt to get that velocity
+        computeBurntFuelFromVelocity(velocityToAchieve.length());
+    }
 
-        //Compute the massFlowRate used to get that force
-        massFlowRate = thrusterForce/exhaustVelocity;
+    /** Computes the mass of kerosene burnt given a certain velocity gain we want to achieve in a certain timestep
+      * and adds the result to the field variable burntFuelMass
+      */
+    public void computeBurntFuelFromVelocity (final double velocity, final double timestep) {
+        double acceleration = velocity / timestep;
+        computeBurntFuelFromAcceleration(acceleration, timestep);
+    }
 
-        //massFlowRate = mass of exhaust gas per unit of time
-        //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
+    /** Computes the mass of kerosene burnt given a certain acceleration and the timestep during which that acceleration is applied
+      * and adds the result to the field variable burntFuelMass
+      */
+    public void computeBurntFuelFromAcceleration (final double acceleration, final double timestep) {
+        double thrusterForce = acceleration * this.getMass();
+        computeBurntFuelFromThrusterForce(thrusterForce, timestep);
+    }
+
+    /** Computes the mass of kerosene burnt given a certain thrusterForce applied during a certain timestep
+      * and adds the result to the field variable burntFuelMass
+      */
+    public void computeBurntFuelFromThrusterForce (final double thrusterForce, final double timestep) {
+        double massFlowRate = thrusterForce / exhaustVelocity;
+        computeBurntFuelFromMassFlowRate(massFlowRate, timestep);
+    }
+
+    /** Computes the mass of kerosene burnt given a certain massFlowRate and a timestep during which we use the thruster
+      * and adds the result to the burntFuelMass field variable
+      */
+    public void computeBurntFuelFromMassFlowRate (double massFlowRate, final double timestep) {
+        //The mass of exhaust gas is equal to the mass flow rate multiplied by the timestep during which we apply the massFlowRate
         double exhaustGasMass = massFlowRate * timestep;
 
-        //Then, we compute the fuelMass burnt to get the exhaustGasMass
-        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
-        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+        //Then, we compute the mass of kerosene burnt to produce that mass of exhaust gas
+        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * mass of burnt kerosene
+        double burntKeroseneMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
-        //Subtract the burnt mass from the total mass
-        this.burntFuelMass += consumedFuelMass;
+        //Add it to the variable keeping track of the burnt fuel so far
+        this.burntFuelMass += burntKeroseneMass;
     }
 
     /** Computes the distance the landing module will travel before coming to a stop
@@ -218,16 +241,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         }
 
         if (useThruster) {
-            //massFlowRate = mass of exhaust gas per unit of time
-            //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
-            double exhaustGasMass = massFlowRate * deltaT;
-
-            //Then, we compute the fuelMass burnt to get the exhaustGasMass
-            double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
-            double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
-
-            //Subtract the burnt mass from the total mass
-            this.burntFuelMass += consumedFuelMass;
+            computeBurntFuelFromMassFlowRate(massFlowRate);
 
             //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
             Vector2D thrusterAccel = new Vector2D(thrusterForce).divide(this.getMass());
@@ -346,7 +360,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       * @param originPlanet the planet which we start from
       * @param destinationPlanet the planet which we should arrive at
       */
-    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer(CelestialBody originPlanet, CelestialBody destinationPlanet) {
+    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer(CelestialBody originPlanet, CelestialBody destinationPlanet, double timestep) {
         // Cheating a bit, orbital periods given
         double pEarth = 365.26 * 86400; // orbital period Earth
         double pSaturn = pEarth * 29.456; // orbital period Saturn
@@ -375,14 +389,19 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         // Keep in mind, deltaV1 is on top of orbital velocity the spacecraft is assumed to have already
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
-        
-        //Create a new spaceProbe from that
-        SpaceProbe probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(),originPlanet.getVelocity().add(dV1Vector));
+
+        //Create a new spaceProbe from that, we start from the originPlanet
+        SpaceProbe probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(), originPlanet.getVelocity());
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
+        FlightPlan plan = FlightPlan();
+        //Add the first iteration with dV1Vector
+        Vector2D accel =
+        plan.addIteration();
 
         //Return the spaceProbe
+        return probe;
     }
 
     @Override
