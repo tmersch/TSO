@@ -361,14 +361,18 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double vSaturn = (2 * Math.PI * dDest)/pSaturn;
 
         double vPeriapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dOrigin) - 1);
-        double deltaVPeriapsis = vPeriapsis - vEarth;
+        double deltaV1 = vPeriapsis - vEarth;
 
         double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
-        double deltaVApoapsis = vSaturn - vApoapsis;
+        double deltaV2 = vSaturn - vApoapsis;
 
         double t = .5 * pHohmann;
 
+        // Keep in mind, deltaV1 is on top of orbital velocity the spacecraft is assumed to have already
+        // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
+
         //Create a new spaceProbe from that
+        SpaceProbe probe = new SpaceProbeWithThrusters();
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
