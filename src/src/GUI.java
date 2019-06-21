@@ -633,7 +633,7 @@ public class GUI extends Application {
 		}
 
 
-
+		/* Previous stuff, can look at it for inspiration but that's it
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
 		double angleChange = startAngleChange;
@@ -737,6 +737,7 @@ public class GUI extends Application {
 		if (DEBUG) System.out.println("'Optimal' launch angle: " + result);
 
 		return result;
+		*/
 	}
 
 	private Vector2D orbitPositionFromPlanet (CelestialBody planet) {

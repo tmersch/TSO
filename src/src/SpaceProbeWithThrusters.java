@@ -341,8 +341,20 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return res;
     }
 
+    /** Creates a spaceProbe, setting its FlightPlan to a flightPlan to perform the Hohmann Transfer
+      *
+      * @param originPlanet the planet which we start from
+      * @param destinationPlanet the planet which we should arrive at
+      */
     public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer (CelestialBody originPlanet, CelestialBody destinationPlanet) {
-        
+        //Compute deltaV1 and deltaV2
+
+        //Create a new spaceProbe from that
+
+        //Try to build a flightPlan from that
+        //Set the spaceProbe's flightPlan to the computed FlightPlan
+
+        //Return the spaceProbe
     }
 
     @Override
