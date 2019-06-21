@@ -346,8 +346,27 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       * @param originPlanet the planet which we start from
       * @param destinationPlanet the planet which we should arrive at
       */
-    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer (CelestialBody originPlanet, CelestialBody destinationPlanet) {
+    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer(CelestialBody originPlanet, CelestialBody destinationPlanet) {
+        // Cheating a bit, orbital periods given
+        double pEarth = 365.26 * 86400; // orbital period Earth
+        double pSaturn = pEarth * 29.456; // orbital period Saturn
+        //Compute distance between Sun and planets
+        double dOrigin = originPlanet.getPosition().length();
+        double dDest = destinationPlanet.getPosition().length();
+
         //Compute deltaV1 and deltaV2
+        double a = (dOrigin + dDest)/2;
+        double pHohmann = Math.sqrt((4 * Math.pow(Math.PI, 2) * Math.pow(a, 3))/(GUI.G * GUI.planets[0].getMass())); //standard gravitational parameter
+        double vEarth = (2 * Math.PI * dOrigin)/pEarth;
+        double vSaturn = (2 * Math.PI * dDest)/pSaturn;
+
+        double vPeriapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dOrigin) - 1);
+        double deltaVPeriapsis = vPeriapsis - vEarth;
+
+        double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
+        double deltaVApoapsis = vSaturn - vApoapsis;
+
+        double t = .5 * pHohmann;
 
         //Create a new spaceProbe from that
 
