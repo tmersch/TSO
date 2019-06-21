@@ -26,6 +26,9 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private boolean targetSet = false;
     private double orbitRadius = 1200000;       //in meters
 
+    // the FlightPlan for the Hohmann transfer
+    private FlightPlan hohmannTransfer = null;
+
     /** Default constructor with the same parameters as the full constructor from the superclass
       * Additionnally, two new parameters:
       * @param initialAngle, the angle in which the spaceProbe points
@@ -336,6 +339,10 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         SpaceProbeWithThrusters res = new SpaceProbeWithThrusters(name, mass, pos, vel, angle);
 
         return res;
+    }
+
+    public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer (CelestialBody originPlanet, CelestialBody destinationPlanet) {
+        
     }
 
     @Override

@@ -589,147 +589,51 @@ public class GUI extends Application {
 		return result;
 	}
 
-	/** Overloads method launchAngleAdjustmentSearchSpaceProbeWithThrusters with one less parameter than the original: the boolean DEBUG
-	  */
-	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
-		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
-	}
-
-	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
-	  * Same idea as for launchAngleAdjustmentSearch, except we use the SpaceProbeWithThrusters class instead of the SpaceProbe class to create space probes
-	  *
-	  * @param originPlanet, the planet from which the spaceProbe starts off
-	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startLaunchAngle, a starting guess for the correct launch angle
-	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
-	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
-	  * @param DEBUG, a boolean unlocking debug print statements
-	  */
-	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
-		//Initialize variables
-		double launch_angle = startLaunchAngle;
-		double angleChange = startAngleChange;
-		boolean crashedDestinationPlanet = false;
-		double DISTANCE_SUN_PLUTO = 5906376272e3;
-		int previousMove = 0;
-		int numberIterations = 0;
-		double spaceProbeAngle = 0;
-		double destinationPlanetAngle  = 0;
-
-		//As long as we have not reached our goal of crashing into destinationPlanet
-		while (! crashedDestinationPlanet) {
-			//Initialize the space probe and the solar system
-			createSolarSystem();
-
-			//Create variables representing the originPlanet, the destinationPlanet and the Sun
-			CelestialBody Sun = planets[0];
-			CelestialBody originPlanet = planets[originPlanetIndex];
-			CelestialBody destinationPlanet = planets[destinationPlanetIndex];
-
-			//Create a new spaceProbe launched with a new angle from planet Earth
-			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, spaceProbeVelocity, launch_angle);
-
-			int num = 0;
-			//As long as the spaceProbe has not crashed into a planet, or gone further away from the originPlanet than the destinationPlanet's distance from the originPlanet or gone further away from the Sun than Pluto's distance to the Sun
-			while (spaceProbe.didNotCrash() && (spaceProbe.getPosition().distance(originPlanet.getPosition()) < destinationPlanet.getPosition().distance(originPlanet.getPosition())) && spaceProbe.getPosition().distance(Sun.getPosition()) < DISTANCE_SUN_PLUTO)  {
-				//Update the position and the number of iterations
-				update(DELTA_T, true);
-				num ++;
-			}
-
-			//If the space probe crashed on Titan, we are done
-			if (planets[destinationPlanetIndex].equals(spaceProbe.getCrashedPlanet())) {
-				crashedDestinationPlanet = true;
-				if (DEBUG) System.out.println("\n\n\nIteration #" + numberIterations + "\nA launch angle of " + launch_angle + " degrees got the spaceProbe to Titan.");
-			}
-			else {
-				//If we crash into a planet, we print it to the console, then reset the variable in the spaceProbe
-				if (spaceProbe.getCrashedPlanet() != null)
-					spaceProbe.resetCrashedPlanet();
-
-				//Then, we compute the angles with respect to a certain CelestialBody
-				Vector2D referencePoint = new Vector2D(planetPositions[originPlanetIndex]);//planetPositions[0]);
-
-				spaceProbeAngle = spaceProbe.getPosition().angle(referencePoint);
-				destinationPlanetAngle = planets[destinationPlanetIndex].getPosition().angle(referencePoint);
-
-				//Save an intermediate value, the sign of the difference of the angles
-				int tmp = signum(spaceProbeAngle-destinationPlanetAngle);
-
-				if (Math.abs(destinationPlanetAngle-spaceProbeAngle) > 180) {
-					//If the previous move was the opposite move,
-					if (previousMove == -tmp) {
-						//We reduce the angleChange by half
-						angleChange = angleChange/2;
-					}
-
-					//In any case, modify the launch_angle
-					launch_angle += tmp * angleChange;
-					//and save this move as the previous move for the next iteration
-					previousMove = tmp;
-				}
-				else if (Math.abs(destinationPlanetAngle-spaceProbeAngle) > 0) {
-					//If the previous move was the opposite move,
-					if (previousMove == tmp) {
-						//We reduce the angleChange by half
-						angleChange = angleChange/2;
-					}
-
-					//In any case, modify the launch_angle
-					launch_angle += -tmp * angleChange;
-					//and save this move as the previous move for the next iteration
-					previousMove = -tmp;
-				}
-				else {
-					//The two angles are the same, but I will still modify the angle in order for angleChange to become smaller and smaller and to refine the launch_angle even more
-					//Modify the angle in some direction
-					launch_angle += tmp * angleChange;
-
-					//and set the previous move for the next iteration as the move just made
-					previousMove = tmp;
-				}
-			}
-
-			//Once we cannot get a more precise value (that is, the change of the angle angleChange is smaller than the distance of launch_angle to the next double value after launch_angle)
-			if (angleChange < Math.ulp(launch_angle)) {
-				if (DEBUG) System.out.println("Final angleChange = " + angleChange);
-				crashedDestinationPlanet = true;
-			}
-
-			if (DEBUG) System.out.println("New space probe launch angle: " + launch_angle);
-
-			numberIterations ++;
-			elapsedSeconds = 0;
-		}
-
-		//Save the ideal angle
-		double result = launch_angle;
-
-		//Now, we print out the supposedly ideal angle if debugging mode is on
-		if (DEBUG) System.out.println("'Optimal' launch angle: " + result);
-
-		return result;
-	}
-
-
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
-	/** Computes the optimal launch angle for the spaceProbe to get near the destinationPlanet starting from the originPlanet, but not quite crashing on that planet
-	  *
+	/** Computes the optimal start time for the spaceProbe to get into orbit around the destination planet
 	  * @param originPlanet, the planet from which the spaceProbe starts off
 	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startLaunchAngle, a starting guess for the correct launch angle
-	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
+	  * @param startTime, a starting guess for the correct time to start the Hohmann Transfer
+	  * @param startTimeIncrement, the starting amount of seconds by which we modify the starting time at each iteration
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchOrbitAngleAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final boolean DEBUG) {
+		//Initialize some variables
+		boolean gotIntoOrbit = false;
+		double startTime = initialStartTime;
+		double startTimeModifier = initialStartTimeIncrement;
+
+		//Reset the solar system, then create a memento for the starting position
+		createSolarSystem();
+		SolarSystemMemento latestStatePreviousIteration = new SolarSystemMemento(planets);
+
+		//As long as we do not get into orbit,
+		while (! gotIntoOrbit) {
+			//Load the latest state from the previous iteration
+			loadMemento(latestStatePreviousIteration);
+
+			//Run the simulation for startTime seconds, without the spaceProbe
+			int time = 0;
+			while (time < startTime) {
+				update(DELTA_T, false);
+				time += startTime;
+			}
+
+			//Create a new spaceProbe to start the Hohmann Transfer from this position
+			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer();
+			FlightPlan plan = spaceProbe.getFlightPlan();
+
+		}
+
+
+
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
 		double angleChange = startAngleChange;
@@ -1305,7 +1209,7 @@ public class GUI extends Application {
 		}
 
 		public void handle (ActionEvent e) {
-			updateFrame(gc, isSpaceProbeIncluded, waitStartTime);
+			redrawCanvas(gc, isSpaceProbeIncluded, waitStartTime);
 		}
 	}
 
@@ -1313,36 +1217,40 @@ public class GUI extends Application {
 		@param gc, the graphicsContext on which we draw the planets' positions
 		@param spaceProbeIncluded determines whether the space probe also has to be taken into account or not
 	*/
-	private void updateFrame(GraphicsContext gc, boolean spaceProbeIncluded, double waitTime) {
+	private void redrawCanvas(GraphicsContext gc, boolean spaceProbeIncluded, double waitTime) {
+		//Draw over to get a wide board
 		this.canvasWidth = gc.getCanvas().getWidth();
 		this.canvasHeight = gc.getCanvas().getHeight();
 		gc.clearRect(0, 0, canvasWidth, canvasHeight);
 
-		for (CelestialBody p : planets) {
-			Vector2D otherPosition = coordinates.modelToOtherPosition(p.getPosition());
+		//Draw all the planets
+		for (int i = 0; i < planets.length; i ++) {
+			//Model the position of the planets to the position in the GUI by using the CoordinateTransformer
+			Vector2D otherPosition = coordinates.modelToOtherPosition(planets[i].getPosition());
 
-			//Draw circles
+			//Draw black circles representing the planets, with a radius of PLANET_RADIUS
 			gc.setFill(Color.BLACK);
 			gc.fillOval(otherPosition.x - PLANET_RADIUS, otherPosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
 
 			//Draw the labels
 			Vector2D textPos = p.getLabelPositionModifier();
-			gc.fillText(p.getName(), otherPosition.x + textPos.getX(), otherPosition.y + textPos.getY());
+			gc.fillText(planets[i].getName(), otherPosition.x + textPos.getX(), otherPosition.y + textPos.getY());
 		}
 
 		//if the space probe is also simulated, then
 		if (spaceProbeIncluded) {
-			//Draw the space probe
+			//get the space probe's position on the GUI by using the CoordinateTransformer
 			Vector2D spaceProbePosition = coordinates.modelToOtherPosition(spaceProbe.getPosition());
 
-			//draw circle for import junit.framework.TestCase;
+			//draw a black circle with the same radius as the planets ... could be changed later on
 			gc.setFill(Color.BLACK);
 			gc.fillOval(spaceProbePosition.x - PLANET_RADIUS, spaceProbePosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
 
-			//draw a fitting label
+			//draw a fitting label, using the name of the space probe object
 			Text text = new Text(spaceProbe.getName());
-			gc.fillText("Space Probe", spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
+			gc.fillText(spaceProbe.getName(), spaceProbePosition.x - (text.getLayoutBounds().getWidth() / 2), spaceProbePosition.y - PLANET_RADIUS - (text.getLayoutBounds().getHeight() / 2));
 
+			//SHOULD BE COMMENTED OUT IN THE FINAL VERSION
 			// Optionnally, print the distance between the spaceProbe and Earth when it is smaller than 5*10^8 to see the closest it gets to Earth
 			if (spaceProbe.didNotCrash() && spaceProbe.getPosition().distance(planets[9].getPosition()) < 1e8) {
 				System.out.println("Distance to Titan: " + (spaceProbe.getPosition().distance(planets[9].getPosition()) - planets[9].getRadius()));
@@ -1350,6 +1258,7 @@ public class GUI extends Application {
 			}
 		}
 
+		//Also keep track of the number of iterations
 		numIterations ++;
 
 		//If the starting wait time is over, update the positions of the planets, otherwise not
@@ -1357,7 +1266,7 @@ public class GUI extends Application {
 			update(DELTA_T, spaceProbeIncluded);
 		}
 
-		//set the text of the timelabel and make the timeLabel large enough to
+		//set the text of the timelabel and make the timeLabel large enough so the text fits in the label
 		timeLabel.setText(getElapsedTimeAsString());
 		if (showNumIterations)
 			timeLabel.setText(timeLabel.getText() + "				Number of iterations: " + numIterations);
