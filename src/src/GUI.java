@@ -104,7 +104,7 @@ public class GUI extends Application {
   	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
   	private static final int SEC_IN_YEAR = 31556926;
 	//and the long keeping track of the number of seconds elapsed from the start
-  	private long elapsedSeconds = 0;
+  	private static long elapsedSeconds = 0;
 
 	//GUI parts shared by the two GUI's
 	private Timeline timeline;
@@ -202,7 +202,12 @@ public class GUI extends Application {
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+
+								//spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+								//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
+
+								//((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[9]);
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -1381,7 +1386,7 @@ public class GUI extends Application {
 
 		@return a nicely formatted string expressing the elapsedSeconds variable in years, days, minutes and seconds
 	*/
-	private String getElapsedTimeAsString() {
+	public static String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
 		long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
 	    long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
