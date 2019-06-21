@@ -363,6 +363,11 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double vPeriapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dOrigin) - 1);
         double deltaV1 = vPeriapsis - vEarth;
 
+        // Convert to vector
+        double dV1Y = Math.sin(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
+        double dV1X = Math.cos(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
+        Vector2D dV1Vector = new Vector2D(dV1X, dV1Y);
+
         double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
         double deltaV2 = vSaturn - vApoapsis;
 
@@ -372,7 +377,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
 
         //Create a new spaceProbe from that
-        SpaceProbe probe = new SpaceProbeWithThrusters();
+        SpaceProbe probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(),originPlanet.getVelocity().add(dV1Vector));
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
