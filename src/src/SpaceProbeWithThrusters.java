@@ -2,7 +2,7 @@
   */
 public class SpaceProbeWithThrusters extends SpaceProbe {
     //The following constants are all for kerosene (massFlowRate's value not found anywhere, set randomly)
-    private final double massFlowRate = 10;                 //in kg/secs
+    private double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
     private final double exhaustVelocity = 3510; //2941 for 1 atm            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
@@ -20,6 +20,11 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private final double fuelMass;                          //in kgs
     //the mass of the fuel burnt so far
     private double burntFuelMass;                           //in kgs
+
+    // the planet or moon we want to reach
+    private CelestialBody target;
+    private boolean targetSet = false;
+    private double orbitRadius = 1200000;       //in meters
 
     /** Default constructor with the same parameters as the full constructor from the superclass
       * Additionnally, two new parameters:
@@ -80,6 +85,56 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         //System.out.println("Thruster force: " + new Vector2D(thrusterForce).divide(this.getMass()));
 	}
 
+    /** Computes, then applies a force of the thruster such that the space probe should get into orbit
+      */
+    public void activateThrusterToReachOrbit (CelestialBody target, double orbitRad, Vector2D currentAcceleration, double timestep) {
+        //Compute the velocity needed to stay in orbit
+        double velocity = Math.sqrt((GUI.G * target.getMass())/orbitRad);
+        //Compute the angle of the direction from this spaceProbe to the target body
+        double angle = new Vector2D(target.getPosition()).subtract(this.getPosition()).angle(new Vector2D());
+        //Compute the angle of the target's velocity
+        double targetVelAngle = new Vector2D(target.getVelocity()).angle(new Vector2D());
+        //Set the resultAngle to the angle between the spaceProbe and the target - 90
+        double resultAngle = angle - 90;
+        //If their difference is not close, then we flip resultAngle by 180 degrees
+        if (((targetVelAngle - resultAngle)%360 > 90 && (targetVelAngle-resultAngle)%360 < 360-90) || ((targetVelAngle - resultAngle)%360 < -90 && (targetVelAngle - resultAngle)%360 > -360+90)) {
+            resultAngle += 180;
+        }
+        //And then make sure the angle is between 0 and 360
+        resultAngle %= 360;
+        if (resultAngle < 0) {
+            resultAngle += 360;
+        }
+
+        //Create a new result velocity with respect to the target body, which is using the computed angle and velocity
+        Vector2D resultVelocityWithRespectToTarget = new Vector2D(resultAngle).multiply(velocity);
+
+        //Then add the result velocity and the target body's velocity together
+        Vector2D targetVelocity = new Vector2D(target.getVelocity()).add(resultVelocityWithRespectToTarget);
+
+        //Then, given the current velocity and the targetVelocity, compute the necessary acceleration to get from the current velocity to the resulting velocity
+        Vector2D accelerationToGetIntoOrbit = new Vector2D(this.getVelocity()).multiply(-1).add(targetVelocity).divide(timestep);
+        Vector2D normalizedAcceleration = new Vector2D(accelerationToGetIntoOrbit);
+
+        //Compute the angle and factor of the acceleration
+        angle = accelerationToGetIntoOrbit.angle(new Vector2D());
+        double thrusterForce = (accelerationToGetIntoOrbit.getX()/normalizedAcceleration.getX())/this.getMass();
+
+        //Compute the massFlowRate used to get that force
+        massFlowRate = thrusterForce/exhaustVelocity;
+
+        //massFlowRate = mass of exhaust gas per unit of time
+        //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
+        double exhaustGasMass = massFlowRate * timestep;
+
+        //Then, we compute the fuelMass burnt to get the exhaustGasMass
+        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
+        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+
+        //Subtract the burnt mass from the total mass
+        this.burntFuelMass += consumedFuelMass;
+    }
+
     /** Computes the distance the landing module will travel before coming to a stop
 	  *	@return a double value representing the distance needed to brake down to y-velocity = 0
 	  */
@@ -137,8 +192,28 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return super.getMass();
     }
 
+    /** Sets the target planet we want to reach
+      */
+    public void setTarget (CelestialBody target) {
+        this.target = target;
+        targetSet = true;
+    }
+
+    /** Resets the target planet and the boolean targetSet
+      */
+    public void resetTarget () {
+        this.target = null;
+        targetSet = false;
+    }
+
     @Override
     protected void applyDerivative (Derivative d, final double deltaT) {
+        if (targetSet) {
+            if (this.getPosition().distance(target.getPosition()) <= orbitRadius) {
+                activateThrusterToReachOrbit(target, this.getPosition().distance(target.getPosition()), new Vector2D(d.dVelocity), deltaT);
+            }
+        }
+
         if (useThruster) {
             //massFlowRate = mass of exhaust gas per unit of time
             //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
@@ -173,6 +248,72 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         useThruster = false;
 	}
 
+    /** Computes, then applies a force of the thruster such that the space probe should get into orbit
+      */
+    public SpaceProbeWithThrusters createSpaceProbeInOrbit (CelestialBody target, double orbitRad, double timestep) {
+        State currentState = new State(this.getPosition(), this.getVelocity());
+        Vector2D currentAcceleration = computeAccelerationRK(currentState);
+
+        //Compute the velocity needed to stay in orbit
+        double velocity = Math.sqrt((GUI.G * target.getMass())/orbitRad);
+        //Compute the angle of the direction from this spaceProbe to the target body
+        double spaceProbeToTargetAngle = new Vector2D(target.getPosition()).subtract(this.getPosition()).angle(new Vector2D());
+        //Compute the angle of the target's velocity
+        double targetVelAngle = new Vector2D(target.getVelocity()).angle(new Vector2D());
+        //Set the resultAngle to the angle between the spaceProbe and the target - 90
+        double resultAngle = spaceProbeToTargetAngle - 90;
+        //If their difference is not close, then we flip resultAngle by 180 degrees
+        if (((targetVelAngle - resultAngle)%360 > 90 && (targetVelAngle-resultAngle)%360 < 360-90) || ((targetVelAngle - resultAngle)%360 < -90 && (targetVelAngle - resultAngle)%360 > -360+90)) {
+            resultAngle += 180;
+        }
+        //And then make sure the angle is between 0 and 360
+        resultAngle %= 360;
+        if (resultAngle < 0) {
+            resultAngle += 360;
+        }
+
+        System.out.println("Velocity: " + velocity);
+
+        //Create a new result velocity with respect to the target body, which is using the computed angle and velocity
+        Vector2D resultVelocityWithRespectToTarget = new Vector2D(resultAngle).multiply(velocity);
+
+        //Then add the result velocity and the target body's velocity together
+        Vector2D resultVelocity = new Vector2D(target.getVelocity()).add(resultVelocityWithRespectToTarget);
+
+        //Then, given the current velocity and the targetVelocity, compute the necessary acceleration to get from the current velocity to the resulting velocity
+        Vector2D accelerationToGetIntoOrbit = new Vector2D(this.getVelocity()).multiply(-1).add(resultVelocity).divide(timestep);
+        Vector2D normalizedAcceleration = new Vector2D(accelerationToGetIntoOrbit);
+
+        //Compute the angle and factor of the acceleration
+        double angle = accelerationToGetIntoOrbit.angle(new Vector2D());
+        double thrusterForce = (accelerationToGetIntoOrbit.getX()/normalizedAcceleration.getX())/this.getMass();
+
+        //Compute the massFlowRate used to get that force
+        massFlowRate = thrusterForce/exhaustVelocity;
+
+        //massFlowRate = mass of exhaust gas per unit of time
+        //Thus, if we multiply by the time during which we apply the thruster, we should get the total mass of the exhaust gas(es)
+        double exhaustGasMass = massFlowRate * timestep;
+
+        //Then, we compute the fuelMass burnt to get the exhaustGasMass
+        double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * burntFuelMass
+        double consumedFuelMass = exhaustGasMass/(burntOxidizerFactor + 1);
+
+        //Set the spaceProbe to have the desired parameters
+        Vector2D pos = new Vector2D(spaceProbeToTargetAngle);//.multiply(orbitRad);
+        System.out.println(pos);
+        System.out.println(pos.length());
+        pos.multiply(orbitRad).add(target.getPosition());;
+        System.out.println("Orbit radius: " + orbitRad + ", \nposition: " + pos + "\nLength of pos: " + pos.length() + "\nDistance from pos to target: " + pos.distance(target.getPosition()));
+        Vector2D vel = new Vector2D(resultVelocity);
+        System.out.println("Result velocity: " + vel);
+
+        //Subtract the burnt mass from the total mass
+        this.burntFuelMass += consumedFuelMass;
+
+        return new SpaceProbeWithThrusters(this.getName(), this.getSpaceProbeMass(), pos, vel);
+    }
+
     /** Creates a spaceProbe launched from launchPlanet in the correct angle
       */
     public static SpaceProbeWithThrusters createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle) {
@@ -205,7 +346,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 			crashedPlanet = p;
 			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
 			crashed = true;
-            System.out.println("Burnt fuel Mass: " + this.getBurntFuelMass());
+            System.out.println("Time taken: " + GUI.getElapsedTimeAsString());
 			return false;
 		}
 		else {
