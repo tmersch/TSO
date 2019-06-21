@@ -112,6 +112,18 @@ public class Vector2D {
 		return y;
 	}
 
+	/** Sets y to a new value
+	  */
+	public void setX(double newX) {
+		x = newX;
+	}
+
+	/** Sets x to a new value
+	  */
+	public void setY(double newY) {
+		y = newY;
+	}
+
 	public String toString () {
 		return "x=" + x + ", y=" + y;
 	}

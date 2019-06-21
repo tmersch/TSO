@@ -61,6 +61,8 @@ public class CelestialBody {
         initialState.position = this.position;
         initialState.velocity = this.velocity;
 
+        intermediateState = new State(initialState);
+
         //And initialize the derivative
         derivative = new Derivative();
 
