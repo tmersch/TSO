@@ -119,7 +119,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         Vector2D velocityToAchieve = new Vector2D(this.getVelocity()).multiply(-1).add(targetVelocity);
 
         //And compute the fuel burnt to get that velocity
-        computeBurntFuelFromVelocity(velocityToAchieve.length());
+        computeBurntFuelFromVelocity(velocityToAchieve.length(), timestep);
     }
 
     /** Computes the mass of kerosene burnt given a certain velocity gain we want to achieve in a certain timestep
@@ -218,6 +218,12 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return super.getMass();
     }
 
+    /** Returns the flightplan of this space probe concerning the Hohmann Transfer
+      */
+    public FlightPlan getFlightPlan () {
+        return hohmannTransfer;
+    }
+
     /** Sets the target planet we want to reach
       */
     public void setTarget (CelestialBody target) {
@@ -241,7 +247,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         }
 
         if (useThruster) {
-            computeBurntFuelFromMassFlowRate(massFlowRate);
+            computeBurntFuelFromMassFlowRate(massFlowRate, deltaT);
 
             //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
             Vector2D thrusterAccel = new Vector2D(thrusterForce).divide(this.getMass());
@@ -391,14 +397,14 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
 
         //Create a new spaceProbe from that, we start from the originPlanet
-        SpaceProbe probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(), originPlanet.getVelocity());
+        SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(), originPlanet.getVelocity());
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
-        FlightPlan plan = FlightPlan();
+        FlightPlan plan = new FlightPlan();
         //Add the first iteration with dV1Vector
-        Vector2D accel =
-        plan.addIteration();
+        //Vector2D accel =
+        //plan.addIteration();
 
         //Return the spaceProbe
         return probe;
