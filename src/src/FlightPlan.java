@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /** This list represents a flight plan for space travel
-  * useThrusters contains, for each iteration, whether we use the thrusters or not (true if we use the thrusters, false if not)
+  * useThrusters contains, for each iteration, the force at which we use the thrusters (0 if we do not use the thrusters)
   * correctAngle contains, for each iteration, whether we corrected the angle or not and in which direction (0 if no correction, -1 if the angle is reduced, +1 if the angle is increased)
   */
 public class FlightPlan {
-    private List<Boolean> useThrusters;         //this list represents the plan of the use of thrusters during the travel
+    private List<Double> useThrusters;          //this list represents the plan of the use of thrusters during the travel
     private List<Integer> correctAngle;         //this list represents the plan of the angle correction during the travel
     //these two lists should have the same length (or size() as they are Lists) at all times
 
@@ -16,7 +16,7 @@ public class FlightPlan {
       * Initializes the useThrusters and correctAngle variables
       */
     public FlightPlan () {
-        useThrusters = new ArrayList<Boolean>();
+        useThrusters = new ArrayList<Double>();
         correctAngle = new ArrayList<Integer>();
     }
 
@@ -27,7 +27,7 @@ public class FlightPlan {
       * @param thrusterPlan the initial value for useThrusters
       * @param angleCorrectionPlan the initial value for correctAngle
       */
-    public FlightPlan (List<Boolean> thrusterPlan, List<Integer> angleCorrectionPlan) {
+    public FlightPlan (List<Double> thrusterPlan, List<Integer> angleCorrectionPlan) {
         this();
 
         //Make sure that the two lists have the same size
@@ -60,7 +60,7 @@ public class FlightPlan {
       */
     public static FlightPlan createNewInactivePlan (int size) {
         FlightPlan plan = new FlightPlan();
-        plan.useThrusters = new ArrayList<Boolean>(size);
+        plan.useThrusters = new ArrayList<Double>(size);
         plan.correctAngle = new ArrayList<Integer>(size);
 
         for (int i = 0; i < size; i ++) {
@@ -75,16 +75,23 @@ public class FlightPlan {
       * @param useThrustersAtIteration the value for useThrusters at the new iteration
       * @param correctAngleAtIteration the value for correctAngle at the new iteration
       */
-    public void addIteration (boolean useThrustersAtIteration, int correctAngleAtIteration) {
+    public void addIteration (double useThrustersAtIteration, int correctAngleAtIteration) {
         useThrusters.add(useThrustersAtIteration);
         correctAngle.add(correctAngleAtIteration);
+    }
+
+    /** Adds a new iteration to the flightPlan
+      */
+    public void addInactiveIteration () {
+        useThrusters.add(0);
+        correctAngle.add(0);
     }
 
     /** Should return the item at entry index "iteration" if possible
       *
       * @return the value of useThrusters at the given index
       */
-    public boolean getUseThrusters (int iteration) {
+    public double getUseThrusters (int iteration) {
         return useThrusters.get(iteration);
     }
 
@@ -101,7 +108,7 @@ public class FlightPlan {
       * @param iteration the number of the iteration which we reset its useThrusters and correctAngle value
       */
     public void resetIterationToInactive(int iteration) {
-        setIteration(iteration, false, 0);
+        setIteration(iteration, 0, 0);
     }
 
     /** Sets the value of useThrusters and correctAngle at a given iteration
@@ -120,7 +127,7 @@ public class FlightPlan {
       * @param iterationIndex the number of the iteration we want to modify
       * @param useThrustersAtIteration the new value of useThrusters of the given iteration
       */
-    public void setUseThrusters (int iterationIndex, boolean useThrustersAtIteration) {
+    private void setUseThrusters (int iterationIndex, boolean useThrustersAtIteration) {
         useThrusters.set(iterationIndex, useThrustersAtIteration);
     }
 
@@ -129,7 +136,7 @@ public class FlightPlan {
       * @param iterationIndex the number of the iteration we want to modify
       * @param correctAngleAtIteration the new value of correctAngle of the given iteration
       */
-    public void setCorrectAngle (int iterationIndex, int correctAngleAtIteration) {
+    private void setCorrectAngle (int iterationIndex, int correctAngleAtIteration) {
         correctAngle.set(iterationIndex, correctAngleAtIteration);
     }
 
