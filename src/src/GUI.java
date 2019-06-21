@@ -165,26 +165,55 @@ public class GUI extends Application {
 								DELTA_T = s.nextDouble();
 
 								//Optionally, let the User select an ending time for the simulation (in simulated time)
-								//System.out.println("After how much time (in secs) do you want to end the simulation ?");
-								//double endTime = s.nextLong();
-								//int numIterations = (int)Math.ceil(endTime/DELTA_T);
+								System.out.println("After how much time (in years) do you want to end the simulation ?");
+								long endTime = s.nextLong();
+								long endTimeInSeconds = endTime * SEC_IN_YEAR;
+								int iterationsNum = (int)Math.ceil(endTimeInSeconds/DELTA_T);
+
+								//Ask the User if he wants to see the GUI or just textual output
+								boolean chose = false;
+								boolean showGUI = false;
+
+								while (!chose) {
+									System.out.println("Do you want to see the GUI (enter 1) or purely textual output (enter 2)?");
+									String showGUIString = s.next();
+
+									switch(showGUIString) {
+										case "1":
+											showGUI = true;
+											chose = true;
+											break;
+										case "2":
+											showGUI = false;
+											chose = true;
+											break;
+									}
+								}
 
 								boolean spaceProbeIncluded = false;
 
-								//GUI part
-								gc = createGUI(stage);
-								launchGUI(1, spaceProbeIncluded/*, numIterations*/);
-								timeline.play();
-								stage.show();
-
-								/*	Debugging part used for printing the planet's position after a certain time
-								while (!timeline.getStatus().equals(Animation.Status.STOPPED)) {
+								if (showGUI) {
+									//GUI part
+									gc = createGUI(stage);
+									launchGUI(1, spaceProbeIncluded, iterationsNum);
+									timeline.play();
+									stage.show();
 								}
+								else {
+									//Run the simulation until the we reach the number of iterations
+									while (numIterations < iterationsNum) {
+										update(DELTA_T, spaceProbeIncluded);
+									}
 
-								for (int i = 0; i < planets.length; i ++) {
-									System.out.println("Planet " + planets[i].getName() + ": \nPosition: " + planets[i].getPosition());
+									System.out.println("\nAfter " + getElapsedTimeAsString());
+
+									//Then print out the position of the Earth and Titan
+									int[] showPlanetsIndex = {3, 9};		//indexes of the Earth and TItan
+
+									for (int i: showPlanetsIndex) {
+										System.out.println("Planet " + planets[i].getName() + ": \n    Position: " + planets[i].getPosition() + "\n    Velocity: " + planets[i].getVelocity());
+									}
 								}
-								*/
 
 								//Set validInput to true and break the switch statement to end the loop of asking the User to choose what he wants to do
 								validInput = true;
@@ -198,7 +227,7 @@ public class GUI extends Application {
 								int destinationPlanetIndex = 9;			//to Titan (= planets[9])
 
 								//Find out the ideal starting angle
-								double idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								double idealAngle = launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
@@ -249,7 +278,7 @@ public class GUI extends Application {
 
 								System.out.println(planets[destinationPlanetIndex].getVelocity().length());
 
-								double launch_angle = launchOrbitAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								double launch_angle = launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
 								/*
 								FlightPlan FPlan = launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
@@ -627,9 +656,8 @@ public class GUI extends Application {
 			}
 
 			//Create a new spaceProbe to start the Hohmann Transfer from this position
-			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer();
-			FlightPlan plan = spaceProbe.getFlightPlan();
-
+			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[originPlanetIndex], planets[destinationPlanetIndex], DELTA_T);
+			FlightPlan plan = ((SpaceProbeWithThrusters)spaceProbe).getFlightPlan();
 		}
 
 
@@ -738,6 +766,8 @@ public class GUI extends Application {
 
 		return result;
 		*/
+
+		return 0;
 	}
 
 	private Vector2D orbitPositionFromPlanet (CelestialBody planet) {
@@ -759,7 +789,6 @@ public class GUI extends Application {
 
 		return resultPos;
 	}
-
 
 	/** Overloads method launchAngleAdjustmentSearchImproved with one less parameter than the original: the boolean DEBUG
 	  */
@@ -1234,7 +1263,7 @@ public class GUI extends Application {
 			gc.fillOval(otherPosition.x - PLANET_RADIUS, otherPosition.y - PLANET_RADIUS, PLANET_RADIUS * 2, PLANET_RADIUS * 2);
 
 			//Draw the labels
-			Vector2D textPos = p.getLabelPositionModifier();
+			Vector2D textPos = planets[i].getLabelPositionModifier();
 			gc.fillText(planets[i].getName(), otherPosition.x + textPos.getX(), otherPosition.y + textPos.getY());
 		}
 
@@ -1258,9 +1287,6 @@ public class GUI extends Application {
 				System.out.println("Distance to the center of Titan: " + (spaceProbe.getPosition().distance(planets[9].getPosition())));
 			}
 		}
-
-		//Also keep track of the number of iterations
-		numIterations ++;
 
 		//If the starting wait time is over, update the positions of the planets, otherwise not
 		if (System.nanoTime() >= startTime + waitTime*Math.pow(10, 9)) {
@@ -1290,6 +1316,8 @@ public class GUI extends Application {
 
 		//Increment the seconds
 		elapsedSeconds += time;
+		//Keep track of the number of iterations
+		numIterations ++;
 	}
 
 	/** Formats the elapsedSeconds variable for displaying the time elapsed since the beginning of the simulation
