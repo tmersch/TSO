@@ -50,7 +50,7 @@ public class GUI extends Application {
 	public static CelestialBody[] planets;
 		//Arrays containing all the information about the planets/moons
 		// Indexes: ----------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
-	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede"};
+	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede" };
 		//names of the planets
 	private static final double[] planetMasses = {	1.9885e30, 		3.302e23, 		4.8685e24, 		5.97219e24, 	6.4171e23, 		1.8981e27, 			5.6834e26, 			8.6813e25, 			1.02413e26, 		1.34553e23, 	7.349e22, 		1.482e23};
 		//masses in kg
@@ -165,10 +165,10 @@ public class GUI extends Application {
 								DELTA_T = s.nextDouble();
 
 								//Optionally, let the User select an ending time for the simulation (in simulated time)
-								System.out.println("After how much time (in years) do you want to end the simulation ?");
-								long endTime = s.nextLong();
-								long endTimeInSeconds = endTime * SEC_IN_YEAR;
-								int iterationsNum = (int)Math.ceil(endTimeInSeconds/DELTA_T);
+								//System.out.println("After how much time (in seconds) do you want to end the simulation ?");
+								long endTime = 9417600;
+								//long endTimeInSeconds = endTime * SEC_IN_YEAR;
+								int iterationsNum = (int)Math.ceil(endTime /*endTimeInSeconds*//DELTA_T);
 
 								//Ask the User if he wants to see the GUI or just textual output
 								boolean chose = false;
@@ -208,11 +208,23 @@ public class GUI extends Application {
 									System.out.println("\nAfter " + getElapsedTimeAsString());
 
 									//Then print out the position of the Earth and Titan
-									int[] showPlanetsIndex = {3, 9};		//indexes of the Earth and TItan
+									int[] showPlanetsIndex = {3/*, 9*/};		//indexes of the Earth and TItan
 
 									for (int i: showPlanetsIndex) {
-										System.out.println("Planet " + planets[i].getName() + ": \n    Position: " + planets[i].getPosition() + "\n    Velocity: " + planets[i].getVelocity());
+										System.out.println("Planet " + planets[i].getName() + ": \n    Position: " + planets[i].getPosition() + "\n    Velocity: " + planets[i].getVelocity() + "\nDistance to the Sun: " + planets[i].getPosition().distance(new Vector2D()));
 									}
+
+									//Start the spaceProbe in the correct direction and stuff
+									spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[3], planets[9], DELTA_T);
+
+									//Then launch the GUI
+									spaceProbeIncluded = true;
+
+									//GUI part
+									gc = createGUI(stage);
+									launchGUI(1, spaceProbeIncluded);
+									timeline.play();
+									stage.show();
 								}
 
 								//Set validInput to true and break the switch statement to end the loop of asking the User to choose what he wants to do
@@ -328,8 +340,8 @@ public class GUI extends Application {
 					//Initialize the landModChoice variable to an empty string
 					String landModChoice = "";
 					//And initialize the starting position, starting velocity and starting angle to default values
-					Vector2D landModStartPos = new Vector2D(0, 1200000);
-					Vector2D landModStartVeloc = new Vector2D(0, 0);
+					Vector2D landModStartPos = new Vector2D(0, 155000);
+					Vector2D landModStartVeloc = new Vector2D(0, -400);
 					double landModStartAngle = 0;
 
 					//Ask the user which kind of controller he would like to have
@@ -497,6 +509,7 @@ public class GUI extends Application {
 	}
 
 	public int[] searchPeriapsisOfSaturn() {
+		return new int[0];
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG

@@ -39,6 +39,18 @@ public class LandingModuleFeedbackController implements LandingModule {
     private final double MAXANGLE = 45;	//maximum angle the spaceship should have with respect to the y-axis (in degrees)
 	private double MINMAINFORCE = mainForce * Math.cos(Math.toRadians(MAXANGLE));
 
+    //The height at which we deploy the parachute to brake a bit
+    private final double activateParachuteHeight = 155000;      //in meters
+    //The height at which we stop using the parachute and start using the thruster
+    private final double activateThrusterHeight = 50000;         //in meters
+
+    private final double strongBrakingAtParachuteActivationTime = 90;       //in secs
+
+    private final double parachuteAccelIntensity = 1.352;                                       //in meters/secs
+    private final double parachuteOpeningAccelIntensity = 35.80175/* - parachuteAccelIntensity*/;       //in meters/secs
+    private double elapsedSecondsSinceParachuteActivation = 0;
+    private boolean deployedParachute = false;
+
 	private final double MINANGLEXCORRECTION = 2;	//minimum angle to keep outside of the [-TOLPOSX, TOLPOSX] x-position
 
     private final boolean considerWind;
@@ -264,26 +276,48 @@ public class LandingModuleFeedbackController implements LandingModule {
             wind();
         }
 
-        //If the braking distance we would need to get to a full stop is smaller than the next position, we activate the thruster
-        if (computeBrakingDistance(thrusterForceUsed) < position.getY() + velocity.getY()*timestep) {
-            thrust = true;
-        }
-        //Unless the velocity is smaller than 5 m/secs in direction of Titan
-        if (velocity.getY() > -5) {
-            thrust = false;
-        }
-        //But we still use the thrusters to brake when we are close to the ground, even if the velocity gets smaller than 5 m/secs
-        if (position.getY() < 50) {
-            thrust = true;
-        }
-        //However, if the velocity gets smaller than the tolerance for the velocity on y, we stop using the thrusters
-        if (velocity.getY() > -TOLVELY) {
-            thrust = false;
+        //Depending on the height, we might use the parachutes or enable the thrusters
+        double height = this.getPosition().getY();
+        if (height < 145000 && !deployedParachute) {
+            System.out.println("Velocity: " + this.getVelocity().length());
+            deployedParachute = true;
         }
 
-        //If the previous checks determined that we had to use the thruster, we use it
-        if (thrust) {
-            useMainThruster(timestep);
+        if (height < activateParachuteHeight && height > activateThrusterHeight) {
+            if (elapsedSecondsSinceParachuteActivation < strongBrakingAtParachuteActivationTime) {
+                //When the parachute is opened, it brakes strongly at first
+                useParachute(parachuteOpeningAccelIntensity + parachuteAccelIntensity);
+            }
+            else {
+                //Then the parachute only brakes lightly
+                useParachute(parachuteAccelIntensity);
+            }
+
+            //Keep track of the seconds since the parachute activation
+            elapsedSecondsSinceParachuteActivation ++;
+        }
+        else if (height < activateThrusterHeight) {
+            //If the braking distance we would need to get to a full stop is smaller than the next position, we activate the thruster
+            if (computeBrakingDistance(thrusterForceUsed) < position.getY() + velocity.getY()*timestep) {
+                thrust = true;
+            }
+            //Unless the velocity is smaller than 5 m/secs in direction of Titan
+            if (velocity.getY() > -5) {
+                thrust = false;
+            }
+            //But we still use the thrusters to brake when we are close to the ground, even if the velocity gets smaller than 5 m/secs
+            if (position.getY() < 50) {
+                thrust = true;
+            }
+            //However, if the velocity gets smaller than the tolerance for the velocity on y, we stop using the thrusters
+            if (velocity.getY() > -TOLVELY) {
+                thrust = false;
+            }
+
+            //If the previous checks determined that we had to use the thruster, we use it
+            if (thrust) {
+                useMainThruster(timestep);
+            }
         }
     }
 
@@ -320,6 +354,17 @@ public class LandingModuleFeedbackController implements LandingModule {
 		return brakingTime;
 	}
 
+    /** Uses the parachute to slow down the SpaceProbe
+      * @param brakingAcceleration the acceleration exerted by the parachute
+      */
+    public void useParachute (final double brakingAcceleration) {
+        //Compute the acceleration caused by the parachute as a vector
+        Vector2D parachuteAccel = new Vector2D(0, brakingAcceleration);
+
+        //Add the acceleration to the "acceleration" field variable
+        acceleration.add(parachuteAccel);
+    }
+
     /** Use the back thruster. Changes the modules acceleration
      *
      */
@@ -331,7 +376,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 	    // accel x = (mainForce/weight) * Math.sin(angle));
 	    // accel y = (mainForce/weight) * Math.cos(angle));
         //The angle is 0 if it goes straight down
-        Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(weight);
+        Vector2D thrust = new Vector2D(Math.sin(Math.toRadians(angle)), Math.cos(Math.toRadians(angle))).multiply(thrusterForceExerted).divide(this.getMass());
 
         //Compute the massFlowRate used to get that force
         massFlowRate = thrusterForceExerted/exhaustVelocity;
