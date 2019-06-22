@@ -18,6 +18,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private final double angleChange = 1;
     //the mass of the fuel
     private final double fuelMass;                          //in kgs
+    //the mass of fuel we start with
+    private static final double START_FUEL_MASS = 1000;     //in kgs
     //the mass of the fuel burnt so far
     private double burntFuelMass;                           //in kgs
 
@@ -50,7 +52,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       */
     public SpaceProbeWithThrusters (String name, double mass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
         //Set the default fuelMass to 1000 kg
-        this(name, mass, 1000, startingPos, startingV, initialAngle);
+        this(name, mass, START_FUEL_MASS, startingPos, startingV, initialAngle);
     }
 
     /** Additional constructor with two less parameters than the full constructor: fuelMass and initialAngle
@@ -88,6 +90,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         //System.out.println("Thruster force: " + new Vector2D(thrusterForce).divide(this.getMass()));
 	}
 
+    // TO DELETE
     /** Computes, then applies a force of the thruster such that the space probe should get into orbit
       */
     public void activateThrusterToReachOrbit (CelestialBody target, double orbitRad, Vector2D currentAcceleration, double timestep) {
@@ -389,8 +392,9 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double deltaV1 = vPeriapsis - vEarth;
 
         // Convert to vector
-        double dV1Y = Math.sin(originPlanet.getPosition().angle(GUI.planets[0].getPosition()) /* + or - 90 !!!*/) * deltaV1;
-        double dV1X = Math.cos(originPlanet.getPosition().angle(GUI.planets[0].getPosition()) /* + or - 90 !!!*/) * deltaV1;
+        double angledV1Vector = originPlanet.getPosition().angle(GUI.planets[0].getPosition()) - 90;
+        double dV1Y = Math.sin(angledV1Vector) * deltaV1;
+        double dV1X = Math.cos(angledV1Vector) * deltaV1;
         Vector2D dV1Vector = new Vector2D(dV1X, dV1Y);
 
         double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
@@ -402,13 +406,16 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
 
         //Create a new spaceProbe from that, we start from the originPlanet
-        double semiMajorAxisEarth = 149598023e3;
-        double sphereOfInfluence = semiMajorAxisEarth * Math.pow(originPlanet.getMass()/GUI.planets[0].getMass(), 2/5);
-        System.out.println("Sphere of influence: " + sphereOfInfluence);
+        double distFromEarthStart = 10000 + originPlanet.getRadius();
+        double additionalVelocity = 0;
+
+        System.out.println("dV1Vector.getAngle(): " + dV1Vector.angle(new Vector2D()));
 
         Vector2D spaceProbePos = new Vector2D(originPlanet.getPosition());
         Vector2D spaceProbeVelocity = new Vector2D(originPlanet.getVelocity()).add(dV1Vector);
-        spaceProbePos.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(sphereOfInfluence));
+        spaceProbePos.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(distFromEarthStart));
+        System.out.println("Norm of the velocity from Earth: " + dV1Vector.length());
+        spaceProbeVelocity.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(additionalVelocity));
         SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, spaceProbePos, spaceProbeVelocity);
 
         //Try to build a flightPlan from that
@@ -430,13 +437,26 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 			crashedPlanet = p;
 			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
 			crashed = true;
-            System.out.println("Time taken: " + GUI.getElapsedTimeAsString());
+            System.out.println("Crashed on " + p.getName() + "\nTime taken: " + GUI.getElapsedTimeAsString());
 			return false;
 		}
 		else {
 			return true;
 		}
 	}
+
+    @Override
+    public Vector2D computeAccelerationRK (State state) {
+        resetAcceleration();
+
+        for (int i = 0; i < GUI.planets.length; i ++) {
+            if (! GUI.planets[i].getName().equals("Earth")) {
+                addGToAccelerationRK(GUI.planets[i], state);
+            }
+        }
+
+        return getAcceleration();
+    }
 
     /** Returns a deep copy of this object at its current state
       */
