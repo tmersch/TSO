@@ -145,7 +145,7 @@ public class GUI extends Application {
 			input = s.next();
 
 			switch (input) {
-				case "1":				//Simulation of the solar system
+				case "1":				//Simulation of the solar system or travel to Titan or back
 					//Initialize the planets
 					createSolarSystem();
 
@@ -276,9 +276,13 @@ public class GUI extends Application {
 								startLaunchAngle = 259.84639616224865;
 								startAngleChange = 5;
 
-								System.out.println(planets[destinationPlanetIndex].getVelocity().length());
+								createSolarSystem();
 
-								double launch_angle = launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[originPlanetIndex], planets[destinationPlanetIndex], DELTA_T);
+
+
+
+								//double launch_angle = launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
 								/*
 								FlightPlan FPlan = launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
@@ -298,7 +302,7 @@ public class GUI extends Application {
 								CelestialBody originPlanet = planets[originPlanetIndex];
 
 								//Create a new spaceProbe with the starting angle
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
+								//spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
 
 								//Show the simulation of the solar system with the space probe
 								showNumIterations = true;
@@ -490,6 +494,9 @@ public class GUI extends Application {
 					break;
 			}
 		} while (! choiceMade);
+	}
+
+	public int[] searchPeriapsisOfSaturn() {
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG

@@ -149,7 +149,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     /** Computes the mass of kerosene burnt given a certain massFlowRate and a timestep during which we use the thruster
       * and adds the result to the burntFuelMass field variable
       */
-    public void computeBurntFuelFromMassFlowRate (double massFlowRate, final double timestep) {
+    public void computeBurntFuelFromMassFlowRate (final double massFlowRate, final double timestep) {
         //The mass of exhaust gas is equal to the mass flow rate multiplied by the timestep during which we apply the massFlowRate
         double exhaustGasMass = massFlowRate * timestep;
 
@@ -367,10 +367,15 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       * @param destinationPlanet the planet which we should arrive at
       */
     public static SpaceProbeWithThrusters createSpaceProbeHohmannTransfer(CelestialBody originPlanet, CelestialBody destinationPlanet, double timestep) {
+        //
+        // WARNING !!! IN THE FOLLOWING WE ASSUME THAT THE ORIGIN PLANET IS EARTH AND THE ARRIVAL PLANET SATURN
+        // WE WILL NEED TO MODIFY THE ORBITAL PERIODS ... probably add them as a field variable of CelestialBody ? in order to make sure that it still works for different settings
+        //
+
         // Cheating a bit, orbital periods given
-        double pEarth = 365.26 * 86400; // orbital period Earth
-        double pSaturn = pEarth * 29.456; // orbital period Saturn
-        //Compute distance between Sun and planets
+        double pEarth = 365.26 * 86400; // orbital period Earth in seconds
+        double pSaturn = pEarth * 29.456; // orbital period Saturn in seconds
+        //Compute distance between Sun and the origin and destination planets (the sun is the center, so has coordinates 0, 0)
         double dOrigin = originPlanet.getPosition().length();
         double dDest = destinationPlanet.getPosition().length();
 
@@ -384,8 +389,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double deltaV1 = vPeriapsis - vEarth;
 
         // Convert to vector
-        double dV1Y = Math.sin(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
-        double dV1X = Math.cos(originPlanet.getPosition().angle(GUI.planets[0].getPosition())) * deltaV1;
+        double dV1Y = Math.sin(originPlanet.getPosition().angle(GUI.planets[0].getPosition()) /* + or - 90 !!!*/) * deltaV1;
+        double dV1X = Math.cos(originPlanet.getPosition().angle(GUI.planets[0].getPosition()) /* + or - 90 !!!*/) * deltaV1;
         Vector2D dV1Vector = new Vector2D(dV1X, dV1Y);
 
         double vApoapsis = ((2 * Math.PI * a)/pHohmann) * Math.sqrt(((2 * a)/dDest) - 1);
@@ -397,7 +402,14 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
 
         //Create a new spaceProbe from that, we start from the originPlanet
-        SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, originPlanet.getPosition(), originPlanet.getVelocity());
+        double semiMajorAxisEarth = 149598023e3;
+        double sphereOfInfluence = semiMajorAxisEarth * Math.pow(originPlanet.getMass()/GUI.planets[0].getMass(), 2/5);
+        System.out.println("Sphere of influence: " + sphereOfInfluence);
+
+        Vector2D spaceProbePos = new Vector2D(originPlanet.getPosition());
+        Vector2D spaceProbeVelocity = new Vector2D(originPlanet.getVelocity()).add(dV1Vector);
+        spaceProbePos.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(sphereOfInfluence));
+        SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, spaceProbePos, spaceProbeVelocity);
 
         //Try to build a flightPlan from that
         //Set the spaceProbe's flightPlan to the computed FlightPlan
