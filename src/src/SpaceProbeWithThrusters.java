@@ -26,7 +26,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     // the planet or moon we want to reach
     private CelestialBody target;
     private boolean targetSet = false;
-    private double orbitRadius = 1200000;       //in meters
+    private double orbitRadius = 3000000;       //in meters
 
     // the FlightPlan for the Hohmann transfer
     private FlightPlan hohmannTransfer = null;
@@ -406,7 +406,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DeltaV2 should be used when the spacecraft is exactly at the apoapsis of the Hohmann transfer to get into the same orbit as Saturn
 
         //Create a new spaceProbe from that, we start from the originPlanet
-        double distFromEarthStart = 10000 + originPlanet.getRadius();
+        double distFromEarthStart = 1000 + originPlanet.getRadius();
         double additionalVelocity = 0;
 
         System.out.println("dV1Vector.getAngle(): " + dV1Vector.angle(new Vector2D()));

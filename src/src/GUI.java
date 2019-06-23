@@ -68,7 +68,7 @@ public class GUI extends Application {
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	//the mass of voyager
 	private static final double spaceProbeMass = 800;								//in kg
-	private static final double averageVelocitySpaceProbe = 44e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbe = 45e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;		//in meters/secs
 	private static final String spaceProbeName = "SpaceProbe";
 
@@ -102,7 +102,7 @@ public class GUI extends Application {
 	private static final int SEC_IN_MINUTE = 60;
   	private static final int SEC_IN_HOUR = SEC_IN_MINUTE * 60;
   	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
-  	private static final int SEC_IN_YEAR = 31556926;
+  	private static final int SEC_IN_YEAR = (int)(SEC_IN_DAY * 365.25);
 	//and the long keeping track of the number of seconds elapsed from the start
   	private static long elapsedSeconds = 0;
 
@@ -166,7 +166,9 @@ public class GUI extends Application {
 
 								//Optionally, let the User select an ending time for the simulation (in simulated time)
 								//System.out.println("After how much time (in seconds) do you want to end the simulation ?");
-								long endTime = 9417600;
+								long days = 110;
+								long years = 7;
+								long endTime = years*SEC_IN_YEAR + days*SEC_IN_DAY;
 								//long endTimeInSeconds = endTime * SEC_IN_YEAR;
 								int iterationsNum = (int)Math.ceil(endTime /*endTimeInSeconds*//DELTA_T);
 
@@ -222,7 +224,7 @@ public class GUI extends Application {
 
 									//GUI part
 									gc = createGUI(stage);
-									launchGUI(1, spaceProbeIncluded);
+									launchGUI(1, spaceProbeIncluded, 10.0);
 									timeline.play();
 									stage.show();
 								}
@@ -233,8 +235,8 @@ public class GUI extends Application {
 							//Launch of space probe from Earth to Titan
 							case "2":
 								//Initialize some variables for the launchAngleAdjustmentSearch method
-								double startLaunchAngle = 256.2480755655964;			//Should already be the end result
-								double startAngleChange = 5;
+								double startLaunchAngle = 256.93955845025266;			//Should already be the end result
+								double startAngleChange = 1;
 								int originPlanetIndex = 3;				//going from Earth (=planets[3])
 								int destinationPlanetIndex = 9;			//to Titan (= planets[9])
 
@@ -243,8 +245,8 @@ public class GUI extends Application {
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
-
+								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+								((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[destinationPlanetIndex]);
 								//spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
 								//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
 
@@ -290,7 +292,7 @@ public class GUI extends Application {
 
 								createSolarSystem();
 
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[originPlanetIndex], planets[destinationPlanetIndex], DELTA_T);
+								//spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[originPlanetIndex], planets[destinationPlanetIndex], DELTA_T);
 
 
 
@@ -300,9 +302,9 @@ public class GUI extends Application {
 								FlightPlan FPlan = launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 								*/
 
-								//Scanner S = new Scanner(System.in);
-								//System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
-								//double launch_angle = S.nextDouble();
+								Scanner S = new Scanner(System.in);
+								System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
+								double launch_angle = S.nextDouble();
 
 								/*
 								System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
@@ -314,7 +316,7 @@ public class GUI extends Application {
 								CelestialBody originPlanet = planets[originPlanetIndex];
 
 								//Create a new spaceProbe with the starting angle
-								//spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
 
 								//Show the simulation of the solar system with the space probe
 								showNumIterations = true;
@@ -340,13 +342,13 @@ public class GUI extends Application {
 					//Initialize the landModChoice variable to an empty string
 					String landModChoice = "";
 					//And initialize the starting position, starting velocity and starting angle to default values
-					Vector2D landModStartPos = new Vector2D(0, 155000);
-					Vector2D landModStartVeloc = new Vector2D(0, -400);
+					Vector2D landModStartPos = new Vector2D(0, 1200000);
+					Vector2D landModStartVeloc = new Vector2D(0, 0);
 					double landModStartAngle = 0;
 
 					//Ask the user which kind of controller he would like to have
-					while ((!landModChoice.equals("1")) && (!landModChoice.equals("2"))) {
-						System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller)?");
+					while ((!landModChoice.equals("1")) && (!landModChoice.equals("2")) && (!landModChoice.equals("3"))) {
+						System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller without parachtue, 3 for the feedback controller with parachute)?");
 						landModChoice = s.next();
 
 						switch (landModChoice) {
@@ -435,8 +437,8 @@ public class GUI extends Application {
 								selection = "";
 								System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
 								selection = s.next().toLowerCase();
-								double windStrength = 2;
-								double thrusterForce = 2500;
+								double windStrength = LandingModuleFeedbackController.getMaxWindStrength();
+								double thrusterForce = LandingModuleFeedbackController.getThrusterForce();
 								//If the user wants to have wind, give it to him !!!
 								if (selection.equals("yes")) {
 									addWind = true;
@@ -460,6 +462,79 @@ public class GUI extends Application {
 								landingModule = new LandingModuleFeedbackController(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
 								((LandingModuleFeedbackController)landingModule).setMaxWindStrength(windStrength);
 								((LandingModuleFeedbackController)landingModule).setThrusterForce(thrusterForce);
+
+								break;
+							case "3":
+								//Initialize the startPosition and the startVelocity for the feedback controller with parachute
+								landModStartPos = new Vector2D(0, 155000);
+								landModStartVeloc = new Vector2D(0, -400);
+
+								//Initialize selection
+								selection = "";
+
+								//Ask the user if he wants to specify a certain starting position for the landing module
+								System.out.println("Do you want to specify a specific starting position ? Enter 'yes' or 'no'");
+								selection = s.next();
+								//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+								if (selection.equals("yes")) {
+									System.out.println("Please enter the x-position and y-position separated by a space");
+									double startX = s.nextDouble();
+									double startY = s.nextDouble();
+									landModStartPos = new Vector2D(startX, startY);
+								}
+
+								//Ask the user if he wants to specify a certain starting velocity for the landing module
+								selection = "";
+								System.out.println("Do you want to specify a specific starting velocity ? Enter 'yes' or 'no'");
+								selection = s.next().toLowerCase();
+								//If the user wants to specify a starting velocity, retrieve the input velocity and save it
+								if (selection.equals("yes")) {
+									System.out.println("Please enter the x-velocity and y-velocity separated by a space");
+									double startXVeloc = s.nextDouble();
+									double startYVeloc = s.nextDouble();
+									landModStartVeloc = new Vector2D(startXVeloc, startYVeloc);
+								}
+
+								//Ask the user if he wants to specify a certain starting angle
+								selection = "";
+								System.out.println("Do you want to specify a specific starting angle ? Enter 'yes' or 'no'");
+								selection = s.next().toLowerCase();
+								//If the user wants to specify a starting angle, retrieve the input angle and save it
+								if (selection.equals("yes")) {
+									System.out.println("Please enter the angle");
+									landModStartAngle = s.nextDouble();
+								}
+
+								//Ask the user if he wants to add wind to the simulation or not
+								addWind = false;
+								selection = "";
+								System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
+								selection = s.next().toLowerCase();
+								windStrength = LandingModuleFeedbackControllerWithParachute.getMaxWindStrength();
+								thrusterForce = LandingModuleFeedbackControllerWithParachute.getThrusterForce();
+								//If the user wants to have wind, give it to him !!!
+								if (selection.equals("yes")) {
+									addWind = true;
+
+									String windChoice = "";
+									System.out.println("Do you want to set the maximum acceleration of the wind ?");
+									windChoice = s.next().toLowerCase();
+									if (windChoice.equals("yes")) {
+										System.out.println("What should the maximum acceleration of the wind be ?");
+										windStrength = s.nextDouble();
+									}
+
+									System.out.println("Do you want to set the force of the main thruster ?");
+									windChoice = s.next().toLowerCase();
+									if (windChoice.equals("yes")) {
+										System.out.println("What should the force of the main thruster be ?");
+										thrusterForce = s.nextDouble();
+									}
+								}
+
+								landingModule = new LandingModuleFeedbackControllerWithParachute(landingModuleWeight, landModStartPos, landModStartVeloc, landModStartAngle, addWind);
+								((LandingModuleFeedbackControllerWithParachute)landingModule).setMaxWindStrength(windStrength);
+								((LandingModuleFeedbackControllerWithParachute)landingModule).setThrusterForce(thrusterForce);
 
 								break;
 						}
@@ -506,10 +581,6 @@ public class GUI extends Application {
 					break;
 			}
 		} while (! choiceMade);
-	}
-
-	public int[] searchPeriapsisOfSaturn() {
-		return new int[0];
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
