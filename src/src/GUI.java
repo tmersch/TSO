@@ -235,46 +235,97 @@ public class GUI extends Application {
 							//Launch of space probe from Earth to Titan
 							case "2":
 								//Initialize some variables for the launchAngleAdjustmentSearch method
-								double startLaunchAngle = 269.7237322056688;			//Should already be the end result
+								double startLaunchAngle = 0;
 								//startLaunchAngle = new Vector2D(planets[3].getPosition()).angle(new Vector2D());
 								double startAngleChange = 5;
 								int originPlanetIndex = 3;				//going from Earth (=planets[3])
 								int destinationPlanetIndex = 9;			//to Titan (= planets[9])
+								double idealAngle = 0;
+								String info = "";
 
-								//Find out the ideal starting angle
-								double idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								//Ask the User whether he would like to use a SpaceProbe or a SpaceProbeWithThrusters and save a corresponding object in the "spaceProbe" variable
+								while ((! info.equals("1")) && (! info.equals("2"))) {
+									System.out.println("Would you like to launch a normal space probe (without thrusters, enter 1) or a space probe with thruster (enter 2) ?");
+									info = s.next();
 
-								//Reset the solar system and create a new space probe with the ideal angle
-								createSolarSystem();
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
-								((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[destinationPlanetIndex]);
-								//spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
-								//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
+									switch (info) {
+										//SpaceProbe
+										case "1":
+											//Compute the ideal angle
+											idealAngle = 272.24189016465317;
+											idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
-								//((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[9]);
+											//Reset the solar system and create a new space probe with the ideal angle
+											createSolarSystem();
+											spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+
+											break;
+										//SpaceProbeWithThrusters
+										case "2":
+											//Compute the ideal starting angle
+											startLaunchAngle = 267.3762536061466;//38.86503178087327 is an alternative
+											idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+
+											//Reset the solar system and create a new space probe with thrusters with the ideal angle
+											createSolarSystem();
+											spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+											((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[destinationPlanetIndex]);
+											//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
+
+											break;
+									}
+								}
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
-								launchGUI(1, true);			//compute next position after 10 milliseconds, and also consider the spaceProbe
+								launchGUI(1, true);			//compute next position after 1 milliseconds, and also consider the spaceProbe
 								timeline.play();
 								stage.show();
 
+								//Needed for the switch statement to work and to terminate the outside while loop
 								validInput = true;
 								break;
 							//Return of the spaceProbe from Titan to earth
 							case "3":
 								//Initialize some variables for the launchAngleAdjustmentSearch method
-								startLaunchAngle = 121.57024271172554;				//110.25108742952477;					//Should already be the final resulting value (for velocity = 30 km/s)
-								startAngleChange = 0.1;
+								startLaunchAngle = 0;				//110.25108742952477;					//Should already be the final resulting value (for velocity = 30 km/s)
+								startAngleChange = 5;
 								originPlanetIndex = 9;			//going from Titan (= planets[9])
 								destinationPlanetIndex = 3;		//to Earth (= planets[3])
+								info = "";
 
-								//Find out the ideal starting angle
-								idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel);
+								//Ask the User whether he would like to use a SpaceProbe or a SpaceProbeWithThrusters and save a corresponding object in the "spaceProbe" variable
+								while ((! info.equals("1")) && (! info.equals("2"))) {
+									System.out.println("Would you like to launch a normal space probe (without thrusters, enter 1) or a space probe with thruster (enter 2) ?");
+									info = s.next();
 
-								//Reset the solar system and create a new space probe with the ideal angle
-								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle);
+									switch (info) {
+										//SpaceProbe
+										case "1":
+											//Compute the ideal angle
+											startLaunchAngle = 111.71980492616017;
+											idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+
+											//Reset the solar system and create a new space probe with the ideal angle
+											createSolarSystem();
+											spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+
+											break;
+										//SpaceProbeWithThrusters
+										case "2":
+											//Compute the ideal starting angle
+											startLaunchAngle = 111.71979572901293;
+											idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+
+											//Reset the solar system and create a new space probe with thrusters with the ideal angle
+											createSolarSystem();
+											spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle);
+											//((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[destinationPlanetIndex]);
+											//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
+
+											break;
+									}
+								}
 
 								//Launch the simulation
 							  	gc = createGUI(stage);
@@ -287,15 +338,39 @@ public class GUI extends Application {
 							//Test of space probe angle
 							case "4":
 								originPlanetIndex = 3;
-								destinationPlanetIndex = 9;
-								startLaunchAngle = 259.84639616224865;
-								startAngleChange = 5;
+								info = "";
 
+								//Ask the User what angle he would like to shoot the spaceProbe in
+								System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
+								double launch_angle = s.nextDouble();
+
+								//Reset/create the solar system
 								createSolarSystem();
 
+								//Ask the User whether he would like to use a SpaceProbe or a SpaceProbeWithThrusters and save a corresponding object in the "spaceProbe" variable
+								while ((! info.equals("1")) && (! info.equals("2"))) {
+									System.out.println("Would you like to launch a normal space probe (without thrusters, enter 1) or a space probe with thruster (enter 2) ?");
+									info = s.next();
+
+									switch (info) {
+										//SpaceProbe
+										case "1":
+											//Create a new space probe with the ideal angle
+											spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, launch_angle);
+
+											break;
+										//SpaceProbeWithThrusters
+										case "2":
+											//Create a new space probe with thrusters with the given angle
+											spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, launch_angle);
+											//((SpaceProbeWithThrusters)spaceProbe).setTarget(planets[destinationPlanetIndex]);
+											//spaceProbe = ((SpaceProbeWithThrusters)spaceProbe).createSpaceProbeInOrbit(planets[9], 1200000, DELTA_T);
+
+											break;
+									}
+								}
+
 								//spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[originPlanetIndex], planets[destinationPlanetIndex], DELTA_T);
-
-
 
 								//double launch_angle = launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
@@ -303,33 +378,16 @@ public class GUI extends Application {
 								FlightPlan FPlan = launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 								*/
 
-								Scanner S = new Scanner(System.in);
-								System.out.println("Enter the angle you would like to launch the spaceProbe in: ");
-								double launch_angle = S.nextDouble();
-
-								/*
-								System.out.println("Do you want a fixed number of iterations ? If yes, enter the number, otherwise enter '-1': ");
-								int numberOfIterations = S.nextInt();
-								*/
-								//Reset the solar system
-								createSolarSystem();
-
-								CelestialBody originPlanet = planets[originPlanetIndex];
-
-								//Create a new spaceProbe with the starting angle
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, averageVelocitySpaceProbe, launch_angle);
+								//Set the variable showNumIterations to whether we want to see the number of iterations or not
+								showNumIterations = true;
 
 								//Show the simulation of the solar system with the space probe
-								showNumIterations = true;
 								gc = createGUI(stage);
-								//if (numberOfIterations == -1) {
-									launchGUI(1, true);
-								/*} else {
-									launchGUI(1, true, numberOfIterations);
-								} */
+								launchGUI(1, true);
 								timeline.play();
 								stage.show();
 
+								//This part is needed for the switch and outside while-loop
 								validInput = true;
 								break;
 						}
@@ -781,8 +839,6 @@ public class GUI extends Application {
 				//Save an intermediate value, the sign of the difference of the angles
 				int tmp = signum(spaceProbeAngle-destinationPlanetAngle);
 
-				System.out.println(tmp);
-
 				if (Math.abs(destinationPlanetAngle-spaceProbeAngle) > 180) {
 					//If the previous move was the opposite move,
 					if (previousMove == -tmp) {
@@ -810,6 +866,7 @@ public class GUI extends Application {
 				else {
 					//The two angles are the same, but I will still modify the angle in order for angleChange to become smaller and smaller and to refine the launch_angle even more
 					//Modify the angle in some direction
+					tmp = 1;		//Set tmp to 1, because normally it should be 0 in this case
 					launch_angle += tmp * angleChange;
 
 					//and set the previous move for the next iteration as the move just made
