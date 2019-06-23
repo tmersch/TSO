@@ -1,6 +1,6 @@
 import javafx.scene.shape.Rectangle;
 
-public class LandingModuleFeedbackController implements LandingModule {
+public class LandingModuleFeedbackControllerWithParachute implements LandingModule {
     private double weight; // weight of landing module (kg)
     private double burntFuelMass;       //in kgs
     private Vector2D acceleration = new Vector2D(0, 0); // Acceleration on module (m/s^2)
