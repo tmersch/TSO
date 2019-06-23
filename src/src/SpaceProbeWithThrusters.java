@@ -244,9 +244,19 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     @Override
     protected void applyDerivative (Derivative d, final double deltaT) {
         if (targetSet) {
+            if (this.getPosition().distance(target.getPosition()) < orbitRadius) {
+                double newVelIntensity = 863;
+                double newVelAngle = new Vector2D(target.getPosition()).subtract(this.getPosition()).angle(new Vector2D()) + 90;
+                Vector2D newVel = new Vector2D(newVelAngle).multiply(newVelIntensity);
+
+                this.setVelocity(newVel);
+            }
+
+            /*
             if (this.getPosition().distance(target.getPosition()) <= orbitRadius) {
                 activateThrusterToReachOrbit(target, this.getPosition().distance(target.getPosition()), new Vector2D(d.dVelocity), deltaT);
             }
+            */
         }
 
         if (useThruster) {

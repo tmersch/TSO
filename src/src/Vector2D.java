@@ -94,7 +94,7 @@ public class Vector2D {
 			}
 		}
 		else {
-			resultAngle = asin+360;					//Fourth quadrant
+			resultAngle = asin + 360;					//Fourth quadrant
 		}
 
 		return resultAngle;
