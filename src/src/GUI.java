@@ -68,7 +68,8 @@ public class GUI extends Application {
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	//the mass of voyager
 	private static final double spaceProbeMass = 800;								//in kg
-	private static final double averageVelocitySpaceProbe = 45e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbe = 47e3;					//in meters/secs
+	private static final double averageVelocitySpaceProbeWithThrusters = 45e3;
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;		//in meters/secs
 	private static final String spaceProbeName = "SpaceProbe";
 
@@ -252,7 +253,7 @@ public class GUI extends Application {
 										//SpaceProbe
 										case "1":
 											//Compute the ideal angle
-											idealAngle = 272.24189016465317;
+											startLaunchAngle = 272.24189016465317;
 											idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
 
 											//Reset the solar system and create a new space probe with the ideal angle
@@ -401,7 +402,7 @@ public class GUI extends Application {
 					//Initialize the landModChoice variable to an empty string
 					String landModChoice = "";
 					//And initialize the starting position, starting velocity and starting angle to default values
-					Vector2D landModStartPos = new Vector2D(0, 1200000);
+					Vector2D landModStartPos = new Vector2D(0, 500000);
 					Vector2D landModStartVeloc = new Vector2D(0, 0);
 					double landModStartAngle = 0;
 
