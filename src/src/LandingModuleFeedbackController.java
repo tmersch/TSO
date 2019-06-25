@@ -102,10 +102,6 @@ public class LandingModuleFeedbackController implements LandingModule {
 		this(weight, position, velocity, 0, false);
     }
 
-    public LandingModuleFeedbackController() {
-        this(800, new Vector2D(0,0), new Vector2D(0,0), 0, false);
-    }
-
     /** This method calls on all necessary methods to simulate the landing
      *
      */

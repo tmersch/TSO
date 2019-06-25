@@ -13,16 +13,16 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
      * @param destination destination of
      * @param addWind
      */
-
     public LandingModuleTakeoff(double weight, Vector2D destination, boolean addWind) {
-        super(weight, new Vector2D(0,0), new Vector2D(0,0), 0,addWind);
+        super(weight, new Vector2D(0,0), new Vector2D(0,0), 0, addWind);
         this.goal = destination;
-        System.out.println(goal);
     }
 
-    public LandingModuleTakeoff(Vector2D dest) {
-        super();
-        goal = dest;
+    /** Additional constructor with one less parameter: addWind
+      * By default, we set addWind to false
+      */
+    public LandingModuleTakeoff(double weight, Vector2D destination) {
+        this(weight, destination, false);
     }
 
     //This method overrides updateModule() of parent
@@ -47,7 +47,6 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
     // TODO x-position overshoots by a large margin; try to adjust angle based on velocity as well
     @Override
     public void correctXPosition() {
-        System.out.println("Angle: " + angle +", Velocity: " + velocity + "\nPosition: " + position);
         if (position.getX() == goal.getX() || velocity.getX() > 20 || velocity.getX() < -20) {
             if (angle < 0 || velocity.getX() < -20) {
                 angle += angleChange;
@@ -191,5 +190,4 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
         }
         return false;
     }
-
 }
