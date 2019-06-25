@@ -230,7 +230,7 @@ public class GUI extends Application {
 
 					//Ask the user which kind of controller he would like to have
 					while ((!landModChoice.equals("1")) && (!landModChoice.equals("2")) && (!landModChoice.equals("3")) && (!landModChoice.equals("4"))) {
-						System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller without parachtue, 3 for the feedback controller with parachute)?");
+						System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller without parachute, 3 for the feedback controller with parachute, 4 for getting back into orbit)?");
 						landModChoice = s.next();
 
 						//Choose which landing module to create, and create a corresponding
