@@ -481,49 +481,65 @@ public class GUI extends Application {
 								((LandingModuleFeedbackControllerWithParachute)landingModule).setThrusterForce(thrusterForce);
 
 								break;
-
 							case "4":					//Back into orbit
 								//Initialize selection
 								selection = "";
 
-								//Ask the user if he wants to specify a certain starting position for the landing module
-								System.out.println("Do you want to specify a specific destination? Enter 'yes' or 'no'");
-								selection = s.next();
-								//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
-								if (selection.equals("yes")) {
-									System.out.println("Please enter the x-position and y-position separated by a space");
-									double startX = s.nextDouble();
-									double startY = s.nextDouble();
-									landModStartPos = new Vector2D(startX, startY);
+								while ((! selection.equals("yes")) && ! selection.equals("no")) {
+									//Ask the user if he wants to specify a certain starting position for the landing module
+									System.out.println("Do you want to specify a specific destination? Enter 'yes' or 'no'");
+									selection = s.next().toLowerCase();
+									//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+									if (selection.equals("yes")) {
+										System.out.println("Please enter the x-position and y-position separated by a space");
+										double startX = s.nextDouble();
+										double startY = s.nextDouble();
+										landModStartPos = new Vector2D(startX, startY);
+									}
 								}
 
 								//Ask the user if he wants to add wind to the simulation or not
 								addWind = false;
 								selection = "";
-								System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
-								selection = s.next().toLowerCase();
 								windStrength = LandingModuleTakeoff.getMaxWindStrength();
 								thrusterForce = LandingModuleTakeoff.getThrusterForce();
-								//If the user wants to have wind, give it to him !!!
-								if (selection.equals("yes")) {
-									addWind = true;
 
-									String windChoice = "";
-									System.out.println("Do you want to set the maximum acceleration of the wind ?");
-									windChoice = s.next().toLowerCase();
-									if (windChoice.equals("yes")) {
-										System.out.println("What should the maximum acceleration of the wind be ?");
-										windStrength = s.nextDouble();
-									}
+								while ((! selection.equals("yes")) && (! selection.equals("no"))) {
+									System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
+									selection = s.next().toLowerCase();
+									windStrength = LandingModuleTakeoff.getMaxWindStrength();
+									thrusterForce = LandingModuleTakeoff.getThrusterForce();
+									//If the user wants to have wind, give it to him !!!
+									if (selection.equals("yes")) {
+										addWind = true;
 
-									System.out.println("Do you want to set the force of the main thruster ?");
-									windChoice = s.next().toLowerCase();
-									if (windChoice.equals("yes")) {
-										System.out.println("What should the force of the main thruster be ?");
-										thrusterForce = s.nextDouble();
+										//Initialize windChoice
+										String windChoice = "";
+
+										while ((! windChoice.equals("yes")) && (! windChoice.equals("no"))) {
+											System.out.println("Do you want to set the maximum acceleration of the wind ?");
+											windChoice = s.next().toLowerCase();
+											if (windChoice.equals("yes")) {
+												System.out.println("What should the maximum acceleration of the wind be ?");
+												windStrength = s.nextDouble();
+											}
+										}
+
+										//Reset windChoice
+										windChoice = "";
+
+										while ((! windChoice.equals("yes")) && (! windChoice.equals("no"))) {
+											System.out.println("Do you want to set the force of the main thruster ?");
+											windChoice = s.next().toLowerCase();
+											if (windChoice.equals("yes")) {
+												System.out.println("What should the force of the main thruster be ?");
+												thrusterForce = s.nextDouble();
+											}
+										}
 									}
 								}
 
+								//Then initailize a LandingModuleTakeoff with the set parameters
 								landingModule = new LandingModuleTakeoff(landingModuleWeight, landModStartPos, addWind);
 								((LandingModuleTakeoff)landingModule).setMaxWindStrength(windStrength);
 								((LandingModuleTakeoff)landingModule).setThrusterForce(thrusterForce);
@@ -814,8 +830,8 @@ public class GUI extends Application {
 					currentMassFlowRateMove = +1;
 
 					//Compute the distance travelled in one iteration
-					double travelledDistanceOneIteration = 
-					if (spaceProbeVelocity * DELTA_T > height) {
+					double travelledDistanceOneIteration = idealMassFlowRate * SpaceProbeWithThrusters.getExhaustVelocity();
+					if (travelledDistanceOneIteration > height) {
 						return new double[0];
 					}
 				}
@@ -1586,7 +1602,7 @@ public class GUI extends Application {
 		gc.clearRect(0, 0, canvasWidth, canvasHeight);
 
 		//Retrieve the landing module's position and modifiy it to pixel coordinates
-		Vector2D pos = new Vector2D(landingModule.getPosition().getX(), -landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
+		Vector2D pos = new Vector2D(landingModule.getPosition().getX(), landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
 		Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
 
 		//Set the rectangle representing the landingModule to the correct x- and y-position
