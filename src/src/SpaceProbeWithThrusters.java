@@ -2,7 +2,7 @@
   */
 public class SpaceProbeWithThrusters extends SpaceProbe {
     //The following constants are all for kerosene (massFlowRate's value not found anywhere, set randomly)
-    private double massFlowRate = 10;                 //in kg/secs
+    private static double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
     private final double exhaustVelocity = 3510; //2941 for 1 atm            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
@@ -18,15 +18,10 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private final double angleChange = 1;
     //the mass of the fuel
     private final double fuelMass;                          //in kgs
-    //the mass of fuel we start with
+    //the mass of fuel we start with by default
     private static final double START_FUEL_MASS = 1000;     //in kgs
     //the mass of the fuel burnt so far
     private double burntFuelMass;                           //in kgs
-
-    // the planet or moon we want to reach
-    private CelestialBody target;
-    private boolean targetSet = false;
-    private double orbitRadius = 3000000;       //in meters
 
     // the FlightPlan for the Hohmann transfer
     private FlightPlan hohmannTransfer = null;
@@ -85,12 +80,16 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 		thrusterForce = new Vector2D(angle).multiply(massFlowRate).multiply(exhaustVelocity);
 
         useThruster = true;
-
-        //For debugging/testing purposes
-        //System.out.println("Thruster force: " + new Vector2D(thrusterForce).divide(this.getMass()));
 	}
 
-    // TO DELETE
+    /** Reset the thruster to a null force
+      */
+    public void resetThruster () {
+        thrusterForce = new Vector2D();
+        useThruster = false;
+    }
+
+    // DIDN'T WORK, TRIED OUT
     /** Computes, then applies a force of the thruster such that the space probe should get into orbit
       */
     public void activateThrusterToReachOrbit (CelestialBody target, double orbitRad, Vector2D currentAcceleration, double timestep) {
@@ -127,32 +126,71 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
     /** Computes the mass of kerosene burnt given a certain velocity gain we want to achieve in a certain timestep
       * and adds the result to the field variable burntFuelMass
+      *
+      * @return the effectively used velocity if the fuel mass would become negative if we were to use the given velocity
       */
-    public void computeBurntFuelFromVelocity (final double velocity, final double timestep) {
+    public double computeBurntFuelFromVelocity (double velocity, final double timestep) {
         double acceleration = velocity / timestep;
-        computeBurntFuelFromAcceleration(acceleration, timestep);
+
+        //Compute the actually used acceleration
+        double effectivelyUsedAcceleration = computeBurntFuelFromAcceleration(acceleration, timestep);
+
+        //if it differs from the given acceleration, compute the actually used velocity
+        if (effectivelyUsedAcceleration != acceleration) {
+            velocity = effectivelyUsedAcceleration * timestep;
+        }
+
+        //And return the applied velocity
+        return velocity;
     }
 
     /** Computes the mass of kerosene burnt given a certain acceleration and the timestep during which that acceleration is applied
       * and adds the result to the field variable burntFuelMass
+      *
+      * @return the effectively used acceleration if the fuel mass would become negative if we were to use the given acceleration
       */
-    public void computeBurntFuelFromAcceleration (final double acceleration, final double timestep) {
-        double thrusterForce = acceleration * this.getMass();
-        computeBurntFuelFromThrusterForce(thrusterForce, timestep);
+    public double computeBurntFuelFromAcceleration (double acceleration, final double timestep) {
+        double mass = this.getMass();
+        double thrusterForce = acceleration * mass;
+
+        //Compute the actualy used thruster force
+        double effectivelyUsedThrusterForce = computeBurntFuelFromThrusterForce(thrusterForce, timestep);
+
+        //If it differs from the given thruster force, compute the actually used acceleration
+        if (thrusterForce != effectivelyUsedThrusterForce) {
+            acceleration = effectivelyUsedThrusterForce/mass;
+        }
+
+        //and return the acceleration that was used
+        return acceleration;
     }
 
     /** Computes the mass of kerosene burnt given a certain thrusterForce applied during a certain timestep
       * and adds the result to the field variable burntFuelMass
+      *
+      * @return the effectively used thruster force if the fuel mass would become negative if we were to use the given force
       */
-    public void computeBurntFuelFromThrusterForce (final double thrusterForce, final double timestep) {
+    public double computeBurntFuelFromThrusterForce (double thrusterForce, final double timestep) {
         double massFlowRate = thrusterForce / exhaustVelocity;
-        computeBurntFuelFromMassFlowRate(massFlowRate, timestep);
+
+        //Compute the actually used massFlowRate
+        double effectivelyUsedMassFlowRate = computeBurntFuelFromMassFlowRate(massFlowRate, timestep);
+
+        //If the actually used massFlowRate and the given massFlowRate differ, then we need to compute the actually used thrusterForce
+        if (massFlowRate != effectivelyUsedMassFlowRate) {
+            thrusterForce = effectivelyUsedMassFlowRate * exhaustVelocity;
+        }
+
+        //Return the used thrusterForce
+        return thrusterForce;
     }
 
     /** Computes the mass of kerosene burnt given a certain massFlowRate and a timestep during which we use the thruster
       * and adds the result to the burntFuelMass field variable
+      *
+      * @return the effectively used massFlowRate if the fuel mass would become negaative if we were to use the given massFlowRate
       */
-    public void computeBurntFuelFromMassFlowRate (final double massFlowRate, final double timestep) {
+    public double computeBurntFuelFromMassFlowRate (double massFlowRate, final double timestep) {
         //The mass of exhaust gas is equal to the mass flow rate multiplied by the timestep during which we apply the massFlowRate
         double exhaustGasMass = massFlowRate * timestep;
 
@@ -160,8 +198,20 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * mass of burnt kerosene
         double burntKeroseneMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
-        //Add it to the variable keeping track of the burnt fuel so far
+        //If we have less fuel left than what we would consume,
+        if (this.getFuelMass() > burntKeroseneMass) {
+            //we use all the leftover fuel
+            burntKeroseneMass = this.getFuelMass();
+
+            //And compute the massFlowRate to return
+            exhaustGasMass = burntKeroseneMass * (burntOxidizerFactor + 1);
+            massFlowRate = exhaustGasMass/timestep;
+        }
+
+        //Add the consumed fuel to the variable keeping track of the burnt fuel so far (and indirectly decrease it from the fuelMass)
         this.burntFuelMass += burntKeroseneMass;
+
+        return massFlowRate;
     }
 
     /** Computes the distance the landing module will travel before coming to a stop
@@ -209,6 +259,12 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return burntFuelMass;
     }
 
+    /** Returns the starting fuel mass by default
+      */
+    public static double getDefaultFuelMass () {
+        return START_FUEL_MASS;
+    }
+
     /** Returns the current prize of the consumed fuel in Euros
       */
     public double getFuelPrize() {
@@ -221,49 +277,43 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return super.getMass();
     }
 
+    /** Set the value of the maxFlowRate variable
+      */
+    public static void setMassFLowRate (double newMassFlowRate) {
+        massFlowRate = newMassFlowRate;
+    }
+
+    /** Get the value of the massFlowRate variable
+      */
+    public static double getMassFlowRate () {
+        return massFlowRate;
+    }
+
+    /** Returns the value of the angle variable
+      */
+    public double getAngle () {
+        return angle;
+    }
+
+    //NOT USED SINCE HOHMANN TRANSFER DOES NOT WORK
     /** Returns the flightplan of this space probe concerning the Hohmann Transfer
       */
     public FlightPlan getFlightPlan () {
         return hohmannTransfer;
     }
 
-    /** Sets the target planet we want to reach
-      */
-    public void setTarget (CelestialBody target) {
-        this.target = target;
-        targetSet = true;
-    }
-
-    /** Resets the target planet and the boolean targetSet
-      */
-    public void resetTarget () {
-        this.target = null;
-        targetSet = false;
-    }
-
     @Override
     protected void applyDerivative (Derivative d, final double deltaT) {
-        if (targetSet) {
-            if (this.getPosition().distance(target.getPosition()) < orbitRadius) {
-                double newVelIntensity = 863;
-                double newVelAngle = new Vector2D(target.getPosition()).subtract(this.getPosition()).angle(new Vector2D()) + 90;
-                Vector2D newVel = new Vector2D(newVelAngle).multiply(newVelIntensity);
-
-                this.setVelocity(newVel);
-            }
-
-            /*
-            if (this.getPosition().distance(target.getPosition()) <= orbitRadius) {
-                activateThrusterToReachOrbit(target, this.getPosition().distance(target.getPosition()), new Vector2D(d.dVelocity), deltaT);
-            }
-            */
-        }
-
+        //add the force of the thruster to the derivative to apply
         if (useThruster) {
-            computeBurntFuelFromMassFlowRate(massFlowRate, deltaT);
+            //Save the mass
+            double mass = this.getMass();
+
+            //Compute the actually used thruster force and subtract the burnt fuel from the fuel count
+            double actuallyUsedThrusterForce = computeBurntFuelFromThrusterForce(thrusterForce.length(), deltaT);
 
             //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
-            Vector2D thrusterAccel = new Vector2D(thrusterForce).divide(this.getMass());
+            Vector2D thrusterAccel = new Vector2D(angle).multiply(actuallyUsedThrusterForce).divide((mass + this.getMass())/2);          //Divide by the average mass before and after to get a better approximation ?
 
             //Add the thruster force to the derivative
             Derivative derivativeThrusterForce = new Derivative(new Vector2D(), thrusterAccel);
@@ -277,13 +327,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         super.applyDerivative(d, deltaT);
     }
 
-    /** Reset the thruster to a null force
-      */
-    public void resetThruster () {
-		thrusterForce = new Vector2D();
-        useThruster = false;
-	}
-
+    //TEST, NOT WORKING
     /** Computes, then applies a force of the thruster such that the space probe should get into orbit
       */
     public SpaceProbeWithThrusters createSpaceProbeInOrbit (CelestialBody target, double orbitRad, double timestep) {
@@ -352,9 +396,9 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
     /** Creates a spaceProbe launched from launchPlanet in the correct angle
       */
-    public static SpaceProbeWithThrusters createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle) {
+    public static SpaceProbeWithThrusters createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle, double distFromStartPlanet) {
         //Call the superclass method to get a spaceProbe with the correct parameters
-        SpaceProbe tmp = SpaceProbe.createSpaceProbeWithStartingAngle(name, mass, launchPlanet, velocity, launchAngle);
+        SpaceProbe tmp = SpaceProbe.createSpaceProbeWithStartingAngle(name, mass, launchPlanet, velocity, launchAngle, distFromStartPlanet);
 
         //Transform it into a SpaceProbeWithThrusters
         return spaceProbeToSpaceProbeWithThrusters(tmp, launchAngle);
@@ -374,6 +418,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return res;
     }
 
+    //NOT WORKING
     /** Creates a spaceProbe, setting its FlightPlan to a flightPlan to perform the Hohmann Transfer
       *
       * @param originPlanet the planet which we start from
@@ -383,6 +428,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         //
         // WARNING !!! IN THE FOLLOWING WE ASSUME THAT THE ORIGIN PLANET IS EARTH AND THE ARRIVAL PLANET SATURN
         // WE WILL NEED TO MODIFY THE ORBITAL PERIODS ... probably add them as a field variable of CelestialBody ? in order to make sure that it still works for different settings
+        //
+        // DOES NOT WORK YET
         //
 
         // Cheating a bit, orbital periods given
@@ -437,35 +484,6 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         //Return the spaceProbe
         return probe;
-    }
-
-    @Override
-    /** Checks whether the space probe crashed into the given planet
-	  */
-	public boolean didNotCrash (CelestialBody p) {
-		if (new Vector2D(p.getPosition()).distance(this.getPosition()) <= p.getRadius()) {
-			crashedPlanet = p;
-			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
-			crashed = true;
-            System.out.println("Crashed on " + p.getName() + "\nTime taken: " + GUI.getElapsedTimeAsString());
-			return false;
-		}
-		else {
-			return true;
-		}
-	}
-
-    @Override
-    public Vector2D computeAccelerationRK (State state) {
-        resetAcceleration();
-
-        for (int i = 0; i < GUI.planets.length; i ++) {
-            if (! GUI.planets[i].getName().equals("Earth")) {
-                addGToAccelerationRK(GUI.planets[i], state);
-            }
-        }
-
-        return getAcceleration();
     }
 
     /** Returns a deep copy of this object at its current state

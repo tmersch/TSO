@@ -197,6 +197,10 @@ public class CelestialBody {
         acceleration = new Vector2D();
     }
 
+    public String toString () {
+        return this.getName();
+    }
+
     /** Returns a deep clone of this CelestialBody at its current state, copying the values of all properties
       */
     public CelestialBody clone () {
