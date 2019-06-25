@@ -23,6 +23,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     //the mass of the fuel burnt so far
     private double burntFuelMass;                           //in kgs
 
+    private final boolean notUsingMoreFuelThanAvailable;
+
     // the FlightPlan for the Hohmann transfer
     private FlightPlan hohmannTransfer = null;
 
@@ -30,8 +32,9 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       * Additionnally, two new parameters:
       * @param initialAngle, the angle in which the spaceProbe points
       * @param fuelMass, the mass of the fuel
+      * @param notUsingMoreFuelThanAvailable the boolean representing whether  we allow to use more fuel than we have or not
       */
-    public SpaceProbeWithThrusters (String name, double mass, double fuelMass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
+    public SpaceProbeWithThrusters (String name, double mass, double fuelMass, Vector2D startingPos, Vector2D startingV, double initialAngle, boolean notUsingMoreFuelThanAvailable) {
         super(name, mass, startingPos, startingV);
 
         //Set the angle to the given value
@@ -39,18 +42,27 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         //Set the fuelMass to the given value
         this.fuelMass = fuelMass;
-        //and initialize the burntFuelMass to 0 (or the typical fuel usage to escape the gravity of Earth)
-        burntFuelMass = 0;
+        //and initialize the burntFuelMass to 0
+        this.burntFuelMass = 0;
+
+        //And set the boolean whether we allow the SpaceProbe to use more fuel than we have to the given parameter
+        this.notUsingMoreFuelThanAvailable = notUsingMoreFuelThanAvailable;
     }
 
-    /** Additional constructor with one less parameter than the full constructor: fuelMass
+    /** Additional constructor with one less parameter than the full constructor: notUsingMoreFuelThanAvailable
+      */
+    public SpaceProbeWithThrusters (String name, double mass, double fuelMass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
+        this(name, mass, fuelMass, startingPos, startingV, initialAngle, true);
+    }
+
+    /** Additional constructor with one less parameter than the full constructor: fuelMass and notUsingMoreFuelThanAvailable
       */
     public SpaceProbeWithThrusters (String name, double mass, Vector2D startingPos, Vector2D startingV, double initialAngle) {
         //Set the default fuelMass to 1000 kg
         this(name, mass, START_FUEL_MASS, startingPos, startingV, initialAngle);
     }
 
-    /** Additional constructor with two less parameters than the full constructor: fuelMass and initialAngle
+    /** Additional constructor with two less parameters than the full constructor: fuelMass, initialAngle and notUsingMoreFuelThanAvailable
       */
     public SpaceProbeWithThrusters (String name, double mass, Vector2D startingPos, Vector2D startingV) {
         //Set the default fuelMass to 1000 kg and the default angle to 0
@@ -188,7 +200,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     /** Computes the mass of kerosene burnt given a certain massFlowRate and a timestep during which we use the thruster
       * and adds the result to the burntFuelMass field variable
       *
-      * @return the effectively used massFlowRate if the fuel mass would become negaative if we were to use the given massFlowRate
+      * @return the effectively used massFlowRate if the fuel mass would become negaative if we were to use the given massFlowRate (and notUsingMoreFuelThanAvailable has to be set to true)
       */
     public double computeBurntFuelFromMassFlowRate (double massFlowRate, final double timestep) {
         //The mass of exhaust gas is equal to the mass flow rate multiplied by the timestep during which we apply the massFlowRate
@@ -198,8 +210,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double burntOxidizerFactor = keroseneOxidizerToFuelRatio; // * mass of burnt kerosene
         double burntKeroseneMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
-        //If we have less fuel left than what we would consume,
-        if (this.getFuelMass() > burntKeroseneMass) {
+        //If we have less fuel left than what we would consume and we do not allow using more fuel than we have,
+        if (notUsingMoreFuelThanAvailable && this.getFuelMass() > burntKeroseneMass) {
             //we use all the leftover fuel
             burntKeroseneMass = this.getFuelMass();
 
@@ -247,16 +259,29 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         return getSpaceProbeMass() + getFuelMass();
     }
 
-    /** Returns the leftover fuelMass
+    /** Returns the mass of fuel
+      * that is, the mass of fuel we start off with minus the mass of consumed fuel if notUsingMoreFuelThanAvailable is true,
+      * otherwise, just return the mass of fuel we start off with
       */
     public double getFuelMass() {
-        return (fuelMass - burntFuelMass);
+        if (notUsingMoreFuelThanAvailable) {
+            return (this.getStartingFuelMass() - this.getBurntFuelMass());
+        }
+        else {
+            return this.getStartingFuelMass();
+        }
     }
 
     /** Returns the mass of the fuel consumed so far
       */
     public double getBurntFuelMass () {
         return burntFuelMass;
+    }
+
+    /** Returns the mass of fuel we start off with
+      */
+    public double getStartingFuelMass() {
+        return fuelMass;
     }
 
     /** Returns the starting fuel mass by default
