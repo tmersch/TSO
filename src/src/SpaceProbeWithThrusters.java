@@ -4,7 +4,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     //The following constants are all for kerosene (massFlowRate's value not found anywhere, set randomly)
     private static double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
-    private final double exhaustVelocity = 3510; //2941 for 1 atm            //in m/secs
+    private final static double exhaustVelocity = 3510; //2941 for 1 atm            //in m/secs
     // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
     private final double keroseneOxidizerToFuelRatio = 2.56;
 
@@ -288,6 +288,12 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
       */
     public static double getDefaultFuelMass () {
         return START_FUEL_MASS;
+    }
+
+    /** Returns the exhaust velocity
+      */
+    public static double getExhaustVelocity () {
+        return exhaustVelocity;
     }
 
     /** Returns the current prize of the consumed fuel in Euros
