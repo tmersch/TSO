@@ -25,7 +25,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.geometry.Side;
 
 /** GUI representing the solar system using javafx
-*/
+ */
 public class GUI extends Application {
 	// !!! Variables only used by the GUI of the solar simulation !!!
 	//Number of seconds between each update
@@ -46,23 +46,23 @@ public class GUI extends Application {
 	private boolean showNumIterations = false;
 
 	//Everything about the planets
-		//Array containing the planets/moons
+	//Array containing the planets/moons
 	public static CelestialBody[] planets;
-		//Arrays containing all the information about the planets/moons
-		// Indexes: ----------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
+	//Arrays containing all the information about the planets/moons
+	// Indexes: ----------------------------    	0							1							2							3							4							5								6								7								8								9							10						11
 	private static final String[] planetNames = {		"Sun", 				"Mercury", 		"Venus",			"Earth",			"Mars", 			"Jupiter", 			"Saturn", 			"Uranus", 			"Neptune", 			"Titan", 			"Moon", 			"Ganymede" };
-		//names of the planets
+	//names of the planets
 	private static final double[] planetMasses = {	1.9885e30, 		3.302e23, 		4.8685e24, 		5.97219e24, 	6.4171e23, 		1.8981e27, 			5.6834e26, 			8.6813e25, 			1.02413e26, 		1.34553e23, 	7.349e22, 		1.482e23};
-		//masses in kg
+	//masses in kg
 	protected static final double[] planetRadius = {695700e3, 		2440e3, 			6051.84e3, 		6371.01e3, 		3389.92e3, 		71492e3, 				60268e3, 				25559e3, 				24766e3, 				2575.5e3, 		1737.53e3,		2.634e6};
-		//average radius in meters
+	//average radius in meters
 	protected static final Vector2D[] planetPositions = {	new Vector2D(0, 0, 0), 	new Vector2D(-5.872125676818924e10, -5.804127334840319e9, 4.912664883118753e9), 	new Vector2D(-1.455889118207544e10, -1.076999192416582e11, -6.376171699620709e8), 	new Vector2D(-1.486342755241585e11, 8.198905701620353e9, -7.620074742892757e4), 	new Vector2D(3.124195290400189e10, 2.298057334393066e11, 4.048651637918636e9), 	new Vector2D(-2.399320956706447e11, -7.598655149344369e11, 8.524600084986627e9), 	new Vector2D(3.516934988142877e11, -1.462721993695447e12, 1.142816489475083e10), 	new Vector2D(2.521978348972803e12, 1.568378087179974e12, -2.683449169055068e10), 	new Vector2D(4.344340662627413e12, -1.085497713760720e12, -7.777825569894868e10), new Vector2D(3.509094646023610e11, -1.461827053014912e12, 1.104487392229486e10), new Vector2D(-1.488847132490647e11, 8.460303130865488e9, 1.051062554109981e7), new Vector2D(-2.394535094933694e11, -7.589080066586609e11, 8.567293856946945e9)};
-		//positions at initialTime in meters
+	//positions at initialTime in meters
 	private static final Vector2D[] planetVelocities = {	new Vector2D(0, 0, 0), 		new Vector2D(-5.341847047712075e3, -4.638410041355678e4, -3.300161136111004e3), 	new Vector2D(3.447098250886419e4, -4.827880810826475e3, -2.055483232947198e3), 		new Vector2D(-2.117483315641365e3, -2.984619930248100e4, 2.683290615177469e-1), 	new Vector2D(-2.309314310690604e4, 5.322963673708609e3, 6.781705506964339e2), 	new Vector2D(1.231426726093322e4, -3.320854863157825e3, -2.617042437691823e2), 		new Vector2D(8.874360410574640e3, 2.226908002447438e3, -3.922282843554251e2), 		new Vector2D(-3.634103497558742e3, 5.462106665107330e3, 6.718779593146884e1), 		new Vector2D(1.294989801625765e3, 5.303327243239019e3, -1.398313168317220e2), new Vector2D(4.602663714929883e3, -5.834636275449419e2, 1.481088959791306e3), new Vector2D(-2.872352106787649e3, -3.061966993302498e4, 9.000888638350801e1), new Vector2D(2.600098840800917e3, 1.559203853272592e3, -2.073416903427829e2)};
-		//velocity at initialTime in meters/secs
+	//velocity at initialTime in meters/secs
 
 	private static final int[] initialTime = {18, 3, 2019};
-		//the day for which the positions and velocities of the planets are taken
+	//the day for which the positions and velocities of the planets are taken
 
 	//All the variables concerning the spaceprobe
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
@@ -84,30 +84,30 @@ public class GUI extends Application {
 
 	//Variables concerning the size of the window and the position of the x- and y-axes concerning the landing
 	private final int LANDINGWINDOWWIDTH = 1920;
-    private final int LANDINGWINDOWHEIGHT = 1080;
-    private final int LANDINGXAXISHEIGHT = 700;
-    private final int LANDINGYAXISWIDTH = 750;
+	private final int LANDINGWINDOWHEIGHT = 1080;
+	private final int LANDINGXAXISHEIGHT = 700;
+	private final int LANDINGYAXISWIDTH = 750;
 	//Variables concerning the size of the rectangle displayed representing the landing module
 	protected final int RECT_WIDTH = 10;
-    protected final int RECT_HEIGHT = 20;
+	protected final int RECT_HEIGHT = 20;
 
 	//Text variables to show the current state of the landing module
 	private Text altitudeText;
-    private Text verticalSpeedText;
-    private Text timeText;
+	private Text verticalSpeedText;
+	private Text timeText;
 
 	//The landingModule
 	private LandingModule landingModule;
 	private final int landingModuleWeight = 800;			//in kgs
 
-    // !!! Variables used by both GUI's !!!
+	// !!! Variables used by both GUI's !!!
 	//Seconds conversion
 	private static final int SEC_IN_MINUTE = 60;
-  	private static final int SEC_IN_HOUR = SEC_IN_MINUTE * 60;
-  	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
-  	private static final int SEC_IN_YEAR = (int)(SEC_IN_DAY * 365.25);
+	private static final int SEC_IN_HOUR = SEC_IN_MINUTE * 60;
+	private static final int SEC_IN_DAY = SEC_IN_HOUR * 24;
+	private static final int SEC_IN_YEAR = (int)(SEC_IN_DAY * 365.25);
 	//and the long keeping track of the number of seconds elapsed from the start
-  	private static long elapsedSeconds = 0;
+	private static long elapsedSeconds = 0;
 
 	//GUI parts shared by the two GUI's
 	private Timeline timeline;
@@ -120,13 +120,13 @@ public class GUI extends Application {
 	private double canvasHeight = 0;
 
 	/** Main method, gets called when the program is executed
-	*/
+	 */
 	public static void main (String[] args) {
 		launch(args);
 	}
 
 	/** This method is called by JavaFX GUI when starting the program
-	*/
+	 */
 	public void start (Stage stage) {
 		//Initialize the planets
 		createSolarSystem();
@@ -229,7 +229,7 @@ public class GUI extends Application {
 					double landModStartAngle = 0;
 
 					//Ask the user which kind of controller he would like to have
-					while ((!landModChoice.equals("1")) && (!landModChoice.equals("2")) && (!landModChoice.equals("3"))) {
+					while ((!landModChoice.equals("1")) && (!landModChoice.equals("2")) && (!landModChoice.equals("3")) && (!landModChoice.equals("4"))) {
 						System.out.println("Which landing module controller do you want to use (enter 1 for the open-loop controller, 2 for the feedback controller without parachtue, 3 for the feedback controller with parachute)?");
 						landModChoice = s.next();
 
@@ -481,6 +481,54 @@ public class GUI extends Application {
 								((LandingModuleFeedbackControllerWithParachute)landingModule).setThrusterForce(thrusterForce);
 
 								break;
+
+							case "4":					//Back into orbit
+								//Initialize selection
+								selection = "";
+
+								//Ask the user if he wants to specify a certain starting position for the landing module
+								System.out.println("Do you want to specify a specific destination? Enter 'yes' or 'no'");
+								selection = s.next();
+								//If the user wants to specify a starting position, then we retrieve the x- and y-position and save it
+								if (selection.equals("yes")) {
+									System.out.println("Please enter the x-position and y-position separated by a space");
+									double startX = s.nextDouble();
+									double startY = s.nextDouble();
+									landModStartPos = new Vector2D(startX, startY);
+								}
+
+								//Ask the user if he wants to add wind to the simulation or not
+								addWind = false;
+								selection = "";
+								System.out.println("Do you want to add wind to the simulation ? Enter 'yes' if you want to add wind, otherwise 'no'");
+								selection = s.next().toLowerCase();
+								windStrength = LandingModuleTakeoff.getMaxWindStrength();
+								thrusterForce = LandingModuleTakeoff.getThrusterForce();
+								//If the user wants to have wind, give it to him !!!
+								if (selection.equals("yes")) {
+									addWind = true;
+
+									String windChoice = "";
+									System.out.println("Do you want to set the maximum acceleration of the wind ?");
+									windChoice = s.next().toLowerCase();
+									if (windChoice.equals("yes")) {
+										System.out.println("What should the maximum acceleration of the wind be ?");
+										windStrength = s.nextDouble();
+									}
+
+									System.out.println("Do you want to set the force of the main thruster ?");
+									windChoice = s.next().toLowerCase();
+									if (windChoice.equals("yes")) {
+										System.out.println("What should the force of the main thruster be ?");
+										thrusterForce = s.nextDouble();
+									}
+								}
+
+								landingModule = new LandingModuleTakeoff(landingModuleWeight, landModStartPos, addWind);
+								((LandingModuleTakeoff)landingModule).setMaxWindStrength(windStrength);
+								((LandingModuleTakeoff)landingModule).setThrusterForce(thrusterForce);
+
+								break;
 						}
 					}
 
@@ -510,14 +558,14 @@ public class GUI extends Application {
 					//If we show the GUI
 					if (showGUI) {
 						//Set the coordinatesTransformer with the correct parameters for the landing GUI
-				        coordinates.setScale(LANDINGSCALE);
+						coordinates.setScale(LANDINGSCALE);
 						coordinates.setModifiedPos(new Vector2D(LANDINGYAXISWIDTH, LANDINGXAXISHEIGHT));
 
-				        //And launch the landing GUI
-				        gc = createLandingGUI(stage, landingModule);
-				        launchLandingGUI(1);
-				        stage.show();
-				        timeline.play();
+						//And launch the landing GUI
+						gc = createLandingGUI(stage, landingModule);
+						launchLandingGUI(1);
+						stage.show();
+						timeline.play();
 					}
 					//Otherwise, we update the landing module until it lands
 					else {
@@ -645,9 +693,9 @@ public class GUI extends Application {
 	}
 
 	/** Try to compute the massFlowRate needed for the spaceProbeWithThrusters to reach the given velocity at the given height
-	  *
-	  * @return a double array, with at index 0 the massFlowRate needed to get to a velocity saved on index 1, at a height of index 2, and the quantity of fuel given to the space probe saved at index 3, with the quantity of burnt fuel at index 4
-	  */
+	 *
+	 * @return a double array, with at index 0 the massFlowRate needed to get to a velocity saved on index 1, at a height of index 2, and the quantity of fuel given to the space probe saved at index 3, with the quantity of burnt fuel at index 4
+	 */
 	private double[] computeMassFlowRateToReachVelocityAtHeight (final double velocity, final double height, final int originPlanetIndex) {
 		//Set the timestep to a smaller timestep (here 1 sec)
 		DELTA_T = 1;
@@ -805,25 +853,25 @@ public class GUI extends Application {
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
-	  */
+	 */
 	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
 		return launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
-	  * The idea is basically to start with the given launchAngle from the origin planet,
-	  * then run the simulation until either the spaceProbe crashes or gets further away from the originPlanet than the destinationPlanet is.
-	  * Then, evaluate the result and if the spaceProbe is too much to the left, make the angle smaller, else if it is too much to the right, make the angle bigger
-	  * once either the angle is as precise as it could be or the spaceProbe crashes on Titan, we found the supposedly best possible angle (without using any thrust during the travel)
-	  *
-	  * @param originPlanet, the planet from which the spaceProbe starts off
-	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startLaunchAngle, a starting guess for the correct launch angle
-	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
-	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
-	  * @param DEBUG, a boolean unlocking debug print statements
-	  */
+	 * The idea is basically to start with the given launchAngle from the origin planet,
+	 * then run the simulation until either the spaceProbe crashes or gets further away from the originPlanet than the destinationPlanet is.
+	 * Then, evaluate the result and if the spaceProbe is too much to the left, make the angle smaller, else if it is too much to the right, make the angle bigger
+	 * once either the angle is as precise as it could be or the spaceProbe crashes on Titan, we found the supposedly best possible angle (without using any thrust during the travel)
+	 *
+	 * @param originPlanet, the planet from which the spaceProbe starts off
+	 * @param destinationPlanet, the planet at which the spaceProbe should arrive
+	 * @param startLaunchAngle, a starting guess for the correct launch angle
+	 * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
+	 * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	 * @param DEBUG, a boolean unlocking debug print statements
+	 */
 	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
@@ -930,25 +978,25 @@ public class GUI extends Application {
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
-	  */
+	 */
 	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
 		return launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
-	  * The idea is basically to start with the given launchAngle from the origin planet,
-	  * then run the simulation until either the spaceProbe crashes or gets further away from the originPlanet than the destinationPlanet is.
-	  * Then, evaluate the result and if the spaceProbe is too much to the left, make the angle smaller, else if it is too much to the right, make the angle bigger
-	  * once either the angle is as precise as it could be or the spaceProbe crashes on Titan, we found the supposedly best possible angle (without using any thrust during the travel)
-	  *
-	  * @param originPlanet, the planet from which the spaceProbe starts off
-	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startLaunchAngle, a starting guess for the correct launch angle
-	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
-	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
-	  * @param DEBUG, a boolean unlocking debug print statements
-	  */
+	 * The idea is basically to start with the given launchAngle from the origin planet,
+	 * then run the simulation until either the spaceProbe crashes or gets further away from the originPlanet than the destinationPlanet is.
+	 * Then, evaluate the result and if the spaceProbe is too much to the left, make the angle smaller, else if it is too much to the right, make the angle bigger
+	 * once either the angle is as precise as it could be or the spaceProbe crashes on Titan, we found the supposedly best possible angle (without using any thrust during the travel)
+	 *
+	 * @param originPlanet, the planet from which the spaceProbe starts off
+	 * @param destinationPlanet, the planet at which the spaceProbe should arrive
+	 * @param startLaunchAngle, a starting guess for the correct launch angle
+	 * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
+	 * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	 * @param DEBUG, a boolean unlocking debug print statements
+	 */
 	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
@@ -1057,20 +1105,20 @@ public class GUI extends Application {
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
-	  */
+	 */
 	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
 		return launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal start time for the spaceProbe to get into orbit around the destination planet
-	  * @param originPlanet, the planet from which the spaceProbe starts off
-	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startTime, a starting guess for the correct time to start the Hohmann Transfer
-	  * @param startTimeIncrement, the starting amount of seconds by which we modify the starting time at each iteration
-	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
-	  * @param DEBUG, a boolean unlocking debug print statements
-	  */
+	 * @param originPlanet, the planet from which the spaceProbe starts off
+	 * @param destinationPlanet, the planet at which the spaceProbe should arrive
+	 * @param startTime, a starting guess for the correct time to start the Hohmann Transfer
+	 * @param startTimeIncrement, the starting amount of seconds by which we modify the starting time at each iteration
+	 * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	 * @param DEBUG, a boolean unlocking debug print statements
+	 */
 	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final boolean DEBUG) {
 		//Initialize some variables
 		boolean gotIntoOrbit = false;
@@ -1209,7 +1257,7 @@ public class GUI extends Application {
 	}
 
 	/** Auxiliary method for launchOrbitAdjustmentSearch
-	  */
+	 */
 	private Vector2D orbitPositionFromPlanet (CelestialBody planet) {
 		CelestialBody Sun = planets[0];
 		//Compute the angle of the position of the planet with respect to the Sun (center of the solar system)
@@ -1231,24 +1279,24 @@ public class GUI extends Application {
 	}
 
 	/** Overloads method launchAngleAdjustmentSearchImproved with one less parameter than the original: the boolean DEBUG
-	  */
+	 */
 	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
 		boolean DEBUG_MODE_ON = true;
 		return launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
 	}
 
 	/** NOT WORKING
-	  * Computes the optimal launch angle for the spaceProbe to get into orbit of the destinationPlanet starting from the originPlanet
-	  * Should work out the flightPlan with which to get into orbit around Titan
-	  * Idea is to try to compute the best angle to reach Titan, then use the thruster towards the end of the fligt to correct the position in order to get into orbit around Titan
-	  *
-	  * @param originPlanet, the planet from which the spaceProbe starts off
-	  * @param destinationPlanet, the planet at which the spaceProbe should arrive
-	  * @param startLaunchAngle, a starting guess for the correct launch angle
-	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
-	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
-	  * @param DEBUG, a boolean unlocking debug print statements
-	  */
+	 * Computes the optimal launch angle for the spaceProbe to get into orbit of the destinationPlanet starting from the originPlanet
+	 * Should work out the flightPlan with which to get into orbit around Titan
+	 * Idea is to try to compute the best angle to reach Titan, then use the thruster towards the end of the fligt to correct the position in order to get into orbit around Titan
+	 *
+	 * @param originPlanet, the planet from which the spaceProbe starts off
+	 * @param destinationPlanet, the planet at which the spaceProbe should arrive
+	 * @param startLaunchAngle, a starting guess for the correct launch angle
+	 * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
+	 * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	 * @param DEBUG, a boolean unlocking debug print statements
+	 */
 	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
 		System.out.println("1");
 
@@ -1364,36 +1412,36 @@ public class GUI extends Application {
 	}
 
 	/** Auxiliary method for launchAngleAdjustmentSearchImproved()
-	  * Given a solar system memento, it loads it into the global planets and spaceProbe variable
-	  *
-	  * @param memento the solarSystemMemento which we want to load into memory
-	  */
+	 * Given a solar system memento, it loads it into the global planets and spaceProbe variable
+	 *
+	 * @param memento the solarSystemMemento which we want to load into memory
+	 */
 	private void loadMemento (SolarSystemMemento memento) {
 		planets = memento.getPlanetsState();
 		spaceProbe = memento.getSpaceProbeState();
 	}
 
 	/** Creates the different GUI elements necessary for the landing GUI, or at least initializes them
-      */
-    private GraphicsContext createLandingGUI (Stage stage, LandingModule landingMod) {
-        //Create the borderPane
-        BorderPane border = new BorderPane();
+	 */
+	private GraphicsContext createLandingGUI (Stage stage, LandingModule landingMod) {
+		//Create the borderPane
+		BorderPane border = new BorderPane();
 
-        //Create the different labels showing information
-        altitudeText = new Text();
-        altitudeText.setFont(new Font(15));
-        altitudeText.translateXProperty().set(40);
-        altitudeText.translateYProperty().set(30);
+		//Create the different labels showing information
+		altitudeText = new Text();
+		altitudeText.setFont(new Font(15));
+		altitudeText.translateXProperty().set(40);
+		altitudeText.translateYProperty().set(30);
 
-        verticalSpeedText = new Text();
-        verticalSpeedText.setFont(new Font(15));
-        verticalSpeedText.translateXProperty().set(40);
-        verticalSpeedText.translateYProperty().set(60);
+		verticalSpeedText = new Text();
+		verticalSpeedText.setFont(new Font(15));
+		verticalSpeedText.translateXProperty().set(40);
+		verticalSpeedText.translateYProperty().set(60);
 
-        timeText = new Text();
-        timeText.setFont(new Font(15));
-        timeText.translateXProperty().set(40);
-        timeText.translateYProperty().set(90);
+		timeText = new Text();
+		timeText.setFont(new Font(15));
+		timeText.translateXProperty().set(40);
+		timeText.translateYProperty().set(90);
 
 		//Create the rectangle representing the landing module at it's starting position
 		Vector2D pos = new Vector2D(landingMod.getPosition().getX(), -landingMod.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
@@ -1412,77 +1460,77 @@ public class GUI extends Application {
 		landingModule.getRectangle().getTransforms().add(rectRotation);
 
 		//And set the label's initial texts
-        altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
-        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
-        timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
+		altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
+		verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
+		timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
 
-        //Draw the line marking the ground of Titan
-        Line line = new Line(0, LANDINGXAXISHEIGHT, LANDINGWINDOWWIDTH, LANDINGXAXISHEIGHT);
+		//Draw the line marking the ground of Titan
+		Line line = new Line(0, LANDINGXAXISHEIGHT, LANDINGWINDOWWIDTH, LANDINGXAXISHEIGHT);
 
-        //Create the canvas
-        Canvas canvas = new Canvas();
-        //add the zooming capability
-        canvas.setOnScroll((event) -> {
-            if (event.getDeltaY() > 0) {
-                coordinates.setScale(coordinates.getScale() * 0.9);
-            } else {
-                coordinates.setScale(coordinates.getScale() * 1.1);
-            }
-        });
+		//Create the canvas
+		Canvas canvas = new Canvas();
+		//add the zooming capability
+		canvas.setOnScroll((event) -> {
+			if (event.getDeltaY() > 0) {
+				coordinates.setScale(coordinates.getScale() * 0.9);
+			} else {
+				coordinates.setScale(coordinates.getScale() * 1.1);
+			}
+		});
 
-        //and set it in the center of the borderpane
-        border.setCenter(canvas);
-        Scene scene = new Scene(border);
-        border.getChildren().addAll(line, altitudeText, verticalSpeedText, timeText, rect);
+		//and set it in the center of the borderpane
+		border.setCenter(canvas);
+		Scene scene = new Scene(border);
+		border.getChildren().addAll(line, altitudeText, verticalSpeedText, timeText, rect);
 
-        //Set the title, scene of the stage and set the window to full screen
-        stage.setTitle("Landing");
-        stage.setScene(scene);
-        stage.setMaximized(true);
+		//Set the title, scene of the stage and set the window to full screen
+		stage.setTitle("Landing");
+		stage.setScene(scene);
+		stage.setMaximized(true);
 
-        // Bind canvas size to stack pane size
-        canvas.widthProperty().bind(stage.widthProperty());
-        canvas.heightProperty().bind(stage.heightProperty());
-        return canvas.getGraphicsContext2D();
-    }
+		// Bind canvas size to stack pane size
+		canvas.widthProperty().bind(stage.widthProperty());
+		canvas.heightProperty().bind(stage.heightProperty());
+		return canvas.getGraphicsContext2D();
+	}
 
 	/** Makes the last preparations for launching the landing GUI
-      *
-      */
-    private void launchLandingGUI (double updateInterval) {
-        //Reset the seconds counter
-        elapsedSeconds = 0;
+	 *
+	 */
+	private void launchLandingGUI (double updateInterval) {
+		//Reset the seconds counter
+		elapsedSeconds = 0;
 
-        //Create the new timeline
-        timeline = new Timeline();
-        timeline.setCycleCount(Timeline.INDEFINITE);
+		//Create the new timeline
+		timeline = new Timeline();
+		timeline.setCycleCount(Timeline.INDEFINITE);
 
-        //Create a keyFrame to update the landing frame
-        KeyFrame kf = new KeyFrame(
-          Duration.millis(updateInterval),
-          new EventHandler<ActionEvent> () {
-              public void handle (ActionEvent e) {
-                  updateLandingGUI(gc);
-              }
-          }
-        );
+		//Create a keyFrame to update the landing frame
+		KeyFrame kf = new KeyFrame(
+				Duration.millis(updateInterval),
+				new EventHandler<ActionEvent> () {
+					public void handle (ActionEvent e) {
+						updateLandingGUI(gc);
+					}
+				}
+		);
 
-        //And link it to the timeline
-        timeline.getKeyFrames().add(kf);
-    }
+		//And link it to the timeline
+		timeline.getKeyFrames().add(kf);
+	}
 
 	/** Draws the landing module at it's current position, then calls another method of the landing module class to update the position of the spaceProbe
-      *
-      */
-    private void updateLandingGUI(GraphicsContext gc) {
-        //Clear the window's previous contents, not sure if it's really needed
-        double canvasWidth = gc.getCanvas().getWidth();
-        double canvasHeight = gc.getCanvas().getHeight();
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
+	 *
+	 */
+	private void updateLandingGUI(GraphicsContext gc) {
+		//Clear the window's previous contents, not sure if it's really needed
+		double canvasWidth = gc.getCanvas().getWidth();
+		double canvasHeight = gc.getCanvas().getHeight();
+		gc.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        //Retrieve the landing module's position and modifiy it to pixel coordinates
-        Vector2D pos = new Vector2D(landingModule.getPosition().getX(), -landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
-        Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
+		//Retrieve the landing module's position and modifiy it to pixel coordinates
+		Vector2D pos = new Vector2D(landingModule.getPosition().getX(), -landingModule.getPosition().getY());      //-landingModule because the y-axis if inverted in java fx
+		Vector2D otherPosition = coordinates.modelToOtherPosition(pos);
 
 		//Set the rectangle representing the landingModule to the correct x- and y-position
 		landingModule.getRectangle().setX(otherPosition.getX() - RECT_WIDTH);
@@ -1494,25 +1542,25 @@ public class GUI extends Application {
 		rectRotation.setPivotX(otherPosition.getX());
 		rectRotation.setPivotY(otherPosition.getY());
 
-        //Set the labels
-        altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
-        verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
-        timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
+		//Set the labels
+		altitudeText.setText("Altitude: " + landingModule.getPosition().getY() + ", x-position: " + landingModule.getPosition().getX() +  ", angle: " + landingModule.getAngle());
+		verticalSpeedText.setText("Vertical speed: " + landingModule.getVelocity().getY() + ", horizontal speed: " + landingModule.getVelocity().getX());
+		timeText.setText("Elapsed time: " + getTimeAsString(elapsedSeconds));
 
-        // update rectPos if the landing module has not yet landed
-        if (! landingModule.hasLanded()) {
-            landingModule.updateModuleOneIteration(LANDINGDELTA_T);
-        }
-        else { //else, the landing module has landed and we stop the simulation
-            timeline.stop();
-        }
+		// update rectPos if the landing module has not yet landed
+		if (! landingModule.hasLanded()) {
+			landingModule.updateModuleOneIteration(LANDINGDELTA_T);
+		}
+		else { //else, the landing module has landed and we stop the simulation
+			timeline.stop();
+		}
 
-        //Keep track of the time elapsed since the start of the simulation
-        elapsedSeconds += LANDINGDELTA_T;
-    }
+		//Keep track of the time elapsed since the start of the simulation
+		elapsedSeconds += LANDINGDELTA_T;
+	}
 
 	/** Initialize the Planet and the Moon objects with their default properties, contained in the planet... arrays
-	*/
+	 */
 	public void createSolarSystem() {
 		planets = new CelestialBody[planetNames.length];
 		for (int i = 0; i < planetNames.length; i ++) {
@@ -1527,10 +1575,10 @@ public class GUI extends Application {
 
 	/** Initializes the GUI elements and sets some of their parameters
 
-		@param Stage, the GUI
+	 @param Stage, the GUI
 
-		@return GraphicsContext, the graphicsContext of the stage
-	*/
+	 @return GraphicsContext, the graphicsContext of the stage
+	 */
 	private GraphicsContext createGUI (Stage stage) {
 		//Create the borderPane
 		BorderPane border = new BorderPane();
@@ -1553,27 +1601,27 @@ public class GUI extends Application {
 		Canvas canvas = new Canvas();
 		//add the zooming capability
 		canvas.setOnScroll((event) -> {
-				if (event.getDeltaY() > 0) {
-						coordinates.setScale(coordinates.getScale() * 0.9);
-				} else {
-						coordinates.setScale(coordinates.getScale() * 1.1);
-				}
+			if (event.getDeltaY() > 0) {
+				coordinates.setScale(coordinates.getScale() * 0.9);
+			} else {
+				coordinates.setScale(coordinates.getScale() * 1.1);
+			}
 		});
 
 		//And the dragging ability
 		canvas.setOnDragDetected((event) -> movingStartPosition = new Vector2D(event.getX(), event.getY()));
-        canvas.setOnMouseDragged((event) -> {
-            if (movingStartPosition != null) {
-                Vector2D movingCurrentPosition = new Vector2D(event.getX(), event.getY());
-                movingCurrentPosition.subtract(movingStartPosition);
-                movingStartPosition = new Vector2D(event.getX(), event.getY());
+		canvas.setOnMouseDragged((event) -> {
+			if (movingStartPosition != null) {
+				Vector2D movingCurrentPosition = new Vector2D(event.getX(), event.getY());
+				movingCurrentPosition.subtract(movingStartPosition);
+				movingStartPosition = new Vector2D(event.getX(), event.getY());
 
 				coordinates.setModifiedPos(coordinates.getModifiedPos().add(movingCurrentPosition));
-                //coordinates.setModifiedX(coordinates.getModifiedX() + movingCurrentPosition.getX());
-                //coordinates.setModifiedY(coordinates.getModifiedY() + movingCurrentPosition.getY());
-            }
-        });
-        canvas.setOnMouseReleased((event) -> movingStartPosition = null);
+				//coordinates.setModifiedX(coordinates.getModifiedX() + movingCurrentPosition.getX());
+				//coordinates.setModifiedY(coordinates.getModifiedY() + movingCurrentPosition.getY());
+			}
+		});
+		canvas.setOnMouseReleased((event) -> movingStartPosition = null);
 
 		//and set it in the center of the borderpane
 		border.setCenter(canvas);
@@ -1591,9 +1639,9 @@ public class GUI extends Application {
 	}
 
 	/** Makes the last preparations for the GUI
-			@param updateInterval, the interval in milliseconds between each frame-update
-			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
-	*/
+	 @param updateInterval, the interval in milliseconds between each frame-update
+	 @param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
+	 */
 	public void launchGUI (double updateInterval, boolean spaceProbePresent) {
 		//Reset the number of iterations of the current simulation
 		numIterations = 0;
@@ -1603,17 +1651,17 @@ public class GUI extends Application {
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		KeyFrame kf = new KeyFrame(
-			Duration.millis(updateInterval),
-			new SolarSystemUpdater(spaceProbePresent));
+				Duration.millis(updateInterval),
+				new SolarSystemUpdater(spaceProbePresent));
 
 		timeline.getKeyFrames().add(kf);
 	}
 
 	/** Alternative version! Makes the last preparations for the GUI
-			@param updateInterval, the interval in milliseconds between each frame-update
-			@param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
-			@param waitAtStartTime, the number of seconds to wait before the planets start moving
-	*/
+	 @param updateInterval, the interval in milliseconds between each frame-update
+	 @param spaceProbePresent, this boolean value represents whether the spaceProbe is taken into account in the simulation or not
+	 @param waitAtStartTime, the number of seconds to wait before the planets start moving
+	 */
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime) {
 		//Reset the number of iterations of the current simulation
 		numIterations = 0;
@@ -1623,25 +1671,25 @@ public class GUI extends Application {
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		KeyFrame kf = new KeyFrame(
-			Duration.millis(updateInterval),
-			new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
+				Duration.millis(updateInterval),
+				new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
 
 		timeline.getKeyFrames().add(kf);
 	}
 
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, int endNumIterations) {
-			//Reset the number of iterations of the current simulation
-			numIterations = 0;
+		//Reset the number of iterations of the current simulation
+		numIterations = 0;
 
-			//Create the objects needed for the GUI, here the Timeline
-			timeline = new Timeline();
-			timeline.setCycleCount(endNumIterations);
+		//Create the objects needed for the GUI, here the Timeline
+		timeline = new Timeline();
+		timeline.setCycleCount(endNumIterations);
 
-			KeyFrame kf = new KeyFrame(
+		KeyFrame kf = new KeyFrame(
 				Duration.millis(updateInterval),
 				new SolarSystemUpdater(spaceProbePresent));
 
-			timeline.getKeyFrames().add(kf);
+		timeline.getKeyFrames().add(kf);
 	}
 
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime, int endNumIterations) {
@@ -1653,23 +1701,23 @@ public class GUI extends Application {
 		timeline.setCycleCount(endNumIterations);
 
 		KeyFrame kf = new KeyFrame(
-			Duration.millis(updateInterval),
-			new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
+				Duration.millis(updateInterval),
+				new SolarSystemUpdater(spaceProbePresent, waitAtStartTime));
 
 		timeline.getKeyFrames().add(kf);
 	}
 
 	/** This class is used to create EventHandlers for keyframes to feed to the timeline ...
-		Whenever it is called, it updates the solar system
-	*/
+	 Whenever it is called, it updates the solar system
+	 */
 	class SolarSystemUpdater implements EventHandler<ActionEvent> {
 		private boolean isSpaceProbeIncluded;
 		private double waitStartTime = 0;
 		private boolean updatedFrameOnce = false;
 
 		/** Default constructor for this class
-			@param spaceProbeIncluded specifies whether the spaceProbe is part of the simulation or not (and, as such, if it needs to be simulated too or not)
-		*/
+		 @param spaceProbeIncluded specifies whether the spaceProbe is part of the simulation or not (and, as such, if it needs to be simulated too or not)
+		 */
 		public SolarSystemUpdater (boolean spaceProbeIncluded) {
 			isSpaceProbeIncluded = spaceProbeIncluded;
 			startTime = System.nanoTime();
@@ -1686,9 +1734,9 @@ public class GUI extends Application {
 	}
 
 	/** Draw the planets at their new positions, then update them
-		@param gc, the graphicsContext on which we draw the planets' positions
-		@param spaceProbeIncluded determines whether the space probe also has to be taken into account or not
-	*/
+	 @param gc, the graphicsContext on which we draw the planets' positions
+	 @param spaceProbeIncluded determines whether the space probe also has to be taken into account or not
+	 */
 	private void redrawCanvas(GraphicsContext gc, boolean spaceProbeIncluded, double waitTime) {
 		//Draw over to get a wide board
 		this.canvasWidth = gc.getCanvas().getWidth();
@@ -1743,11 +1791,11 @@ public class GUI extends Application {
 	}
 
 	/** This method updates acceleration, then the velocity and the position of the planets
-		It is assumed that createPlanets has been called before
+	 It is assumed that createPlanets has been called before
 
-		@param time, the time interval which we update the position after
-		@param spaceProbeIncluded indicates whether the space probe's position is also updated or not
-	*/
+	 @param time, the time interval which we update the position after
+	 @param spaceProbeIncluded indicates whether the space probe's position is also updated or not
+	 */
 	private void update(double time, boolean spaceProbeIncluded) {
 		for (int step = 0; step < 8; step ++) {
 			for (int i = 0; i < planets.length; i ++) {
@@ -1765,37 +1813,37 @@ public class GUI extends Application {
 
 	/** Formats the elapsedSeconds variable for displaying the time elapsed since the beginning of the simulation
 
-		@return a nicely formatted string expressing the elapsedSeconds variable in years, days, minutes and seconds
-	*/
+	 @return a nicely formatted string expressing the elapsedSeconds variable in years, days, minutes and seconds
+	 */
 	public static String getElapsedTimeAsString() {
 		long years = elapsedSeconds / SEC_IN_YEAR;
 		long days = (elapsedSeconds % SEC_IN_YEAR) / SEC_IN_DAY;
-	    long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-	    long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-	    long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-	    return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+		long hours = ( (elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+		long minutes = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+		long seconds = ( ((elapsedSeconds % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+		return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 
 	/** Mainly for debugging purposes, could be deleted in the end product
 
-		@param time, a given number of seconds
+	 @param time, a given number of seconds
 
-		@return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
-	*/
+	 @return a nicely formatted string expressing the time parameter in years, days, minutes and seconds
+	 */
 	private String getTimeAsString (long time) {
 		long years = time / SEC_IN_YEAR;
-    	long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
-    	long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
-    	long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
-    	long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
-    	return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
+		long days = (time % SEC_IN_YEAR) / SEC_IN_DAY;
+		long hours = ((time % SEC_IN_YEAR) % SEC_IN_DAY) / SEC_IN_HOUR;
+		long minutes =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) / SEC_IN_MINUTE;
+		long seconds =  (((time % SEC_IN_YEAR) % SEC_IN_DAY) % SEC_IN_HOUR) % SEC_IN_MINUTE;
+		return String.format("Years:%08d, Days:%03d, Hours:%02d, Minutes:%02d, Seconds:%02d", years, days, hours, minutes, seconds);
 	}
 
 	/** Auxiliary method
 
-			@param double n, a double number
-			@return the sign of the double parameter
-	*/
+	 @param double n, a double number
+	 @return the sign of the double parameter
+	 */
 	private int signum (double n) {
 		return (int)(Math.abs(n)/n);
 	}

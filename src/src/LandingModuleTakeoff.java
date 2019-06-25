@@ -47,11 +47,12 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
     // TODO x-position overshoots by a large margin; try to adjust angle based on velocity as well
     @Override
     public void correctXPosition() {
-        if (position.getX() == goal.getX()) {
-            if (angle < 0) {
+        System.out.println("Angle: " + angle +", Velocity: " + velocity + "\nPosition: " + position);
+        if (position.getX() == goal.getX() || velocity.getX() > 20 || velocity.getX() < -20) {
+            if (angle < 0 || velocity.getX() < -20) {
                 angle += angleChange;
             }
-            else if (angle > 0) {
+            else if (angle > 0 || velocity.getX() > 20) {
                 angle -= angleChange;
             }
         }
@@ -104,7 +105,7 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
                 }
             }
         }
-        else { //then position.getX() > TOLPOSX
+        else { //then position.getX() > goal.getX()
             if (angle > 0) {
                 angle -= angleChange;
             }
@@ -163,7 +164,18 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
     public void updateAcceleration(final double timestep, final double thrusterForceUsed) {
         Vector2D gravity = new Vector2D(0, GRAVITYTITAN);
         acceleration.add(gravity);
+        if(considerWind) {
+            super.wind();
+        }
 
+
+
+        /*if (position.getX() > (goal.getX() + 100) && angle < 0) { // TODO Something with the x position/velocity
+            useMainThruster(timestep);
+        }
+        else if (position.getX() < (goal.getX() - 100) && angle > 0) {
+            useMainThruster(timestep);
+        }*/
         if (goal.getY() - position.getY() < (velocity.getY()/(-GRAVITYTITAN)) * velocity.getY() * .5) {
             //don't thrust
         }
