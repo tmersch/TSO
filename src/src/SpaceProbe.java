@@ -24,14 +24,14 @@ public class SpaceProbe extends CelestialBody {
 			launchAngle, the angle which the spaceProbe is launched in (angle in degrees),
 			and planetRadius, the radius of the planet the spaceProbe is launched from
 	*/
-	public static SpaceProbe createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle) {
+	public static SpaceProbe createSpaceProbeWithStartingAngle (String name, double mass, CelestialBody launchPlanet, double velocity, double launchAngle, double distFromStartPlanet) {
 		//Get a scaler according to the angle
 		Vector2D angleScaler = new Vector2D(launchAngle);
 
 		//Then compute the initialPosition and initialVelocity of the spaceProbe
 		Vector2D initialPosition = new Vector2D(launchPlanet.getPosition());
 			//NOTE ! We are starting in the direction of launchAngle, at a distance of 1000 meters of the surface
-		initialPosition.add(new Vector2D(angleScaler).multiply(1000 + launchPlanet.getRadius()));
+		initialPosition.add(new Vector2D(angleScaler).multiply(distFromStartPlanet + launchPlanet.getRadius()));
 		Vector2D initialVelocity = new Vector2D(angleScaler).multiply(velocity);
 
 

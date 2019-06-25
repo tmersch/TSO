@@ -47,7 +47,7 @@ public class LandingModuleFeedbackControllerWithParachute implements LandingModu
     private final double strongBrakingAtParachuteActivationTime = 90;       //in secs
 
     private final double parachuteAccelIntensity = 1.352;                                       //in meters/secs
-    private final double parachuteOpeningAccelIntensity = 35.8017378942/* - parachuteAccelIntensity*/;       //in meters/secs
+    private final double parachuteOpeningAccelIntensity = 35.801737894;                         //in meters/secs
     private double elapsedSecondsSinceParachuteActivation = 0;
     private boolean deployedParachute = false;
 
