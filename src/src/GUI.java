@@ -73,7 +73,7 @@ public class GUI extends Application {
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeWithThrustersReturnTravel = 17e3;		//in meters/secs
 	private static final String spaceProbeName = "SpaceProbe";
-	private static final double spaceProbeStartingHeight = 1000;					//in meters
+	private static final double spaceProbeStartingHeightEarth = 1000000;						//in meters
 
 	//the gravitational constant
 	public static final double G = 6.67300E-11;		//in meters^3 * kg^(-1) * secs^(-1)
@@ -191,22 +191,22 @@ public class GUI extends Application {
 							case "1":
 								//Compute the ideal angle
 								startLaunchAngle = 271.03781144252537;
-								idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe);
+								idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbe, spaceProbeStartingHeightEarth);
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, idealAngle, spaceProbeStartingHeightEarth);
 
 								break;
 							//SpaceProbeWithThrusters
 							case "2":
 								//Compute the ideal starting angle
 								startLaunchAngle = 267.3762536061466;//38.86503178087327 is an alternative
-								idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeWithThrusters);
+								idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeWithThrusters, spaceProbeStartingHeightEarth);
 
 								//Reset the solar system and create a new space probe with thrusters with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrusters, idealAngle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrusters, idealAngle, spaceProbeStartingHeightEarth);
 
 								break;
 						}
@@ -546,22 +546,22 @@ public class GUI extends Application {
 							case "1":
 								//Compute the ideal angle
 								startLaunchAngle = 111.71980492616017;
-								idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel);
+								idealAngle = launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeReturnTravel, spaceProbeStartingHeightEarth);
 
 								//Reset the solar system and create a new space probe with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeReturnTravel, idealAngle, spaceProbeStartingHeightEarth);
 
 								break;
 							//SpaceProbeWithThrusters
 							case "2":
 								//Compute the ideal starting angle
 								startLaunchAngle = 111.71979572901293;
-								idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeWithThrustersReturnTravel);
+								idealAngle = launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, averageVelocitySpaceProbeWithThrustersReturnTravel, spaceProbeStartingHeightEarth);
 
 								//Reset the solar system and create a new space probe with thrusters with the ideal angle
 								createSolarSystem();
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrustersReturnTravel, idealAngle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrustersReturnTravel, idealAngle, spaceProbeStartingHeightEarth);
 
 								break;
 						}
@@ -588,9 +588,9 @@ public class GUI extends Application {
 					double spaceProbeVeloc = averageVelocitySpaceProbe;
 					int originPlanet = 3;
 
-					double[] result = computeMassFlowRateToReachVelocityAtHeight(spaceProbeVeloc, spaceProbeStartingHeight, originPlanet);
+					double[] result = computeMassFlowRateToReachVelocityAtHeight(spaceProbeVeloc, spaceProbeStartingHeightEarth, originPlanet);
 
-					System.out.printf("\n\nIdealMassFlowRate: %f, \nReached velocity: %f VS wanted velocity: %f, \nReached height: %f VS wanted height: %f\nFuel mass given to the space probe: %f\nFuel mass burnt: %f", result[0], result[1], spaceProbeVeloc, result[2], spaceProbeStartingHeight, result[3], result[4]);
+					System.out.printf("\n\nIdealMassFlowRate: %f, \nReached velocity: %f VS wanted velocity: %f, \nReached height: %f VS wanted height: %f\nFuel mass given to the space probe: %f\nFuel mass burnt: %f", result[0], result[1], spaceProbeVeloc, result[2], spaceProbeStartingHeightEarth, result[3], result[4]);
 
 					/*
 					originPlanetIndex = 3;
@@ -612,13 +612,13 @@ public class GUI extends Application {
 							//SpaceProbe
 							case "1":
 								//Create a new space probe with the ideal angle
-								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, launch_angle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbe, launch_angle, spaceProbeStartingHeightEarth);
 
 								break;
 							//SpaceProbeWithThrusters
 							case "2":
 								//Create a new space probe with thrusters with the given angle
-								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrusters, launch_angle, spaceProbeStartingHeight);
+								spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], averageVelocitySpaceProbeWithThrusters, launch_angle, spaceProbeStartingHeightEarth);
 
 								break;
 						}
@@ -644,50 +644,94 @@ public class GUI extends Application {
 		}
 	}
 
+	/** Overloads method computeMassFlowRateToReachVelocityAtHeight()
+	  * Sets the parameter DEBUG to give it
+	  */
+	private double[] computeMassFlowRateToReachVelocityAtHeight (final double velocity, final double height, final int originPlanetIndex) {
+		boolean DEBUG_MODE_ON = true;
+		return computeMassFlowRateToReachVelocityAtHeight(velocity, height, originPlanetIndex, DEBUG_MODE_ON);
+	}
+
 	/** Try to compute the massFlowRate needed for the spaceProbeWithThrusters to reach the given velocity at the given height
 	  *
 	  * @return a double array, with at index 0 the massFlowRate needed to get to a velocity saved on index 1, at a height of index 2, and the quantity of fuel given to the space probe saved at index 3, with the quantity of burnt fuel at index 4
 	  */
-	private double[] computeMassFlowRateToReachVelocityAtHeight (final double velocity, final double height, final int originPlanetIndex) {
-		//Set the timestep to a smaller timestep (here 1 sec)
+	private double[] computeMassFlowRateToReachVelocityAtHeight (final double velocity, final double height, final int originPlanetIndex, final boolean DEBUG) {
+		//Set the timestep to a smaller timestep (here 1 sec) and save the previous value of DELTA_T
+		double old_DELTA_T = DELTA_T;
 		DELTA_T = 1;
 		//Set the launchAngle
 		double angle = 0;
+		//Set the launchDistance from the surface of the originPlanet
+		double launchDistanceFromSurface = 10;
 		//Set the tolerance factor for the height and for the velocity
-		final double TOL_HEIGHT = 0.01;		// 1/100 of the height as tolerance
+		final double TOL_HEIGHT = (velocity*DELTA_T)/height;		//should be one iteration of the wished velocity
 		final double TOL_VELOC = 0.01;
 		final double TOL_FUEL_MASS = 10;	//10 kgs
+
 		//Set the starting fuel mass and fuelMass change
 		double fuelMass = SpaceProbeWithThrusters.getDefaultFuelMass();
 		double fuelMassChange = fuelMass*1/10;
-		int fuelChangeMove = 0;
+		int currentFuelChangeMove = 0;
 		int previousFuelChangeMove = 0;
+
+		//In the first iteration, we allow to use more fuel than the spaceProbe has to get an estimate of the consumed fuel, and thus the mass of fuel we would need to have
+		boolean notUseMoreFuelThanAvailable = false;
 
 		//Start off with the massFlowRate from SpaceProbeWithThrusters
 		double idealMassFlowRate = SpaceProbeWithThrusters.getMassFlowRate();
 		double massFlowRateChange = 1.0/100 * idealMassFlowRate;
-		int currentMove = 0;
-		int previousMove = 0;
+		int currentMassFlowRateMove = 0;
+		int previousMassFlowRateMove = 0;
 
-		//Make a launch
+		//First iteration to get an estimate of the mass of burntFuel, and thus the mass of fuel we would need
+		//Reset the solar system
+		createSolarSystem();
+		//Create a spaceProbeWithThrusters from originPlanet
+		spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], 0, angle, launchDistanceFromSurface);
+		//We launch it in a specific angle, with only the velocity of the originPlanet and specify the fuelMass
+		spaceProbe = new SpaceProbeWithThrusters(spaceProbeName, spaceProbeMass, fuelMass, spaceProbe.getPosition(), spaceProbe.getVelocity().add(planets[originPlanetIndex].getVelocity()), ((SpaceProbeWithThrusters)spaceProbe).getAngle(), notUseMoreFuelThanAvailable);
+
+		//Run the simulation
+		int counter = 0;
+		while (planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) - planets[originPlanetIndex].getRadius() < height) {
+			System.out.println("Iteration #" + counter + " distance from Earth: " + (spaceProbe.getPosition().distance(planets[originPlanetIndex].getPosition()) - planets[originPlanetIndex].getRadius()));
+			((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
+			update(DELTA_T, true);
+
+			counter ++;
+		}
+
+		//Then, set the fuelMass to the mass of burntFuel of this iteration
+		fuelMass = ((SpaceProbeWithThrusters)spaceProbe).getBurntFuelMass();
+
+		System.out.println("FuelMass estimation: " + fuelMass);
+		//And now, we do not allow using more fuel than available anymore
+		notUseMoreFuelThanAvailable = true;
+
+		//Start the simulations
 		boolean idealMassFlowRateReached = false;
 		int numIterations = 0;
 		while (! idealMassFlowRateReached) {
-			System.out.println("Iteration #" + numIterations + ", massFlowRate: " + idealMassFlowRate + ", fuelMass: " + fuelMass);
+			if (DEBUG) System.out.println("Iteration #" + numIterations + ", massFlowRate: " + idealMassFlowRate + ", fuelMass: " + fuelMass);
+
+			//Reset the currentFuelChangeMove and currentMassFlowRateMove to 0
+			currentFuelChangeMove = 0;
+			currentMassFlowRateMove = 0;
 
 			//Reset the solar system
 			createSolarSystem();
 
 			//Create a spaceProbeWithThrusters from originPlanet
-			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], 0, angle, height);
+			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], 0, angle, 0);
 			//We launch it in a specific angle, with only the velocity of the originPlanet and specify the fuelMass
-			spaceProbe = new SpaceProbeWithThrusters(spaceProbeName, spaceProbeMass, fuelMass, spaceProbe.getPosition(), spaceProbe.getVelocity().add(planets[originPlanetIndex].getVelocity()), ((SpaceProbeWithThrusters)spaceProbe).getAngle());
+			spaceProbe = new SpaceProbeWithThrusters(spaceProbeName, spaceProbeMass, fuelMass, spaceProbe.getPosition(), spaceProbe.getVelocity().add(planets[originPlanetIndex].getVelocity()), ((SpaceProbeWithThrusters)spaceProbe).getAngle(), notUseMoreFuelThanAvailable);
 
 			//Set the massFlowRate
 			SpaceProbeWithThrusters.setMassFLowRate(idealMassFlowRate);
 
 			//Run the simulation until a height of "height" is reached or the velocity goes back down towards the originPlanet
-			while (planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) < height && (spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) > 90 && spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) < 270)) {
+			while (planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) - planets[originPlanetIndex].getRadius() < height && (spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) > 90 && spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) < 270)) {
 				((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
 				update(DELTA_T, true);
 			}
@@ -696,97 +740,103 @@ public class GUI extends Application {
 			//If we are not in the searched range of height, then
 			double spaceProbeHeight = spaceProbe.getPosition().subtract(planets[originPlanetIndex].getPosition()).length();
 			double spaceProbeVelocity = spaceProbe.getVelocity().length();
-			if (spaceProbeHeight < height*(1-TOL_HEIGHT) || spaceProbeHeight > height*(1+TOL_HEIGHT)) {
-				if (numIterations < 10) System.out.println("1");
-				//If the spaceProbe is below the searched height, we need to use the thrusters more (thus more fuel)
-				if (spaceProbeHeight < height*(1-TOL_HEIGHT)) {
-					if (numIterations < 10) System.out.println("	1.1");
-					fuelChangeMove = +1;
-
-					//If the previous fuel change was the opposite as this one, we reduce the fuelMassChange to finetune the needed fuel
-					if (fuelChangeMove == -previousFuelChangeMove) {
-						fuelMassChange /= 2;
-					}
-
-					//Apply the move
-					fuelMass += fuelChangeMove * fuelMassChange;
-
-					//We set the previous move to the move we just did
-					previousFuelChangeMove = fuelChangeMove;
+			//If the reached height is lower than the target height
+			if (spaceProbeHeight < height*(1-TOL_HEIGHT)) {
+				System.out.print("1");
+				//If the velocity is lower than the target velocity or is in the target velocity range,
+				if (spaceProbeVelocity < velocity*(1-TOL_VELOC) || (spaceProbeVelocity >= velocity*(1-TOL_VELOC) && spaceProbeVelocity <= velocity*(1+TOL_VELOC))) {
+					System.out.println(".1");
+					//Increase fuelMass
+					currentFuelChangeMove = +1;
 				}
-				//Else if we are above the searched height and the leftover fuelMass is bigger than the tolerance for fuel, we reduce the quantity of fuel
-				else if (((SpaceProbeWithThrusters)spaceProbe).getFuelMass() > TOL_FUEL_MASS) {
-					if (numIterations < 10) System.out.println("	.2");
-					fuelChangeMove = -1;
-
-					//If the previous fuel change was the opposite as this one, we reduce the fuelMassChange to finetune the needed fuel
-					if (fuelChangeMove == -previousFuelChangeMove) {
-						fuelMassChange /= 2;
-					}
-
-					//Apply the move
-					fuelMass += fuelChangeMove * fuelMassChange;
-
-					//We set the previous move to the move we just did
-					previousFuelChangeMove = fuelChangeMove;
-				}
+				//the velocity is bigger than the required velocity
 				else {
-					if (numIterations < 10) System.out.println("	.3");
-					//If we are not in the tolerated height range, we decrease the massFlowRate, because that means we passed over the given height and didn't have too much fuel
-					currentMove = -1;
+					System.out.println(".2");
+					//Decrease massFlowRate
+					currentMassFlowRateMove = -1;
+				}
+			}
+			//If the reached height is higher than the target height
+			else if (spaceProbeHeight > height*(1+TOL_HEIGHT)) {
+				System.out.print("2");
+				//If the velocity is lower than the target velocity,
+				if (spaceProbeVelocity < velocity*(1-TOL_VELOC)) {
+					System.out.println(".1");
+					//Increase massFlowRate
+					currentMassFlowRateMove = +1;
 
-					//If we do the opposite action to the previous one,
-					if (currentMove == -previousMove) {
-						massFlowRateChange /= 2;
+					//Compute the distance travelled in one iteration
+					double travelledDistanceOneIteration = 
+					if (spaceProbeVelocity * DELTA_T > height) {
+						return new double[0];
 					}
-
-					//Apply the current move
-					idealMassFlowRate += currentMove * massFlowRateChange;
-
-					//Then set the previous move to the value for this move, in prevision for the next iteration
-					previousMove = currentMove;
+				}
+				//Else if the velocity is bigger than the target velocity,
+				else if (spaceProbeVelocity > velocity*(1+TOL_VELOC)) {
+					System.out.println(".2");
+					//Decrease massFlowRate
+					currentMassFlowRateMove = -1;
+				}
+				//Else, the velocity is in the required range,
+				else {
+					System.out.println(".3");
+					//So, we increase the massFlowRate, hoping that it will make the iteration before the last iteration we reached this time arrive in the required height with the required velocity
+					currentMassFlowRateMove = +1;
 				}
 			}
-			else if (spaceProbe.getVelocity().length() < velocity*(1-TOL_VELOC)) {
-				if (numIterations < 10) System.out.println("2");
-				//If we have a lower velocity as required, augment the massFlowRate
-				currentMove = +1;
-
-				//If we do the opposite action to the previous one,
-				if (currentMove == -previousMove && currentMove != 0) {
-					massFlowRateChange /= 2;
-				}
-
-				//Apply the move
-				idealMassFlowRate += currentMove * massFlowRateChange;
-
-				//Then set the previous move to the value for this move, in prevision for the next iteration
-				previousMove = currentMove;
-			}
-			else if (spaceProbe.getVelocity().length() > velocity*(1+TOL_VELOC)) {
-				if (numIterations < 10) System.out.println("3");
-				//If we have a bigger velocity as required, decrease the massFlowRate
-				currentMove = -1;
-
-				//If we do the opposite action to the previous one,
-				if (currentMove == -previousMove && currentMove != 0) {
-					massFlowRateChange /= 2;
-				}
-
-				//Apply the current move
-				idealMassFlowRate += currentMove * massFlowRateChange;
-
-				//Then set the previous move to the value for this move, in prevision for the next iteration
-				previousMove = currentMove;
-			}
+			//Else, the reached height is in the target height range,
 			else {
-				System.out.println("Perfect conditions");
-				idealMassFlowRateReached = true;
+				System.out.print("3");
+				//If the velocity is smaller than the target velocity,
+				if (spaceProbeVelocity < velocity*(1-TOL_VELOC)) {
+					System.out.println(".1");
+					//Increase massFlowRate
+					currentMassFlowRateMove = +1;
+				}
+				//Else if the velocity is bigger than the target velocity,
+				else if (spaceProbeVelocity > velocity*(1+TOL_VELOC)) {
+					System.out.println(".2");
+					//Decrease massFlowRate
+					currentMassFlowRateMove = -1;
+				}
+				//Else, the velocity is in the target range, and we are done
+				else {
+					System.out.println(".3");
+					//We are done, end the simulations and return the result
+					if (DEBUG) System.out.println("Ideal conditions reached: ");
+					idealMassFlowRateReached = true;
+				}
 			}
+
+			//Then, execute the moves that were ordered in the previous if's
+			//If there is a fuel change move ordered,
+			if (currentFuelChangeMove != 0) {
+				//If the previous move was the opposite, then reduce the fuelMassChange
+				if (previousFuelChangeMove == -currentFuelChangeMove) {
+					fuelMassChange /= 2;
+				}
+
+				//Then, apply the fuel mass change
+				fuelMass += currentFuelChangeMove * fuelMassChange;
+			}
+			//If there is a mass flow rate change move ordered,
+			if (currentMassFlowRateMove != 0) {
+				//If the previous move was the opposite, then reduce the massFlowRateChange
+				if (previousMassFlowRateMove == -currentMassFlowRateMove) {
+					massFlowRateChange /= 2;
+				}
+
+				//Then, apply the given mass flow rate change
+				idealMassFlowRate += currentMassFlowRateMove * massFlowRateChange;
+			}
+
+			//And set the previous moves to the move(s) we just applied
+			previousFuelChangeMove = currentFuelChangeMove;
+			previousMassFlowRateMove = currentMassFlowRateMove;
 
 			//If the massFlowRateChange is smaller than the smallest double value bigger than idealMassFlowRate, then we refined the massFlowRate as much as we could and we can be happy with the result
 			if (massFlowRateChange < Math.ulp(idealMassFlowRate)) {
-				System.out.println("Finetuning finished: " + massFlowRateChange);
+				if (DEBUG) System.out.println("MassFlowRateChange reached minimum: " + massFlowRateChange);
 				idealMassFlowRateReached = true;
 			}
 
@@ -801,14 +851,17 @@ public class GUI extends Application {
 		result[3] = fuelMass;																			//index 3, the fuelMass given to the spaceProbe
 		result[4] = ((SpaceProbeWithThrusters)spaceProbe).getBurntFuelMass();							//index 4, the burntFuelMass
 
+		//Set DELTA_T back to its old value
+		DELTA_T = old_DELTA_T;
+
 		return result;
 	}
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchAngleAdjustmentSearchSpaceProbe(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
@@ -822,9 +875,10 @@ public class GUI extends Application {
 	  * @param startLaunchAngle, a starting guess for the correct launch angle
 	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	  * @param distFromOriginPlanet, the distance from originPlanet which we start at (with spaceProbeVelocity as velocity)
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchAngleAdjustmentSearchSpaceProbe (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet, final boolean DEBUG) {
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
 		double angleChange = startAngleChange;
@@ -846,7 +900,7 @@ public class GUI extends Application {
 			CelestialBody destinationPlanet = planets[destinationPlanetIndex];
 
 			//Create a new spaceProbe launched with a new angle from planet Earth
-			spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, spaceProbeVelocity, launch_angle, spaceProbeStartingHeight);
+			spaceProbe = SpaceProbe.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, spaceProbeVelocity, launch_angle, distFromOriginPlanet);
 
 			int num = 0;
 			//As long as the spaceProbe has not crashed into a planet, or gone further away from the originPlanet than the destinationPlanet's distance from the originPlanet or gone further away from the Sun than Pluto's distance to the Sun
@@ -931,9 +985,9 @@ public class GUI extends Application {
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchAngleAdjustmentSearchSpaceProbeWithThrusters(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal launch angle for the spaceProbe to reach the destinationPlanet starting from the originPlanet
@@ -947,9 +1001,10 @@ public class GUI extends Application {
 	  * @param startLaunchAngle, a starting guess for the correct launch angle
 	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	  * @param distFromOriginPlanet, the distance from originPlanet which we start at (with spaceProbeVelocity as velocity)
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchAngleAdjustmentSearchSpaceProbeWithThrusters (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet, final boolean DEBUG) {
 		//Initialize variables
 		double launch_angle = startLaunchAngle;
 		double angleChange = startAngleChange;
@@ -971,7 +1026,7 @@ public class GUI extends Application {
 			CelestialBody destinationPlanet = planets[destinationPlanetIndex];
 
 			//Create a new spaceProbe launched with a new angle from planet Earth
-			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, spaceProbeVelocity, launch_angle, spaceProbeStartingHeight);
+			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, originPlanet, spaceProbeVelocity, launch_angle, distFromOriginPlanet);
 
 			int num = 0;
 			//As long as the spaceProbe has not crashed into a planet, or gone further away from the originPlanet than the destinationPlanet's distance from the originPlanet or gone further away from the Sun than Pluto's distance to the Sun
@@ -1058,9 +1113,9 @@ public class GUI extends Application {
 
 	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	  */
-	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity) {
+	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
-		return launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
 
 	/** Computes the optimal start time for the spaceProbe to get into orbit around the destination planet
@@ -1069,9 +1124,10 @@ public class GUI extends Application {
 	  * @param startTime, a starting guess for the correct time to start the Hohmann Transfer
 	  * @param startTimeIncrement, the starting amount of seconds by which we modify the starting time at each iteration
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	  * @param distFromOriginPlanet, the distance from originPlanet which we start at (with spaceProbeVelocity as velocity)
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final boolean DEBUG) {
+	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final double distFromOriginPlanet, final boolean DEBUG) {
 		//Initialize some variables
 		boolean gotIntoOrbit = false;
 		double startTime = initialStartTime;
@@ -1232,9 +1288,9 @@ public class GUI extends Application {
 
 	/** Overloads method launchAngleAdjustmentSearchImproved with one less parameter than the original: the boolean DEBUG
 	  */
-	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity) {
+	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
-		return launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG_MODE_ON);
+		return launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
 
 	/** NOT WORKING
@@ -1247,15 +1303,16 @@ public class GUI extends Application {
 	  * @param startLaunchAngle, a starting guess for the correct launch angle
 	  * @param startAngleChange, the starting amount of degrees by which the launch angle is modified at each iteration
 	  * @param spaceProbeVelocity, the total velocity of the spaceProbe at the starting position
+	  * @param distFromOriginPlanet, the distance from originPlanet which we start at (with spaceProbeVelocity as velocity)
 	  * @param DEBUG, a boolean unlocking debug print statements
 	  */
-	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final boolean DEBUG) {
+	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet, final boolean DEBUG) {
 		System.out.println("1");
 
 		//Use launchAngleAdjustmentSearch() to get the ideal angle without thrust
 		final double IDEAL_ANGLE = 256.2480755655964;	//launchAngleAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, DEBUG);
 		System.out.println("2");
-		spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], spaceProbeVelocity, IDEAL_ANGLE, spaceProbeStartingHeight);
+		spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], spaceProbeVelocity, IDEAL_ANGLE, distFromOriginPlanet);
 		//final Vector2D INITIAL_POSITION = spaceProbe.getPosition();
 		//final Vector2D INITIAL_VELOCITY = spaceProbe.getVelocity();
 		//the mass is saved in spaceProbeMass

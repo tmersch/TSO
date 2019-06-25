@@ -324,8 +324,7 @@ public class LandingModuleFeedbackController implements LandingModule {
 		return brakingTime;
 	}
 
-    /** Use the back thruster. Changes the modules acceleration
-     *
+    /** Use the back thruster. Changes the module's acceleration
      */
     public void useMainThruster(final double timestep) {
         //Determine the thrusterForceto to apply in order to always have a force equal to minMainForce on the y-axis

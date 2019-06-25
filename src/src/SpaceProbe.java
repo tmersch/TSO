@@ -59,7 +59,7 @@ public class SpaceProbe extends CelestialBody {
 	/** Checks whether the space probe crashed into the given planet
 	  */
 	public boolean didNotCrash (CelestialBody p) {
-		if (new Vector2D(p.getPosition()).distance(this.getPosition()) <= p.getRadius()) {
+		if (new Vector2D(p.getPosition()).distance(this.getPosition()) < p.getRadius()) {
 			crashedPlanet = p;
 			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
 			crashed = true;

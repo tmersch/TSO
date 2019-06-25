@@ -338,7 +338,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
             double actuallyUsedThrusterForce = computeBurntFuelFromThrusterForce(thrusterForce.length(), deltaT);
 
             //Divide the thrusterForce by the mass to get the actual acceleration caused by the thrusters
-            Vector2D thrusterAccel = new Vector2D(angle).multiply(actuallyUsedThrusterForce).divide((mass + this.getMass())/2);          //Divide by the average mass before and after to get a better approximation ?
+            Vector2D thrusterAccel = new Vector2D(thrusterForce.angle(new Vector2D())).multiply(actuallyUsedThrusterForce).divide((mass + this.getMass())/2);
+            //Divide by the average mass before and after to get a better approximation ?
 
             //Add the thruster force to the derivative
             Derivative derivativeThrusterForce = new Derivative(new Vector2D(), thrusterAccel);

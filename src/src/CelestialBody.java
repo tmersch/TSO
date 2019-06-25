@@ -116,11 +116,6 @@ public class CelestialBody {
         return new State(intermediateState);
     }
 
-    protected void setVelocity(Vector2D newVel) {
-        velocity = new Vector2D(newVel);
-        initialState.velocity = velocity;
-    }
-
     public Derivative nextDerivative (State initial, Derivative d, double deltaT, int step) {
         if (step == 0) {
             intermediateState = new State(0, 0, 0, 0);

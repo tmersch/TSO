@@ -48,4 +48,16 @@ public class Derivative {
 
     return this;
   }
+
+  public Vector2D getDPosition () {
+      return new Vector2D(dPosition);
+  }
+
+  public Vector2D getDVelocity () {
+      return new Vector2D(dVelocity);
+  }
+
+  public String toString () {
+      return "dPosition = " + dPosition.toString() + "\ndVelocity = " + dVelocity.toString();
+  }
 }
