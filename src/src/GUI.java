@@ -644,8 +644,7 @@ public class GUI extends Application {
 					choiceMade = true;
 					break;
 
-
-				//TEst case 5
+				//TEst case 5, does not work
 				//
 
 				case "5":
@@ -676,7 +675,7 @@ public class GUI extends Application {
 					choiceMade = true;
 					break;
 
-				// Case 6 TO DELETE
+				// Case 6 WAS TO TEST; DOES NOT WORK SO FAR
 				//
 
 				case "6":					//Test of space probe angle
@@ -686,7 +685,10 @@ public class GUI extends Application {
 
 					double[] result = computeMassFlowRateToReachVelocityAtHeight(spaceProbeVeloc, spaceProbeStartingHeightEarth, originPlanet);
 
-					System.out.printf("\n\nIdealMassFlowRate: %f, \nReached velocity: %f VS wanted velocity: %f, \nReached height: %f VS wanted height: %f\nFuel mass given to the space probe: %f\nFuel mass burnt: %f", result[0], result[1], spaceProbeVeloc, result[2], spaceProbeStartingHeightEarth, result[3], result[4]);
+					if (result.length > 0)
+						System.out.printf("\n\nIdealMassFlowRate: %f, \nReached velocity: %f VS wanted velocity: %f, \nReached height: %f VS wanted height: %f\nFuel mass given to the space probe: %f\nFuel mass burnt: %f", result[0], result[1], spaceProbeVeloc, result[2], spaceProbeStartingHeightEarth, result[3], result[4]);
+					else
+						System.out.println("Did not work");
 
 					/*
 					originPlanetIndex = 3;
