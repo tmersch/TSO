@@ -12,8 +12,8 @@ public class LandingModuleFeedbackControllerWithParachute implements LandingModu
     private double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
     private final double exhaustVelocity = 3510; //2941 at 1 atm            //in m/secs
-    // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
-    private final double keroseneOxidizerToFuelRatio = 2.56;
+    // oxidizer-to-fuel ratio for kerosene found on http://www.braeunig.us/space/propel.htm
+    private final double keroseneOxidizerToFuelRatio = 2.29;
 
     private Rectangle rectangle;
 

@@ -68,7 +68,7 @@ public class GUI extends Application {
 	private static SpaceProbe spaceProbe;											//the spaceProbe object
 	//the mass of voyager
 	private static final double spaceProbeMass = 800;											//in kg
-	private static final double averageVelocitySpaceProbe = 47e3;								//in meters/secs
+	private static final double averageVelocitySpaceProbe = 44e3;								//in meters/secs
 	private static final double averageVelocitySpaceProbeWithThrusters = 45e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeReturnTravel = 10e3;					//in meters/secs
 	private static final double averageVelocitySpaceProbeWithThrustersReturnTravel = 17e3;		//in meters/secs
@@ -761,13 +761,16 @@ public class GUI extends Application {
 		//Set the launchDistance from the surface of the originPlanet
 		double launchDistanceFromSurface = 10;
 		//Set the tolerance factor for the height and for the velocity
-		final double TOL_HEIGHT = (velocity*DELTA_T)/height;		//should be one iteration of the wished velocity
-		final double TOL_VELOC = 0.01;
+		final double TOL_HEIGHT = 1.0/10;		//a tenth of height
+		final double TOL_VELOC = 0.01;			//one out of a hundred of the velocity
 		final double TOL_FUEL_MASS = 10;	//10 kgs
+
+		//The space probe is always part of the simulations
+		final boolean spaceProbeIncluded = true;
 
 		//Set the starting fuel mass and fuelMass change
 		double fuelMass = SpaceProbeWithThrusters.getDefaultFuelMass();
-		double fuelMassChange = fuelMass*1/10;
+		double fuelMassChange = fuelMass*1.0/10;
 		int currentFuelChangeMove = 0;
 		int previousFuelChangeMove = 0;
 
@@ -791,10 +794,11 @@ public class GUI extends Application {
 		//Run the simulation
 		int counter = 0;
 		while (planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) - planets[originPlanetIndex].getRadius() < height) {
-			System.out.println("Iteration #" + counter + " distance from Earth: " + (spaceProbe.getPosition().distance(planets[originPlanetIndex].getPosition()) - planets[originPlanetIndex].getRadius()));
+			//Activate the thrusters and update the bodies
 			((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
 			update(DELTA_T, true);
 
+			//Keep track of the number of iterations
 			counter ++;
 		}
 
@@ -819,7 +823,7 @@ public class GUI extends Application {
 			createSolarSystem();
 
 			//Create a spaceProbeWithThrusters from originPlanet
-			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], 0, angle, 0);
+			spaceProbe = SpaceProbeWithThrusters.createSpaceProbeWithStartingAngle(spaceProbeName, spaceProbeMass, planets[originPlanetIndex], 0, angle, 5);
 			//We launch it in a specific angle, with only the velocity of the originPlanet and specify the fuelMass
 			spaceProbe = new SpaceProbeWithThrusters(spaceProbeName, spaceProbeMass, fuelMass, spaceProbe.getPosition(), spaceProbe.getVelocity().add(planets[originPlanetIndex].getVelocity()), ((SpaceProbeWithThrusters)spaceProbe).getAngle(), notUseMoreFuelThanAvailable);
 
@@ -827,15 +831,32 @@ public class GUI extends Application {
 			SpaceProbeWithThrusters.setMassFLowRate(idealMassFlowRate);
 
 			//Run the simulation until a height of "height" is reached or the velocity goes back down towards the originPlanet
-			while (planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) - planets[originPlanetIndex].getRadius() < height && (spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) > 90 && spaceProbe.getVelocity().angle(planets[originPlanetIndex].getPosition()) < 270)) {
+			counter = 0;
+			double distToEarthSurface = 0;
+			double angleOfSpaceProbeVelocityWithRespectToEarth = 0;
+			do {
+				//Activate the thrusters, then update the position of all the bodies from the solar system, including the space probe
 				((SpaceProbeWithThrusters)spaceProbe).activateThrusters();
 				update(DELTA_T, true);
-			}
+
+				//Recompute the distance to Earth's surface and the angle of the velocity
+				distToEarthSurface = planets[originPlanetIndex].getPosition().distance(spaceProbe.getPosition()) - planets[originPlanetIndex].getRadius();
+				angleOfSpaceProbeVelocityWithRespectToEarth = (spaceProbe.getPosition().subtract(planets[originPlanetIndex].getPosition()).angle(new Vector2D()) - spaceProbe.getVelocity().subtract(planets[originPlanetIndex].getVelocity()).angle(new Vector2D()));
+
+				//Keep track of the number of iterations so far
+				counter ++;
+			} while (distToEarthSurface < height && (angleOfSpaceProbeVelocityWithRespectToEarth > 270 && angleOfSpaceProbeVelocityWithRespectToEarth < 90));
+
+			System.out.println("Iteration #" + counter + "distance from Earth: " + distToEarthSurface + "\nAngle of the velocity: " + angleOfSpaceProbeVelocityWithRespectToEarth);
+			System.out.println("Angle from Earth to SpaceProbe: " + (spaceProbe.getPosition().subtract(planets[originPlanetIndex].getPosition()).angle(new Vector2D())) + ", \nAngle of Space probe's velocity: " + spaceProbe.getVelocity().subtract(planets[originPlanetIndex].getVelocity()).angle(new Vector2D()));
 
 			//Evaluate the simulation
 			//If we are not in the searched range of height, then
-			double spaceProbeHeight = spaceProbe.getPosition().subtract(planets[originPlanetIndex].getPosition()).length();
+			double spaceProbeHeight = spaceProbe.getPosition().subtract(planets[originPlanetIndex].getPosition()).length() - planets[originPlanetIndex].getRadius();
 			double spaceProbeVelocity = spaceProbe.getVelocity().length();
+
+			System.out.println("Space probe height: " + spaceProbeHeight + "\nSpace probe Velocity: " + spaceProbeVelocity);
+
 			//If the reached height is lower than the target height
 			if (spaceProbeHeight < height*(1-TOL_HEIGHT)) {
 				System.out.print("1");
@@ -1207,13 +1228,13 @@ public class GUI extends Application {
 		return result;
 	}
 
-	/** Overloads method launchAngleAdjustmentSearch with one less parameter than the original: the boolean DEBUG
+	//NOT WORKING, launchOrbitAdjustmentSearch (the two different ones), as well as orbitPositionFromPlanet, were tests to try to get in orbit around a planet without using Hohmann Transfer, but didn't work out
+	/** Overloads method launcOrbitAdjustmentSearch with one less parameter than the original: the boolean DEBUG
 	 */
 	private double launchOrbitAdjustmentSearch (final int originPlanetIndex, final int destinationPlanetIndex, final double initialStartTime, final double initialStartTimeIncrement, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
 		return launchOrbitAdjustmentSearch(originPlanetIndex, destinationPlanetIndex, initialStartTime, initialStartTimeIncrement, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
-
 	/** Computes the optimal start time for the spaceProbe to get into orbit around the destination planet
 	 * @param originPlanet, the planet from which the spaceProbe starts off
 	 * @param destinationPlanet, the planet at which the spaceProbe should arrive
@@ -1359,7 +1380,6 @@ public class GUI extends Application {
 
 		return 0;
 	}
-
 	/** Auxiliary method for launchOrbitAdjustmentSearch
 	 */
 	private Vector2D orbitPositionFromPlanet (CelestialBody planet) {
@@ -1382,13 +1402,13 @@ public class GUI extends Application {
 		return resultPos;
 	}
 
+	//Does not work, another try to get into orbit
 	/** Overloads method launchAngleAdjustmentSearchImproved with one less parameter than the original: the boolean DEBUG
 	 */
 	private FlightPlan launchAngleAdjustmentSearchImproved (final int originPlanetIndex, final int destinationPlanetIndex, final double startLaunchAngle, final double startAngleChange, final double spaceProbeVelocity, final double distFromOriginPlanet) {
 		boolean DEBUG_MODE_ON = true;
 		return launchAngleAdjustmentSearchImproved(originPlanetIndex, destinationPlanetIndex, startLaunchAngle, startAngleChange, spaceProbeVelocity, distFromOriginPlanet, DEBUG_MODE_ON);
 	}
-
 	/** NOT WORKING
 	 * Computes the optimal launch angle for the spaceProbe to get into orbit of the destinationPlanet starting from the originPlanet
 	 * Should work out the flightPlan with which to get into orbit around Titan
@@ -1515,7 +1535,6 @@ public class GUI extends Application {
 		//This is a placeholder to avoid getting a "missing return statement" error
 		return null;
 	}
-
 	/** Auxiliary method for launchAngleAdjustmentSearchImproved()
 	 * Given a solar system memento, it loads it into the global planets and spaceProbe variable
 	 *
@@ -1782,6 +1801,9 @@ public class GUI extends Application {
 		timeline.getKeyFrames().add(kf);
 	}
 
+	/** Alternative version! Makes the last preparations for the GUI
+	  * @param endNumIterations gives the number of iterations that should be run
+	  */
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, int endNumIterations) {
 		//Reset the number of iterations of the current simulation
 		numIterations = 0;
@@ -1797,6 +1819,9 @@ public class GUI extends Application {
 		timeline.getKeyFrames().add(kf);
 	}
 
+	/** Alternative version! Makes the last preparations for the GUI
+	  * Same thing as the two previous, except it does both tasks
+	  */
 	public void launchGUI (double updateInterval, boolean spaceProbePresent, double waitAtStartTime, int endNumIterations) {
 		//Reset the number of iterations of the current simulation
 		numIterations = 0;

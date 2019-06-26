@@ -5,8 +5,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
     private static double massFlowRate = 10;                 //in kg/secs
     // exhaust velocity found on https://en.wikipedia.org/wiki/Liquid_rocket_propellant
     private final static double exhaustVelocity = 3510; //2941 for 1 atm            //in m/secs
-    // oxidizer-to-fuel ratio for kerosene found on https://en.wikipedia.org/wiki/RP-1
-    private final double keroseneOxidizerToFuelRatio = 2.56;
+    // oxidizer-to-fuel ratio for kerosene found on http://www.braeunig.us/space/propel.htm
+    private final double keroseneOxidizerToFuelRatio = 2.29;
 
     //The force applied on the space probe by the thrusters
     protected Vector2D thrusterForce = new Vector2D(0, 0);
@@ -211,7 +211,7 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double burntKeroseneMass = exhaustGasMass/(burntOxidizerFactor + 1);
 
         //If we have less fuel left than what we would consume and we do not allow using more fuel than we have,
-        if (notUsingMoreFuelThanAvailable && this.getFuelMass() > burntKeroseneMass) {
+        if (notUsingMoreFuelThanAvailable && this.getFuelMass() < burntKeroseneMass) {
             //we use all the leftover fuel
             burntKeroseneMass = this.getFuelMass();
 
@@ -534,13 +534,17 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
 
         Vector2D spaceProbePos = new Vector2D(originPlanet.getPosition());
         Vector2D spaceProbeVelocity = new Vector2D(previousVelocitySpaceProbe);
-        spaceProbePos.add(new Vector2D(angleFromEarth).multiply(distFromEarth));
+        spaceProbePos.add(new Vector2D(angleFromEarth).multiply(distFromEarth + originPlanet.getRadius()));
         spaceProbeVelocity.add(deltaV1);
 
         SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, spaceProbePos, spaceProbeVelocity);
 
         //Return the spaceProbe
         return probe;
+    }
+
+    public String toString () {
+        return "SpaceProbe " + this.getName() + " of mass " + this.getMass() + " with fuel mass " + this.getStartingFuelMass() + ", with burnt fuel mass " + this.getBurntFuelMass() + " at position (" + this.getPosition() + "), velocity (" + this.getVelocity() + ")";
     }
 
     /** Returns a deep copy of this object at its current state

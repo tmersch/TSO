@@ -63,6 +63,7 @@ public class SpaceProbe extends CelestialBody {
 			crashedPlanet = p;
 			positionWithRespectToCrashedPlanet = new Vector2D(this.getPosition()).subtract(crashedPlanet.getPosition());
 			crashed = true;
+			System.out.println("Crashed on " + p.getName());
 			return false;
 		}
 		else {

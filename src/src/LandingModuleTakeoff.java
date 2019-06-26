@@ -31,7 +31,7 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
         time = 0;
         numIterations = 0;
 
-        System.out.println("Starting landing from \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle + "\nWind taken into account: " + considerWind);
+        System.out.println("Starting takeoff from \nposition = " + position + "\nvelocity = " + velocity + "\nangle = " + angle + "\nWind taken into account: " + considerWind);
 
         while (!reachedGoal()) {
             updateModuleOneIteration(timestep);
@@ -167,17 +167,17 @@ public class LandingModuleTakeoff extends LandingModuleFeedbackController {
             super.wind();
         }
 
-
-
         /*if (position.getX() > (goal.getX() + 100) && angle < 0) { // TODO Something with the x position/velocity
             useMainThruster(timestep);
         }
         else if (position.getX() < (goal.getX() - 100) && angle > 0) {
             useMainThruster(timestep);
         }*/
+        //If the distance we still need to travel is less than the distance we would need to breake,
         if (goal.getY() - position.getY() < (velocity.getY()/(-GRAVITYTITAN)) * velocity.getY() * .5) {
             //don't thrust
         }
+        //Else, activate the main thruster
         else {
             useMainThruster(timestep);
         }
