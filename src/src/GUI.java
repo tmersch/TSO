@@ -644,10 +644,42 @@ public class GUI extends Application {
 					choiceMade = true;
 					break;
 
-				// Case 5 TO DELETE
+
+				//TEst case 5
 				//
 
-				case "5":					//Test of space probe angle
+				case "5":
+					//First simulate the solar system simulation until the 23 may 2024
+					int numDays = 1893;		//number of days between now (18 may 2019) and the 23 may 2024
+					int numIterationsToDo = (int)((numDays*SEC_IN_DAY)/DELTA_T);
+					spaceProbeIncluded = false;
+
+					//Do as many iterations
+					while (numIterationsToDo > numIterations) {
+						//Update the position of the planets and all bodies (also updates the global variable numIterations)
+						update(DELTA_T, spaceProbeIncluded);
+					}
+
+					//Then, launch the spaceProbe with the supposedly correct parameters for the Hohmann Transfer
+					spaceProbe = SpaceProbeWithThrusters.createSpaceProbeHohmannTransfer(planets[3], planets[9], DELTA_T);
+
+					//Include the spaceProbe
+					spaceProbeIncluded = true;
+
+					//Then launch the GUI
+					gc = createGUI(stage);
+					launchGUI(1, spaceProbeIncluded);
+					timeline.play();
+					stage.show();
+
+					//And exit the switch
+					choiceMade = true;
+					break;
+
+				// Case 6 TO DELETE
+				//
+
+				case "6":					//Test of space probe angle
 					//Compute the ideal massFlowRate for the launch to reach the speed we would like
 					double spaceProbeVeloc = averageVelocitySpaceProbe;
 					int originPlanet = 3;

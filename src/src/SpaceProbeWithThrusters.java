@@ -464,6 +464,8 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         // DOES NOT WORK YET
         //
 
+        //These would be the computations for a transfer from Earth to Saturn
+        /*
         // Cheating a bit, orbital periods given
         double pEarth = 365.26 * 86400; // orbital period Earth in seconds
         double pSaturn = pEarth * 29.456; // orbital period Saturn in seconds
@@ -498,13 +500,11 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         double distFromEarthStart = 1000 + originPlanet.getRadius();
         double additionalVelocity = 0;
 
-        System.out.println("dV1Vector.getAngle(): " + dV1Vector.angle(new Vector2D()));
-
         Vector2D spaceProbePos = new Vector2D(originPlanet.getPosition());
         Vector2D spaceProbeVelocity = new Vector2D(originPlanet.getVelocity()).add(dV1Vector);
         spaceProbePos.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(distFromEarthStart));
-        System.out.println("Norm of the velocity from Earth: " + dV1Vector.length());
         spaceProbeVelocity.add(new Vector2D(spaceProbeVelocity.angle(new Vector2D())).multiply(additionalVelocity));
+
         SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, spaceProbePos, spaceProbeVelocity);
 
         //Try to build a flightPlan from that
@@ -513,6 +513,31 @@ public class SpaceProbeWithThrusters extends SpaceProbe {
         //Add the first iteration with dV1Vector
         //Vector2D accel =
         //plan.addIteration();
+
+        */
+
+        //Discrete values computed for testing if it works
+        //Case of transfer from Earth to Saturn
+        //Create a new spaceProbe from that, we start from the originPlanet
+        Vector2D previousVelocitySpaceProbe = new Vector2D(originPlanet.getVelocity()).normalize().multiply(15500);
+
+        System.out.println("Angle of previous velocity: " + previousVelocitySpaceProbe.angle(new Vector2D()));
+
+        double deltaV1Norm = 7300;
+        double deltaV1Angle = originPlanet.getVelocity().angle(new Vector2D());
+        Vector2D deltaV1 = new Vector2D(deltaV1Angle).multiply(deltaV1Norm);
+
+        System.out.println("angle of deltaV1: " + deltaV1Angle);
+
+        double angleFromEarth = originPlanet.getVelocity().angle(new Vector2D());
+        double distFromEarth = 300000;
+
+        Vector2D spaceProbePos = new Vector2D(originPlanet.getPosition());
+        Vector2D spaceProbeVelocity = new Vector2D(previousVelocitySpaceProbe);
+        spaceProbePos.add(new Vector2D(angleFromEarth).multiply(distFromEarth));
+        spaceProbeVelocity.add(deltaV1);
+
+        SpaceProbeWithThrusters probe = new SpaceProbeWithThrusters("Probe", 800, spaceProbePos, spaceProbeVelocity);
 
         //Return the spaceProbe
         return probe;
